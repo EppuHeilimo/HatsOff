@@ -1,0 +1,39 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MoveShape", "MoveShape\MoveShape.csproj", "{9BA6F2AF-DECA-4FC4-A8A7-B9B353351800}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PublishScripts", "PublishScripts", "{87AAB845-B1DE-443A-B65A-67BDEFEC418C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scripts", "Scripts", "{E3851F59-EA54-48ED-A975-BD3FBC66ACAA}"
+	ProjectSection(SolutionItems) = preProject
+		PublishScripts\Scripts\Deploy-AzureResourceGroup.ps1 = PublishScripts\Scripts\Deploy-AzureResourceGroup.ps1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Templates", "Templates", "{8EE1D4A7-372D-4221-B9AA-6D38FB1B70EF}"
+	ProjectSection(SolutionItems) = preProject
+		PublishScripts\Templates\MoveShape.json = PublishScripts\Templates\MoveShape.json
+		PublishScripts\Templates\MoveShape.param.dev.json = PublishScripts\Templates\MoveShape.param.dev.json
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9BA6F2AF-DECA-4FC4-A8A7-B9B353351800}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9BA6F2AF-DECA-4FC4-A8A7-B9B353351800}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9BA6F2AF-DECA-4FC4-A8A7-B9B353351800}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9BA6F2AF-DECA-4FC4-A8A7-B9B353351800}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{E3851F59-EA54-48ED-A975-BD3FBC66ACAA} = {87AAB845-B1DE-443A-B65A-67BDEFEC418C}
+		{8EE1D4A7-372D-4221-B9AA-6D38FB1B70EF} = {87AAB845-B1DE-443A-B65A-67BDEFEC418C}
+	EndGlobalSection
+EndGlobal
