@@ -4,14 +4,16 @@
 <head>
     <title>SignalR MoveShape Demo</title>
     <style>
-        #shape {
+        #myShape {
             width: 100px;
             height: 100px;
+            position: absolute;
             background-color: #FF0000;
         }
-        #shape2 {
+        .player {
             width: 100px;
             height: 100px;
+            position: absolute;
             background-color: #00FF00;
         }
     </style>
@@ -23,56 +25,51 @@
     <script src="/signalr/hubs"></script>
     <script>
         $(function () {
+            var players = [];
+            var me = document.createElement('div');
+            me.id = "myShape";
+            document.getElementsByTagName('body')[0].appendChild(me);
             var moveShapeHub = $.connection.moveShapeHub,
-                $shape = $("#shape"),
-                $shape2 = $("#shape2"),
+                $shape = $("#myShape"),
                 // Send a maximum of 10 messages per second
                 // (mouse movements trigger a lot of messages)
-                messageFrequency = 10,
+                messageFrequency = 20,
                 // Determine how often to send messages in
                 // time to abide by the messageFrequency
                 updateRate = 1000 / messageFrequency,
                 shapeModel = {
                     left: 0,
-                    top: 0,
-                },
-                shapeModel2 = {
-                    left: 0,
-                    top: 0,
+                    top: 0
                 }
+            players.push($shape);
             moved = false;
-            moved2 = false;
             moveShapeHub.client.updateShape = function (model, shapeid) {
                 if (shapeid == 0)
                 {
                     shapeModel = model;
                     $shape.animate(shapeModel, { duration: updateRate, queue: false });
                 }
-                    
-                if (shapeid == 1)
-                {
-                    shapeModel2 = model;
-                    $shape2.animate(shapeModel2, { duration: updateRate, queue: false });
-                }  
                  // Gradually move the shape towards the new location (interpolate)
                  // The updateRate is used as the duration because by the time
                  // we get to the next location we want to be at the "last" location
                  // We also clear the animation queue so that we start a new
                  // animation and don't lag behind.
-                
-                
             };
+
+            moveShapeHub.client.addPlayer = function () {
+                var player = document.createElement('div');
+                me.id = "player" + players.length;
+                me.className = 'player';
+                document.getElementsByTagName('body')[0].appendChild(me);
+                $temp = $(me.id);
+                players.push($temp);
+            }
+
             $.connection.hub.start().done(function () {
                 $shape.draggable({
                     drag: function () {
                         shapeModel = $shape.offset();
                         moved = true;
-                    }
-                });
-                $shape2.draggable({
-                    drag: function () {
-                        shapeModel2 = $shape2.offset();
-                        moved2 = true;
                     }
                 });
                 // Start the client side server update interval
@@ -84,16 +81,8 @@
                     moveShapeHub.server.updateModel(shapeModel, 0);
                     moved = false;
                 }
-                if(moved2)
-                {
-                    moveShapeHub.server.updateModel(shapeModel2, 1);
-                    moved2 = false;
-                }
             }
         });
     </script>
-
-    <div id="shape" />
-    <div id="shape2" />
 </body>
 </html> 
