@@ -6,30 +6,7 @@ using System.Collections.Generic;
 
 namespace MoveShape
 {
-    public class Server
-    {
-        private Broadcaster _broadcaster;
-        private readonly static Lazy<Server> _server = new Lazy<Server>(() => new Server());
-        private List<RemotePlayer> connectedPlayers;
-        public Server()
-        {
-            connectedPlayers = new List<RemotePlayer>();
-        }
 
-        public void NewConnection(string connectionID)
-        {
-            connectedPlayers.Add(new RemotePlayer(connectionID));
-            _broadcaster.AddPlayer();
-        }
-
-        public static Server ServerInstance
-        {
-            get
-            {
-                return _server.Value;
-            }
-        }
-    }
 
     public class Broadcaster
     {
@@ -39,13 +16,13 @@ namespace MoveShape
         private readonly TimeSpan BroadcastInterval =
             TimeSpan.FromMilliseconds(16);
         private readonly IHubContext _hubContext;
-
         private Timer _broadcastLoop;
         private ShapeModel _model;
-        private ShapeModel _model2;
         private int _shapeID;
         private bool _modelUpdated;
-        private bool _playerJoined;
+        public int newID = 0;
+        private Dictionary<string, RemotePlayer> connectedPlayers;
+        private List<ShapeModel> updatedmodels = new List<ShapeModel>();
         public Broadcaster()
         {
             // Save our hub context so we can easily use it 
@@ -53,7 +30,7 @@ namespace MoveShape
             _hubContext = GlobalHost.ConnectionManager.GetHubContext<MoveShapeHub>();
             _model = new ShapeModel();
             _modelUpdated = false;
-            _playerJoined = false;
+            connectedPlayers = new Dictionary<string, RemotePlayer>();
             // Start the broadcast loop
             _broadcastLoop = new Timer(
                 Broadcast,
@@ -63,31 +40,34 @@ namespace MoveShape
         }
         public void Broadcast(object state)
         {
-            // No need to send anything if our model hasn't changed
-            if (_modelUpdated)
+            // This is how we can access the Clients property 
+            // in a static hub method or outside of the hub entirely
+            if(_modelUpdated)
             {
-                // This is how we can access the Clients property 
-                // in a static hub method or outside of the hub entirely
-                _hubContext.Clients.AllExcept(_model.LastUpdatedBy).updateShape(_model, _shapeID);
+                ShapeModel[] array = updatedmodels.ToArray();
+                _hubContext.Clients.All.updateShapes(array);
                 _modelUpdated = false;
-            }
-            if(_playerJoined)
-            {
-                _hubContext.Clients.AllExcept(_model.LastUpdatedBy).addPlayer();
-                _playerJoined = false;
+                updatedmodels.Clear();
             }
 
         }
-        public void UpdateShape(ShapeModel clientModel, int shapeID)
+
+        public int NewID()
         {
-            _shapeID = shapeID;
-            _model = clientModel;
+            newID++;
+            return newID;
+        }
+        public void UpdateShape(ShapeModel clientModel)
+        {
+            updatedmodels.Add(clientModel);
             _modelUpdated = true;
         }
 
-        public void AddPlayer()
+        public void AddPlayer(string connectionid)
         {
-            _playerJoined = true;
+            connectedPlayers.Add(connectionid, new RemotePlayer(connectionid, newID));
+            _hubContext.Clients.AllExcept(connectionid).addPlayer(newID);
+            _hubContext.Clients.Client(connectionid).getMyID(newID);
         }
 
         public static Broadcaster Instance
@@ -97,29 +77,35 @@ namespace MoveShape
                 return _instance.Value;
             }
         }
+
     }
 
     public class MoveShapeHub : Hub
     {
         // Is set via the constructor on each creation
         private Broadcaster _broadcaster;
-        private Server _server;
         public MoveShapeHub()
             : this(Broadcaster.Instance)
         {
-            _server = Server.ServerInstance;
-            _server.NewConnection(Context.ConnectionId);
         }
         public MoveShapeHub(Broadcaster broadcaster)
         {
             _broadcaster = broadcaster;
         }
-        public void UpdateModel(ShapeModel clientModel, int shapeID)
+        public void UpdateModel(ShapeModel clientModel)
         {
             clientModel.LastUpdatedBy = Context.ConnectionId;
             // Update the shape model within our broadcaster
-            _broadcaster.UpdateShape(clientModel, shapeID);
+            _broadcaster.UpdateShape(clientModel);
         }
+        public int AddPlayer()
+        {
+            _broadcaster.NewID();
+            _broadcaster.AddPlayer(Context.ConnectionId);
+            return _broadcaster.newID;
+        }
+
+
     }
     public class ShapeModel
     {
@@ -132,19 +118,23 @@ namespace MoveShape
         // We don't want the client to get the "LastUpdatedBy" property
         [JsonIgnore]
         public string LastUpdatedBy { get; set; }
+        [JsonProperty("id")]
+        public double id { get; set; }
     }
 
     public class RemotePlayer
     {
         ShapeModel _playerShape;
         string _connectionID;
-        public RemotePlayer(string connectionID)
+        int _ID;
+        public RemotePlayer(string connectionID, int ID)
         {
             _connectionID = connectionID;
             _playerShape = new ShapeModel();
             _playerShape.Left = 0;
             _playerShape.Top = 0;
             _playerShape.LastUpdatedBy = connectionID;
+            _ID = ID;
         }
     }
 }
