@@ -5,7 +5,11 @@ $(function () {
         this.$shape = s;
         this.ID = i;
     }
+
     var players = [];
+
+    //players.find((x)=>x.ID == 3);
+
     var myID;
     var me = document.createElement('div');
     me.id = "myShape";
@@ -26,9 +30,15 @@ $(function () {
     moved = false;
             
     moveShapeHub.client.updateShapes = function (models) {
-        for(index in models)
+        for(var i = 0; i < models.length; i++)
         {
-            players[models[index].id].$shape.animate(models[index], { duration: updateRate, queue: false });
+            var a = players.find((x) =>x.ID == models[i].id);
+            if(a)
+            {
+                $("player" + a.ID).animate({ left: "+=" + models[i].left + "px", top: "+=" + models[i].top + "px" }, { duration: updateRate, queue: false });
+            }
+            
+            //players[models[index].id].$shape.animate(models[index], { duration: updateRate, queue: false });
         }
         // Gradually move the shape towards the new location (interpolate)
         // The updateRate is used as the duration because by the time
@@ -41,26 +51,43 @@ $(function () {
         myID = ID;
         shapeModel.id = ID;
     }
-    moveShapeHub.client.addPlayer = function (ID) {
+
+    addPlayer = function(model)
+    {
         var player = document.createElement('div');
-        player.id = "player" + players.length;
+        player.id = "player" + model.id;
         player.className = 'player';
         document.getElementsByTagName('body')[0].appendChild(player);
         $temp = $(player.id);
-        var test = new playertest($temp, ID);
+        var test = new playertest($temp, model.id);
+        test.$shape.offset(model.left, model.top);
         players.push(test);
+    }
+
+    moveShapeHub.client.addPlayer = function (model) {
+        addPlayer(model);
+    }
+
+    moveShapeHub.client.addPlayers = function(playerlist)
+    {
+        for(index in playerlist)
+        {
+            addPlayer(playerlist[index]);
+        }
     }
 
     $.connection.hub.start().done(function () {
         $shape.draggable({
             drag: function () {
-                shapeModel = $shape.offset();
+                shapeModel.left = $shape.offset().left;
+                shapeModel.top = $shape.offset().top;
                 moved = true;
             }
         });
         // Start the client side server update interval
         setInterval(updateServerModel, updateRate);
         moveShapeHub.server.addPlayer();
+        moveShapeHub.server.getPlayers();
     });
     function updateServerModel() {
         // Only update server if we have a new movement

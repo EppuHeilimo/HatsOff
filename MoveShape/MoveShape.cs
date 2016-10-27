@@ -63,9 +63,11 @@ namespace Hatsoff
 
         public void AddPlayer(string connectionid)
         {
-            connectedPlayers.Add(connectionid, new RemotePlayer(connectionid, newID));
-            _hubContext.Clients.AllExcept(connectionid).addPlayer(newID);
-            _hubContext.Clients.Client(connectionid).getMyID(newID);
+            int id = NewID();
+            RemotePlayer newplayer = new RemotePlayer(connectionid, id);
+            connectedPlayers.Add(connectionid, newplayer);
+            _hubContext.Clients.AllExcept(connectionid).addPlayer(newplayer.getPlayerShape());
+            _hubContext.Clients.Client(connectionid).getMyID(id);
         }
 
         public static Broadcaster Instance
@@ -76,6 +78,24 @@ namespace Hatsoff
             }
         }
 
+        internal void SendPlayersListTo(string connectionId)
+        {
+            List<ShapeModel> playerlist = new List<ShapeModel>();
+            if(connectedPlayers.Count > 1)
+            {
+                foreach (KeyValuePair<string, RemotePlayer> p in connectedPlayers)
+                {
+                    if (p.Key == connectionId)
+                        continue;
+                    else
+                    {
+                        playerlist.Add(p.Value.getPlayerShape());
+                    }
+                }
+
+                _hubContext.Clients.Client(connectionId).addPlayers(playerlist);
+            }
+        }
     }
 
     public class MoveShapeHub : Hub
@@ -95,12 +115,15 @@ namespace Hatsoff
             clientModel.LastUpdatedBy = Context.ConnectionId;
             // Update the shape model within our broadcaster
             _broadcaster.UpdateShape(clientModel);
+
         }
-        public int AddPlayer()
+        public void AddPlayer()
         {
-            _broadcaster.NewID();
             _broadcaster.AddPlayer(Context.ConnectionId);
-            return _broadcaster.newID;
+        }
+        public void GetPlayers()
+        {
+            _broadcaster.SendPlayersListTo(Context.ConnectionId);
         }
 
 
@@ -133,6 +156,11 @@ namespace Hatsoff
             _playerShape.Top = 0;
             _playerShape.LastUpdatedBy = connectionID;
             _ID = ID;
+            _playerShape.id = ID;
+        }
+        public ShapeModel getPlayerShape()
+        {
+            return _playerShape;
         }
     }
 }

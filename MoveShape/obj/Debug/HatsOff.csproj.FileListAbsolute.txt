@@ -61,3 +61,4 @@ Z:\Dox\Repos\ASPRealTimeTest\MoveShape\bin\Antlr3.Runtime.pdb
 Z:\Dox\Repos\ASPRealTimeTest\MoveShape\bin\Newtonsoft.Json.xml
 Z:\Dox\Repos\ASPRealTimeTest\MoveShape\obj\Debug\MoveShape.dll
 Z:\Dox\Repos\ASPRealTimeTest\MoveShape\obj\Debug\MoveShape.pdb
+Z:\Dox\Repos\ASPRealTimeTest\MoveShape\obj\Debug\HatsOff.csprojResolveAssemblyReference.cache
