@@ -4,10 +4,8 @@ using Microsoft.AspNet.SignalR;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 
-namespace MoveShape
+namespace Hatsoff
 {
-
-
     public class Broadcaster
     {
         private readonly static Lazy<Broadcaster> _instance =

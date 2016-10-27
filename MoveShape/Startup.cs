@@ -1,8 +1,8 @@
 ﻿using Microsoft.Owin;
 using Owin;
 
-[assembly: OwinStartup(typeof(MoveShape.Startup))]
-namespace MoveShape
+[assembly: OwinStartup(typeof(Hatsoff.Startup))]
+namespace Hatsoff
 {
     public class Startup
     {
