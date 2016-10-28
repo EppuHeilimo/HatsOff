@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Threading;
 using Microsoft.AspNet.SignalR;
 using Newtonsoft.Json;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Hatsoff
 {
@@ -15,20 +17,20 @@ namespace Hatsoff
             TimeSpan.FromMilliseconds(16);
         private readonly IHubContext _hubContext;
         private Timer _broadcastLoop;
-        private ShapeModel _model;
-        private int _shapeID;
         private bool _modelUpdated;
-        public int newID = 0;
-        private Dictionary<string, RemotePlayer> connectedPlayers;
-        private List<ShapeModel> updatedmodels = new List<ShapeModel>();
+        private bool _playerDisconnected = false;
+        public int _newID = 0;
+        private ConcurrentDictionary<string, RemotePlayer> connectedPlayers;
+        private List<ShapeModel> _updatedPlayers = new List<ShapeModel>();
+        private List<ShapeModel> _disconnctedPlayers = new List<ShapeModel>();
         public Broadcaster()
         {
             // Save our hub context so we can easily use it 
             // to send to its connected clients
             _hubContext = GlobalHost.ConnectionManager.GetHubContext<MoveShapeHub>();
-            _model = new ShapeModel();
+
             _modelUpdated = false;
-            connectedPlayers = new Dictionary<string, RemotePlayer>();
+            connectedPlayers = new ConcurrentDictionary<string, RemotePlayer>();
             // Start the broadcast loop
             _broadcastLoop = new Timer(
                 Broadcast,
@@ -42,22 +44,52 @@ namespace Hatsoff
             // in a static hub method or outside of the hub entirely
             if(_modelUpdated)
             {
-                ShapeModel[] array = updatedmodels.ToArray();
+                ShapeModel[] array = _updatedPlayers.ToArray();
                 _hubContext.Clients.All.updateShapes(array);
                 _modelUpdated = false;
-                updatedmodels.Clear();
+                _updatedPlayers.Clear();
+            }
+            if (_playerDisconnected)
+            {
+                _hubContext.Clients.All.playerDisconnected(_disconnctedPlayers);
+                _playerDisconnected = false;
+            }
+
+        }
+
+        public void PlayerDisconnect(string connectionId)
+        {
+            try
+            {
+                RemotePlayer dPlayer;
+                connectedPlayers.TryRemove(connectionId, out dPlayer);
+                if (dPlayer != null)
+                {
+                    _disconnctedPlayers.Add(dPlayer.getPlayerShape());
+                    _playerDisconnected = true;
+                }
+
+            }
+            catch (ArgumentNullException ex)
+            {
+                
             }
 
         }
 
         public int NewID()
         {
-            newID++;
-            return newID;
+            _newID++;
+            return _newID;
         }
         public void UpdateShape(ShapeModel clientModel)
         {
-            updatedmodels.Add(clientModel);
+            //TODO: Make player gradually move ovetime 
+            RemotePlayer p;
+            connectedPlayers.TryGetValue(clientModel.LastUpdatedBy, out p);
+            p.setPosition(clientModel.Left, clientModel.Top);
+
+            _updatedPlayers.Add(clientModel);
             _modelUpdated = true;
         }
 
@@ -65,7 +97,7 @@ namespace Hatsoff
         {
             int id = NewID();
             RemotePlayer newplayer = new RemotePlayer(connectionid, id);
-            connectedPlayers.Add(connectionid, newplayer);
+            connectedPlayers.TryAdd(connectionid, newplayer);
             _hubContext.Clients.AllExcept(connectionid).addPlayer(newplayer.getPlayerShape());
             _hubContext.Clients.Client(connectionid).getMyID(id);
         }
@@ -126,7 +158,11 @@ namespace Hatsoff
             _broadcaster.SendPlayersListTo(Context.ConnectionId);
         }
 
-
+        public override Task OnDisconnected(bool stopCalled)
+        {
+            _broadcaster.PlayerDisconnect(Context.ConnectionId);
+            return base.OnDisconnected(stopCalled);
+        }
     }
     public class ShapeModel
     {
@@ -161,6 +197,12 @@ namespace Hatsoff
         public ShapeModel getPlayerShape()
         {
             return _playerShape;
+        }
+
+        public void setPosition(double left, double top)
+        {
+            _playerShape.Left = left;
+            _playerShape.Top = top;
         }
     }
 }

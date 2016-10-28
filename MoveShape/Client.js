@@ -1,6 +1,6 @@
 ﻿
 $(function () {
-    function playertest(s, i)
+    function Player(s, i)
     {
         this.$shape = s;
         this.ID = i;
@@ -10,7 +10,7 @@ $(function () {
 
     //players.find((x)=>x.ID == 3);
 
-    var myID;
+    var myId;
     var me = document.createElement('div');
     me.id = "myShape";
     document.getElementsByTagName('body')[0].appendChild(me);
@@ -27,12 +27,16 @@ $(function () {
             top: 0,
             id: 0
         }
-    moved = false;
+    var moved = false;
+
+    findPlayerByID = function (id)
+    {
+        return players.find((x) =>x.ID == id);
+    }
             
     moveShapeHub.client.updateShapes = function (models) {
-        for(var i = 0; i < models.length; i++)
-        {
-            var a = players.find((x) =>x.ID == models[i].id);
+        for(var i = 0; i < models.length; i++) {
+            var a = findPlayerByID(models[i].id);
             if(a)
             {
                 $("#player" + a.ID).animate({ left: models[i].left + "px", top: models[i].top + "px" }, { duration: updateRate, queue: false });
@@ -46,9 +50,24 @@ $(function () {
         // We also clear the animation queue so that we start a new
         // animation and don't lag behind.
     };
+
+    moveShapeHub.client.playerDisconnected = function(disconnectedPlayers)
+    {
+        for (var i = 0; i < disconnectedPlayers.length; i++) {
+            var a = findPlayerByID(disconnectedPlayers[i].id);
+            if (a) {
+                a.$shape.remove();
+                var index = players.indexOf(a);
+                if (index > -1) {
+                    players.splice(index, 1);
+                }
+            }
+
+        }
+    }
     moveShapeHub.client.getMyID = function(ID)
     {
-        myID = ID;
+        myId = ID;
         shapeModel.id = ID;
     }
 
@@ -58,10 +77,9 @@ $(function () {
         player.id = "player" + model.id;
         player.className = 'player';
         document.getElementsByTagName('body')[0].appendChild(player);
-        $temp = $("#" + player.id);
-        var test = new playertest($temp, model.id);
-        test.$shape.animate({ left: model.left + "px", top: model.top + "px" });
-        players.push(test);
+        var newplayer = new Player($("#" + player.id), model.id);
+        newplayer.$shape.animate({ left: model.left + "px", top: model.top + "px" });
+        players.push(newplayer);
     }
 
     moveShapeHub.client.addPlayer = function (model) {
@@ -70,9 +88,9 @@ $(function () {
 
     moveShapeHub.client.addPlayers = function(playerlist)
     {
-        for(index in playerlist)
+        for(var i = 0; i < playerlist.length; i++)
         {
-            addPlayer(playerlist[index]);
+            addPlayer(playerlist[i]);
         }
     }
 
