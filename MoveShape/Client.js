@@ -35,7 +35,7 @@ $(function () {
             var a = players.find((x) =>x.ID == models[i].id);
             if(a)
             {
-                $("player" + a.ID).animate({ left: "+=" + models[i].left + "px", top: "+=" + models[i].top + "px" }, { duration: updateRate, queue: false });
+                $("#player" + a.ID).animate({ left: models[i].left + "px", top: models[i].top + "px" }, { duration: updateRate, queue: false });
             }
             
             //players[models[index].id].$shape.animate(models[index], { duration: updateRate, queue: false });
@@ -58,9 +58,9 @@ $(function () {
         player.id = "player" + model.id;
         player.className = 'player';
         document.getElementsByTagName('body')[0].appendChild(player);
-        $temp = $(player.id);
+        $temp = $("#" + player.id);
         var test = new playertest($temp, model.id);
-        test.$shape.offset(model.left, model.top);
+        test.$shape.animate({ left: model.left + "px", top: model.top + "px" });
         players.push(test);
     }
 
