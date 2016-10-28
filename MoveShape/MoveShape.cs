@@ -10,7 +10,7 @@ namespace Hatsoff
     {
         private readonly static Lazy<Broadcaster> _instance =
             new Lazy<Broadcaster>(() => new Broadcaster());
-        // We're going to broadcast to all clients a maximum of 25 times per second
+        // We're going to broadcast to all clients a maximum of 25 times per second.
         private readonly TimeSpan BroadcastInterval =
             TimeSpan.FromMilliseconds(16);
         private readonly IHubContext _hubContext;
