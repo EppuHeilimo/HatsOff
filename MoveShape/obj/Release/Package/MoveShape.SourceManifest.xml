@@ -1,6 +1,0 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<sitemanifest>
-  <IisApp path="\\storage\homes\h8566\dox\documents\visual studio 2015\Projects\MoveShape\MoveShape\obj\Release\Package\PackageTmp" />
-  <setAcl path="\\storage\homes\h8566\dox\documents\visual studio 2015\Projects\MoveShape\MoveShape\obj\Release\Package\PackageTmp" setAclResourceType="Directory" />
-  <setAcl path="\\storage\homes\h8566\dox\documents\visual studio 2015\Projects\MoveShape\MoveShape\obj\Release\Package\PackageTmp" setAclUser="anonymousAuthenticationUser" setAclResourceType="Directory" />
-</sitemanifest>
