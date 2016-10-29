@@ -39,6 +39,22 @@ $(function () {
             var a = findPlayerByID(models[i].id);
             if(a)
             {
+                //Create a new test particle with maximum size of 16 by 16
+                //(defined in Client/gfx/box.ts)
+                var dtp = new DrawableTestParticle({ x: 16, y: 16 });
+
+                //Set the particle color to random tone of orange
+                dtp.color.r = 1.0;
+                dtp.color.g = Math.random();
+                dtp.color.b = 0.0;
+
+                //Set the particle position
+                dtp.position.x = models[i].left + 50;
+                dtp.position.y = models[i].top + 50;
+
+                //Hand it to the GFX engine, it'll take care of the rest
+                GFX.addDrawable(dtp);
+
                 $("#player" + a.ID).animate({ left: models[i].left + "px", top: models[i].top + "px" }, { duration: updateRate, queue: false });
             }
             

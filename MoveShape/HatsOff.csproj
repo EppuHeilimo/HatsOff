@@ -183,6 +183,7 @@
     <Compile Include="Startup.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="assets\font1.png" />
     <Content Include="Client.js" />
     <Content Include="Content\bootstrap.css" />
     <Content Include="Content\bootstrap.min.css" />
@@ -240,6 +241,11 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Client\tsconfig.json" />
+    <Content Include="assets\shaders\basic.fs" />
+    <Content Include="assets\shaders\basic.vs" />
+    <Content Include="assets\shaders\colored.fs" />
+    <Content Include="assets\shaders\font.vs" />
+    <Content Include="assets\shaders\inverted.fs" />
     <None Include="Properties\PublishProfiles\Trinedy.pubxml" />
     <None Include="Scripts\jquery-1.12.4.intellisense.js" />
     <Content Include="Scripts\jquery-1.12.4.js" />
@@ -285,7 +291,13 @@
     <None Include="Project_Readme.html" />
   </ItemGroup>
   <ItemGroup>
+    <TypeScriptCompile Include="Client\async.ts" />
+    <TypeScriptCompile Include="Client\gfx\assets.ts" />
+    <TypeScriptCompile Include="Client\gfx\box.ts" />
+    <TypeScriptCompile Include="Client\gfx\gfx.ts" />
+    <TypeScriptCompile Include="Client\gfx\text.ts" />
     <TypeScriptCompile Include="Client\main.ts" />
+    <TypeScriptCompile Include="Client\vector.ts" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{4A0DDDB5-7A95-4FBF-97CC-616D07737A77}" />

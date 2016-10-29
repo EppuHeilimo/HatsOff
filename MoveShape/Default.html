@@ -16,15 +16,30 @@
             position: absolute;
             background-color: #00FF00;
         }
+
+        #canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -1;
+        }
+        body {
+            margin: 0px 0px 0px 0px;
+        }
     </style>
 </head>
 <body>
+    <canvas id="canvas"></canvas>
     <script src="Scripts/jquery-1.12.4.min.js"></script>
     <script src="Scripts/jquery-ui-1.12.1.min.js"></script>
     <script src="Scripts/jquery.signalR-2.2.1.js"></script>
     <script src="/signalr/hubs"></script>
     <script src="/Client.js"></script>
 	<script src="/TSClient.js"></script>
-    
+   
+   <script>
+
+       initMain();
+   </script> 
 </body>
 </html> 
