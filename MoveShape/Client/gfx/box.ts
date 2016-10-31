@@ -28,6 +28,27 @@ class DrawableColorBox implements Drawable
 	}
 }
 
+class DrawableTextureBox implements Drawable {
+    public visible: boolean = true;
+
+    public depth: number;
+    public position: Vector2;
+    public size: Vector2;
+    public texture: Texture;
+
+    constructor() {
+        this.depth = 0;
+        this.position = Vector2New(0, 0);
+        this.size = Vector2New(0, 0);
+        this.texture = null;
+    }
+
+    public draw(): void {
+        let sb = new ShaderBinder();
+        GFX.drawCentered(this.texture, this.position, this.depth, this.size);
+    }
+}
+
 
 class DrawableTestParticle extends DrawableColorBox {
     private maxSize: Vector2;
