@@ -11,11 +11,11 @@ namespace Hatsoff
         [JsonProperty("mapstate")]
         public MapState mapstate;
         [JsonProperty("triggerareas")]
-        public Dictionary<string, TriggerArea> areas;
+        public Dictionary<string, TriggerArea> triggerareas;
         public Map()
         {
-            areas = new Dictionary<string, TriggerArea>();
-            areas.Add("TownEntrance", new TriggerArea(200, 200, 100, 100));
+            triggerareas = new Dictionary<string, TriggerArea>();
+            triggerareas.Add("TownEntrance", new TriggerArea(200, 200, 100, 100));
             mapstate = new MapState();
         }
     }
@@ -46,6 +46,10 @@ namespace Hatsoff
             _y = y;
             _sizex = sizex;
             _sizey = sizey;
+        }
+        public Vec2 getCenter()
+        {
+            return new Vec2(_x, _y);
         }
     }
 }

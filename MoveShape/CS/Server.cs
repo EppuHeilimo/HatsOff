@@ -92,9 +92,23 @@ namespace Hatsoff
             RemotePlayer p;
             connectedPlayers.TryGetValue(clientModel.LastUpdatedBy, out p);
             p.setPosition(clientModel.x, clientModel.y);
-
             _updatedPlayers.Add(clientModel);
             _modelUpdated = true;
+        }
+
+        public void Message(string cmd, string attribs, string connectionId)
+        {
+            RemotePlayer p;
+            connectedPlayers.TryGetValue(connectionId, out p);
+            if(cmd == "hittrigger")
+            {
+                if (Collision.TestCircleCollision(p.getPosition(), 50, _gamedata.maps[p.getPlayerShape().areaname].triggerareas[attribs].getCenter(), 50))
+                {
+                    p.setPosition(400, 400);
+                    _hubContext.Clients.Client(connectionId).teleport(400, 400);
+                }
+            }
+
         }
 
         public void AddPlayer(string connectionid)
@@ -142,7 +156,11 @@ namespace Hatsoff
             clientModel.LastUpdatedBy = Context.ConnectionId;
             // Update the shape model within our broadcaster
             _broadcaster.UpdateShape(clientModel);
+        }
 
+        public void Message(string cmd, string attribs)
+        {
+            _broadcaster.Message(cmd, attribs, Context.ConnectionId);
         }
         public void AddPlayer()
         {

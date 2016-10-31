@@ -4,7 +4,7 @@ namespace Hatsoff
     static class Collision
     {
         
-        static bool TestCircleCollision(Vec2 c1, double r1, Vec2 c2, double r2)
+        static public bool TestCircleCollision(Vec2 c1, double r1, Vec2 c2, double r2)
         {
             Vec2 delta = c2 - c1;
 

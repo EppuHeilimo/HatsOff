@@ -200,7 +200,7 @@
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
-    <Compile Include="Collision.cs" />
+    <Compile Include="CS\Collision.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="CS\Data.cs" />
     <Compile Include="Global.asax.cs">

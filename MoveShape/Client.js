@@ -144,6 +144,14 @@ $(function () {
         }
     }
 
+    connectionHub.client.teleport = function (x, y)
+    {
+        PlayerActor.x = x;
+        PlayerActor.y = y;
+        $shape.animate({ left: x + "px", top: y + "px" });
+        alert("ASD");
+    }
+
     $.connection.hub.start().done(function () {
         $shape.draggable({
             drag: function () {
@@ -161,6 +169,9 @@ $(function () {
         // Only update server if we have a new movement
         if (moved) {
             connectionHub.server.updateModel(PlayerActor);
+            if (collisionCircle(PlayerActor, 50, world.map.triggerareas["TownEntrance"], 50)) {
+                connectionHub.server.message("hittrigger", "TownEntrance");
+            }
             moved = false;
         }
     }
