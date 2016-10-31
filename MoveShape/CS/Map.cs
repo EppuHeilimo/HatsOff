@@ -12,10 +12,9 @@ namespace Hatsoff
         public MapState mapstate;
         [JsonProperty("triggerareas")]
         public Dictionary<string, TriggerArea> triggerareas;
-        public Map()
+        public Map(Dictionary<string, TriggerArea> triggers)
         {
-            triggerareas = new Dictionary<string, TriggerArea>();
-            triggerareas.Add("TownEntrance", new TriggerArea(200, 200, 100, 100));
+            triggerareas = triggers;
             mapstate = new MapState();
         }
     }

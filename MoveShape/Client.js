@@ -126,14 +126,28 @@ $(function () {
             if(worldd.map.mapstate.playerlist[i].id != myId)
                 addPlayer(worldd.map.mapstate.playerlist[i]);
         }
+
+        if (world) {
+            for (var j in world.map.triggerareas) {
+
+                var area = world.map.triggerareas[j];
+                GFX.removeDrawable(area.drawable);
+            }
+        }
         world = worldd;
-        a = new DrawableColorBox();
-        a.position.x = world.map.triggerareas["TownEntrance"].x;
-        a.position.y = world.map.triggerareas["TownEntrance"].y;
-        a.size.x = world.map.triggerareas["TownEntrance"].sizex;
-        a.size.y = world.map.triggerareas["TownEntrance"].sizey;
-        a.color.b = 1;
-        GFX.addDrawable(a);
+        for (var j in world.map.triggerareas)
+        {
+            var area = world.map.triggerareas[j];
+            if (!world.map.triggerareas.hasOwnProperty(j)) continue;
+            a = new DrawableColorBox();
+            a.position.x = area.x;
+            a.position.y = area.y;
+            a.size.x = area.sizex;
+            a.size.y = area.sizey;
+            a.color.b = 1;
+            GFX.addDrawable(a);
+            area.drawable = a;
+        }  
     }
 
     connectionHub.client.addPlayers = function (playerlist)
@@ -149,7 +163,15 @@ $(function () {
         PlayerActor.x = x;
         PlayerActor.y = y;
         $shape.animate({ left: x + "px", top: y + "px" });
-        alert("ASD");
+    }
+
+    connectionHub.client.changeMap = function ()
+    {
+        for (var i = 0; i < players.length; i++) {
+            players[i].$shape.remove();
+        }
+        players = [];
+        connectionHub.server.getWorldInfo();
     }
 
     $.connection.hub.start().done(function () {
@@ -169,9 +191,19 @@ $(function () {
         // Only update server if we have a new movement
         if (moved) {
             connectionHub.server.updateModel(PlayerActor);
-            if (collisionCircle(PlayerActor, 50, world.map.triggerareas["TownEntrance"], 50)) {
-                connectionHub.server.message("hittrigger", "TownEntrance");
+            var hit = false;
+            for (var j in world.map.triggerareas) {
+                var area = world.map.triggerareas[j];
+                if (!world.map.triggerareas.hasOwnProperty(j)) continue;
+                if (collisionCircle(PlayerActor, 50, area, 50)) {
+                    hit = true;
+                }
             }
+            if (hit)
+            {
+                connectionHub.server.message("hittrigger", "Town");
+            }
+
             moved = false;
         }
     }

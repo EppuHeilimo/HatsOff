@@ -8,7 +8,7 @@ namespace Hatsoff
         {
             Vec2 delta = c2 - c1;
 
-            if (delta.x * delta.x + delta.y * delta.y > (r1 + r2) * (r1 + r2))
+            if (delta.x * delta.x + delta.y * delta.y < (r1 + r2) * (r1 + r2))
                 return true;
             return false;
         }

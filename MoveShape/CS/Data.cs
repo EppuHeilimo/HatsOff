@@ -13,7 +13,15 @@ namespace Hatsoff
         public GameData()
         {
             maps = new Dictionary<string, Map>();
-            maps.Add("Overworld", new Map());
+            Dictionary<string, TriggerArea> triggers = new Dictionary<string, TriggerArea>();
+
+            triggers.Add("Town", new TriggerArea(200, 200, 100, 100));
+            maps.Add("Overworld", new Map(triggers));
+
+            Dictionary<string, TriggerArea> triggers2 = new Dictionary<string, TriggerArea>();
+
+            triggers2.Add("Overworld", new TriggerArea(500, 100, 100, 100));
+            maps.Add("Town", new Map(triggers2));
         }
     }
     /*
