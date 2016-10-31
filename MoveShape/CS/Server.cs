@@ -20,6 +20,7 @@ namespace Hatsoff
         private Timer _broadcastLoop;
         private bool _modelUpdated;
         private bool _playerDisconnected = false;
+        private bool _playerChangedMap = false;
         public int _newID = 0;
         private ConcurrentDictionary<string, RemotePlayer> connectedPlayers;
         private List<PlayerActor> _updatedPlayers = new List<PlayerActor>();
@@ -57,7 +58,6 @@ namespace Hatsoff
                 _hubContext.Clients.All.playerDisconnected(_disconnctedPlayers);
                 _playerDisconnected = false;
             }
-
         }
 
         public void PlayerDisconnect(string connectionId)
@@ -104,11 +104,19 @@ namespace Hatsoff
             {
                 if (Collision.TestCircleCollision(p.getPosition(), 50, _gamedata.maps[p.getPlayerShape().areaname].triggerareas[attribs].getCenter(), 50))
                 {
-                    p.setPosition(400, 400);
-                    _hubContext.Clients.Client(connectionId).teleport(400, 400);
+                    p.setPosition(0, 0);
+                    _hubContext.Clients.Client(connectionId).teleport(0, 0);
+                    p.getPlayerShape().areaname = attribs;
+                    _disconnctedPlayers.Add(p.getPlayerShape());
+                    _playerDisconnected = true;
+                    ChangeMap(connectionId);
                 }
             }
 
+        }
+        private void ChangeMap(string connectionId)
+        {
+            _hubContext.Clients.Client(connectionId).changeMap();
         }
 
         public void AddPlayer(string connectionid)
