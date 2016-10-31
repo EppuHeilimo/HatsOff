@@ -1,4 +1,14 @@
 ﻿
+function collisionCircle(centera, rada, centerb, radb) {
+    var delta = {}
+    delta.x = centerb.x - centera.x
+    delta.y = centerb.y - centera.y
+
+    if (Math.sqrt(delta.x * delta.x + delta.y * delta.y) < (rada + radb))
+        return true;
+    return false;
+}
+
 $(function () {
     function Player(s, i)
     {
@@ -12,6 +22,7 @@ $(function () {
 
     var myId;
     var moved = false
+    var world;
     var me = document.createElement('div');
     me.id = "myShape";
     document.getElementsByTagName('body')[0].appendChild(me);
@@ -30,9 +41,8 @@ $(function () {
         },
         WorldInfo =
         {
-            playerlist: []
+            map: {}
         }
-
     
 
     findPlayerByID = function (id)
@@ -110,11 +120,20 @@ $(function () {
         addPlayer(model);
     }
 
-    moveShapeHub.client.getWorldInfo = function(world)
+    moveShapeHub.client.getWorldInfo = function(worldd)
     {
-        for (var i = 0; i < world.playerlist.length; i++) {
-            addPlayer(world.playerlist[i]);
+        for (var i = 0; i < worldd.map.mapstate.playerlist.length; i++) {
+            if(worldd.map.mapstate.playerlist[i].id != myId)
+                addPlayer(worldd.map.mapstate.playerlist[i]);
         }
+        world = worldd;
+        a = new DrawableColorBox();
+        a.position.x = world.map.triggerareas["TownEntrance"].x;
+        a.position.y = world.map.triggerareas["TownEntrance"].y;
+        a.size.x = world.map.triggerareas["TownEntrance"].sizex;
+        a.size.y = world.map.triggerareas["TownEntrance"].sizey;
+        a.color.b = 1;
+        GFX.addDrawable(a);
     }
 
     moveShapeHub.client.addPlayers = function(playerlist)

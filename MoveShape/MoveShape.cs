@@ -10,11 +10,12 @@ namespace Hatsoff
 {
     public class Broadcaster
     {
+        private GameData _gamedata;
         private readonly static Lazy<Broadcaster> _instance =
             new Lazy<Broadcaster>(() => new Broadcaster());
         // We're going to broadcast to all clients a maximum of 25 times per second.
         private readonly TimeSpan BroadcastInterval =
-            TimeSpan.FromMilliseconds(16);
+            TimeSpan.FromMilliseconds(50);
         private readonly IHubContext _hubContext;
         private Timer _broadcastLoop;
         private bool _modelUpdated;
@@ -22,7 +23,6 @@ namespace Hatsoff
         public int _newID = 0;
         private ConcurrentDictionary<string, RemotePlayer> connectedPlayers;
         private List<PlayerActor> _updatedPlayers = new List<PlayerActor>();
-        private WorldInfo world;
         private List<PlayerActor> _disconnctedPlayers = new List<PlayerActor>();
         public Broadcaster()
         {
@@ -38,10 +38,11 @@ namespace Hatsoff
                 null,
                 BroadcastInterval,
                 BroadcastInterval);
-            world = new WorldInfo();
+            _gamedata = new GameData();
         }
         public void Broadcast(object state)
         {
+
             // This is how we can access the Clients property 
             // in a static hub method or outside of the hub entirely
             if(_modelUpdated)
@@ -65,7 +66,7 @@ namespace Hatsoff
             {
                 RemotePlayer dPlayer;
                 connectedPlayers.TryRemove(connectionId, out dPlayer);
-                world.playerlist.Remove(dPlayer.getPlayerShape());
+                _gamedata.maps[dPlayer.getPlayerShape().areaname].mapstate.playerlist.Remove(dPlayer.getPlayerShape());
                 if (dPlayer != null)
                 {
                     _disconnctedPlayers.Add(dPlayer.getPlayerShape());
@@ -91,7 +92,6 @@ namespace Hatsoff
             RemotePlayer p;
             connectedPlayers.TryGetValue(clientModel.LastUpdatedBy, out p);
             p.setPosition(clientModel.x, clientModel.y);
-          
             _updatedPlayers.Add(clientModel);
             _modelUpdated = true;
         }
@@ -101,7 +101,7 @@ namespace Hatsoff
             int id = NewID();
             RemotePlayer newplayer = new RemotePlayer(connectionid, id);
             connectedPlayers.TryAdd(connectionid, newplayer);
-            world.playerlist.Add(new PlayerActor(id, 0, 0));
+            _gamedata.maps["Overworld"].mapstate.playerlist.Add(new PlayerActor(id, 0, 0, "Overworld"));
             _hubContext.Clients.AllExcept(connectionid).addPlayer(newplayer.getPlayerShape());
             _hubContext.Clients.Client(connectionid).getMyID(id);
         }
@@ -116,24 +116,23 @@ namespace Hatsoff
 
         internal void SendWorldInfo(string connectionId)
         {
-
-            
-            if(connectedPlayers.Count > 1)
+            /*
+            foreach (KeyValuePair<string, RemotePlayer> p in connectedPlayers)
             {
-                world.playerlist.Clear();
-                foreach (KeyValuePair<string, RemotePlayer> p in connectedPlayers)
+                if (p.Key == connectionId)
+                    continue;
+                else
                 {
-                    if (p.Key == connectionId)
-                        continue;
-                    else
-                    {
-                        world.playerlist.Add(p.Value.getPlayerShape());
-                    }
+                    world.playerlist.Add(p.Value.getPlayerShape());
                 }
-
-                _hubContext.Clients.Client(connectionId).getWorldInfo(world);
             }
+            */
+            RemotePlayer p;
+            connectedPlayers.TryGetValue(connectionId, out p);
+            WorldInfo world = new WorldInfo(_gamedata.maps[p.getPlayerShape().areaname]);
+            _hubContext.Clients.Client(connectionId).getWorldInfo(world);
         }
+        
     }
 
     public class MoveShapeHub : Hub
@@ -170,6 +169,18 @@ namespace Hatsoff
             return base.OnDisconnected(stopCalled);
         }
     }
+
+    public class GameData
+    {
+        public Dictionary<string, Map> maps;
+
+        public GameData()
+        {
+            maps = new Dictionary<string, Map>();
+            maps.Add("Overworld", new Map());
+        }
+    }
+
     public class PlayerActor
     {
         // We declare Left and Top as lowercase with 
@@ -183,21 +194,69 @@ namespace Hatsoff
         public string LastUpdatedBy { get; set; }
         [JsonProperty("id")]
         public double id { get; set; }
-        public PlayerActor(double id, double x, double y)
+        [JsonProperty("areaname")]
+        public string areaname { get; set; }
+        public PlayerActor(double id, double x, double y, string areaname)
         {
             this.id = id;
             this.x = x;
             this.y = y;
+            this.areaname = areaname;
         }
     }
 
+    /*
+     WorldInfo class represents data which is sent only once to player, on join. 
+         */
     public class WorldInfo
     {
-        [JsonProperty]
+        [JsonProperty("map")]
+        public Map map;
+        public WorldInfo(Map currentmap)
+        {
+            map = currentmap;
+        }
+    }
+    public class TriggerArea
+    {
+        [JsonProperty("x")]
+        private double _x;
+        [JsonProperty("y")]
+        private double _y;
+        [JsonProperty("sizex")]
+        private double _sizex;
+        [JsonProperty("sizey")]
+        private double _sizey;
+        public TriggerArea(double x, double y, double sizex, double sizey)
+        {
+            _x = x;
+            _y = y;
+            _sizex = sizex;
+            _sizey = sizey;
+        }
+    }
+
+    public class MapState
+    {
+        [JsonProperty("playerlist")]
         public List<PlayerActor> playerlist { get; set; }
-        public WorldInfo()
+        public MapState()
         {
             playerlist = new List<PlayerActor>();
+        }
+    }
+
+    public class Map
+    {
+        [JsonProperty("mapstate")]
+        public MapState mapstate;
+        [JsonProperty("triggerareas")]
+        public Dictionary<string, TriggerArea> areas;
+        public Map()
+        {
+            areas = new Dictionary<string, TriggerArea>();
+            areas.Add("TownEntrance", new TriggerArea(200, 200, 100, 100));
+            mapstate = new MapState();
         }
     }
 
@@ -209,7 +268,7 @@ namespace Hatsoff
         public RemotePlayer(string connectionID, int ID)
         {
             _connectionID = connectionID;
-            _playerShape = new PlayerActor(ID, 0, 0);
+            _playerShape = new PlayerActor(ID, 0, 0, "Overworld");
             _playerShape.x = 0;
             _playerShape.y = 0;
             _playerShape.LastUpdatedBy = connectionID;
@@ -231,6 +290,21 @@ namespace Hatsoff
         {
             _playerShape.x = left;
             _playerShape.y = top;
+        }
+        public Vec2 getPosition()
+        {
+            return new Vec2(_playerShape.x, _playerShape.y);
+        }
+    }
+
+    public struct Vec2
+    {
+        public double x;
+        public double y;
+        public Vec2(double x, double y)
+        {
+            this.x = x;
+            this.y = y;
         }
     }
 }
