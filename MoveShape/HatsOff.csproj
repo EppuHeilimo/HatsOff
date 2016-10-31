@@ -278,6 +278,7 @@
     <Content Include="assets\shaders\colored.fs" />
     <Content Include="assets\shaders\font.vs" />
     <Content Include="assets\shaders\inverted.fs" />
+    <Resource Include="Data\maps.json" />
     <None Include="Properties\PublishProfiles\Trinedy.pubxml" />
     <None Include="Scripts\jquery-1.12.4.intellisense.js" />
     <Content Include="Scripts\jquery-1.12.4.js" />

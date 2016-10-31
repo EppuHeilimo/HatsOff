@@ -15,7 +15,6 @@ namespace Hatsoff
         public Map()
         {
             triggerareas = new Dictionary<string, TriggerArea>();
-            triggerareas.Add("TownEntrance", new TriggerArea(200, 200, 100, 100));
             mapstate = new MapState();
         }
     }

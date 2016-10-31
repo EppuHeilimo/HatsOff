@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+using System.IO;
 
 namespace Hatsoff
 {
@@ -12,8 +13,11 @@ namespace Hatsoff
 
         public GameData()
         {
+            JsonSerializer js = new JsonSerializer();
             maps = new Dictionary<string, Map>();
-            maps.Add("Overworld", new Map());
+            maps = js.Deserialize<Dictionary<string, Map>>(new JsonTextReader(new StreamReader(Path.Combine(HttpContext.Current.Server.MapPath("~"), @"./Data/maps.json"))));
+
+            return;
         }
     }
     /*
