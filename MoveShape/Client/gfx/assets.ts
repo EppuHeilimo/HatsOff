@@ -13,7 +13,9 @@ interface ShaderSource
 declare var TextureImports : {[key:string] : TextureSource};
 TextureImports = 
 {
-	"font1": {"source":"assets/font1.png","isPowerOfTwo":false},
+    "font1": { "source": "assets/font1.png", "isPowerOfTwo": false },
+    "castle1": { "source": "assets/graphics/castle1.png", "isPowerOfTwo": false },
+    "cottage1": { "source": "assets/graphics/cottage1.png", "isPowerOfTwo": false },
 };
 
 declare var ShaderImports : {[key:string] : ShaderSource};

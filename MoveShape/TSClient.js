@@ -43,6 +43,8 @@ class AsyncLoader {
 TextureImports =
     {
         "font1": { "source": "assets/font1.png", "isPowerOfTwo": false },
+        "castle1": { "source": "assets/graphics/castle1.png", "isPowerOfTwo": false },
+        "cottage1": { "source": "assets/graphics/cottage1.png", "isPowerOfTwo": false },
     };
 ShaderImports =
     {
@@ -198,6 +200,19 @@ class DrawableColorBox {
         GFX.gl.uniform4f(GFX.currentShader.uniforms["color"], this.color.r, this.color.g, this.color.b, this.color.a ? this.color.a : 1.0);
         GFX.drawCenteredTextureless(this.position, this.depth, this.size);
         sb.restoreShader();
+    }
+}
+class DrawableTextureBox {
+    constructor() {
+        this.visible = true;
+        this.depth = 0;
+        this.position = Vector2New(0, 0);
+        this.size = Vector2New(0, 0);
+        this.texture = null;
+    }
+    draw() {
+        let sb = new ShaderBinder();
+        GFX.drawCentered(this.texture, this.position, this.depth, this.size);
     }
 }
 class DrawableTestParticle extends DrawableColorBox {
