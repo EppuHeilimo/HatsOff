@@ -39,10 +39,6 @@ $(function () {
             y: 0,
             id: 0
         },
-        WorldInfo =
-        {
-            map: {}
-        }
     
 
     findPlayerByID = function (id)
@@ -219,6 +215,7 @@ $(function () {
             if (hit)
             {
                 connectionHub.server.message("areatrigger", hitarea);
+                
             }
 
             moved = false;
