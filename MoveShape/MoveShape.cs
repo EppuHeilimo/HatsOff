@@ -22,6 +22,7 @@ namespace Hatsoff
         public int _newID = 0;
         private ConcurrentDictionary<string, RemotePlayer> connectedPlayers;
         private List<PlayerActor> _updatedPlayers = new List<PlayerActor>();
+        private WorldInfo world;
         private List<PlayerActor> _disconnctedPlayers = new List<PlayerActor>();
         public Broadcaster()
         {
@@ -37,6 +38,7 @@ namespace Hatsoff
                 null,
                 BroadcastInterval,
                 BroadcastInterval);
+            world = new WorldInfo();
         }
         public void Broadcast(object state)
         {
@@ -63,6 +65,7 @@ namespace Hatsoff
             {
                 RemotePlayer dPlayer;
                 connectedPlayers.TryRemove(connectionId, out dPlayer);
+                world.playerlist.Remove(dPlayer.getPlayerShape());
                 if (dPlayer != null)
                 {
                     _disconnctedPlayers.Add(dPlayer.getPlayerShape());
@@ -88,7 +91,7 @@ namespace Hatsoff
             RemotePlayer p;
             connectedPlayers.TryGetValue(clientModel.LastUpdatedBy, out p);
             p.setPosition(clientModel.x, clientModel.y);
-
+          
             _updatedPlayers.Add(clientModel);
             _modelUpdated = true;
         }
@@ -98,6 +101,7 @@ namespace Hatsoff
             int id = NewID();
             RemotePlayer newplayer = new RemotePlayer(connectionid, id);
             connectedPlayers.TryAdd(connectionid, newplayer);
+            world.playerlist.Add(new PlayerActor(id, 0, 0));
             _hubContext.Clients.AllExcept(connectionid).addPlayer(newplayer.getPlayerShape());
             _hubContext.Clients.Client(connectionid).getMyID(id);
         }
@@ -110,22 +114,24 @@ namespace Hatsoff
             }
         }
 
-        internal void SendPlayersListTo(string connectionId)
+        internal void SendWorldInfo(string connectionId)
         {
-            List<PlayerActor> playerlist = new List<PlayerActor>();
+
+            
             if(connectedPlayers.Count > 1)
             {
+                world.playerlist.Clear();
                 foreach (KeyValuePair<string, RemotePlayer> p in connectedPlayers)
                 {
                     if (p.Key == connectionId)
                         continue;
                     else
                     {
-                        playerlist.Add(p.Value.getPlayerShape());
+                        world.playerlist.Add(p.Value.getPlayerShape());
                     }
                 }
 
-                _hubContext.Clients.Client(connectionId).addPlayers(playerlist);
+                _hubContext.Clients.Client(connectionId).getWorldInfo(world);
             }
         }
     }
@@ -153,9 +159,9 @@ namespace Hatsoff
         {
             _broadcaster.AddPlayer(Context.ConnectionId);
         }
-        public void GetPlayers()
+        public void GetWorldInfo()
         {
-            _broadcaster.SendPlayersListTo(Context.ConnectionId);
+            _broadcaster.SendWorldInfo(Context.ConnectionId);
         }
 
         public override Task OnDisconnected(bool stopCalled)
@@ -177,6 +183,22 @@ namespace Hatsoff
         public string LastUpdatedBy { get; set; }
         [JsonProperty("id")]
         public double id { get; set; }
+        public PlayerActor(double id, double x, double y)
+        {
+            this.id = id;
+            this.x = x;
+            this.y = y;
+        }
+    }
+
+    public class WorldInfo
+    {
+        [JsonProperty]
+        public List<PlayerActor> playerlist { get; set; }
+        public WorldInfo()
+        {
+            playerlist = new List<PlayerActor>();
+        }
     }
 
     public class RemotePlayer
@@ -187,12 +209,18 @@ namespace Hatsoff
         public RemotePlayer(string connectionID, int ID)
         {
             _connectionID = connectionID;
-            _playerShape = new PlayerActor();
+            _playerShape = new PlayerActor(ID, 0, 0);
             _playerShape.x = 0;
             _playerShape.y = 0;
             _playerShape.LastUpdatedBy = connectionID;
             _ID = ID;
             _playerShape.id = ID;
+        }
+        public RemotePlayer(string connectionID, int ID, PlayerActor player)
+        {
+            _connectionID = connectionID;
+            _playerShape = player;
+            _ID = ID;
         }
         public PlayerActor getPlayerShape()
         {

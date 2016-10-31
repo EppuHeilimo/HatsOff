@@ -11,6 +11,7 @@ $(function () {
     //players.find((x)=>x.ID == 3);
 
     var myId;
+    var moved = false
     var me = document.createElement('div');
     me.id = "myShape";
     document.getElementsByTagName('body')[0].appendChild(me);
@@ -26,8 +27,13 @@ $(function () {
             x: 0,
             y: 0,
             id: 0
+        },
+        WorldInfo =
+        {
+            playerlist: []
         }
-    var moved = false;
+
+    
 
     findPlayerByID = function (id)
     {
@@ -104,6 +110,13 @@ $(function () {
         addPlayer(model);
     }
 
+    moveShapeHub.client.getWorldInfo = function(world)
+    {
+        for (var i = 0; i < world.playerlist.length; i++) {
+            addPlayer(world.playerlist[i]);
+        }
+    }
+
     moveShapeHub.client.addPlayers = function(playerlist)
     {
         for(var i = 0; i < playerlist.length; i++)
@@ -123,7 +136,7 @@ $(function () {
         // Start the client side server update interval
         setInterval(updateServerModel, updateRate);
         moveShapeHub.server.addPlayer();
-        moveShapeHub.server.getPlayers();
+        moveShapeHub.server.getWorldInfo();
     });
     function updateServerModel() {
         // Only update server if we have a new movement
