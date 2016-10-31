@@ -139,12 +139,12 @@ $(function () {
         {
             var area = world.map.triggerareas[j];
             if (!world.map.triggerareas.hasOwnProperty(j)) continue;
-            a = new DrawableColorBox();
+            a = new DrawableTextureBox();
             a.position.x = area.x;
             a.position.y = area.y;
             a.size.x = area.sizex;
             a.size.y = area.sizey;
-            a.color.b = 1;
+            a.texture = GFX.textures[area.appearance];
             GFX.addDrawable(a);
             area.drawable = a;
         }  

@@ -5,11 +5,11 @@
 		{
 			"Town" :
 			{
-				x: 400, y: 600, sizex: 100, sizey: 100
+				x: 400, y: 600, sizex: 100, sizey: 100, "appearance": "castle1"
 			},
 			"SomeMagicPlace" :
 			{
-				x: 288, y: 345, sizex: 80, sizey: 150
+				x: 288, y: 345, sizex: 80, sizey: 150, "appearance": "castle1"
 			}
 		}
 	},
@@ -19,7 +19,7 @@
 		{
 			"Overworld" :
 			{
-				x: 22, y: 909, sizex: 100, sizey: 100
+				x: 22, y: 909, sizex: 100, sizey: 100, "appearance":  "cottage1"
 			}
 		}
 	}
