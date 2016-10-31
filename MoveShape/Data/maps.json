@@ -3,7 +3,7 @@
 	{
 		triggerareas :
 		{
-			"TownEntrance" :
+			"Town" :
 			{
 				x: 400, y: 600, sizex: 100, sizey: 100
 			},
@@ -17,7 +17,7 @@
 	{
 		triggerareas :
 		{
-			"Exit1" :
+			"Overworld" :
 			{
 				x: 22, y: 909, sizex: 100, sizey: 100
 			}

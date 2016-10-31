@@ -192,16 +192,18 @@ $(function () {
         if (moved) {
             connectionHub.server.updateModel(PlayerActor);
             var hit = false;
-            for (var j in world.map.triggerareas) {
-                var area = world.map.triggerareas[j];
-                if (!world.map.triggerareas.hasOwnProperty(j)) continue;
+            var hitarea;
+            for (var key in world.map.triggerareas) {
+                var area = world.map.triggerareas[key];
+                if (!world.map.triggerareas.hasOwnProperty(key)) continue;
                 if (collisionCircle(PlayerActor, 50, area, 50)) {
                     hit = true;
+                    hitarea = key;
                 }
             }
             if (hit)
             {
-                connectionHub.server.message("hittrigger", "Town");
+                connectionHub.server.message("hittrigger", area);
             }
 
             moved = false;

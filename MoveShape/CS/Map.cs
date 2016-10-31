@@ -18,6 +18,11 @@ namespace Hatsoff
             triggerareas = triggers;
             mapstate = new MapState();
         }
+        public Map()
+        {
+            triggerareas = new Dictionary<string, TriggerArea>();
+            mapstate = new MapState();
+        }
     }
 
     public class MapState
@@ -40,6 +45,8 @@ namespace Hatsoff
         private double _sizex;
         [JsonProperty("sizey")]
         private double _sizey;
+        [JsonProperty("appearance")]
+        private string appearance;
         public TriggerArea(double x, double y, double sizex, double sizey)
         {
             _x = x;

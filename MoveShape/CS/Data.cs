@@ -17,6 +17,7 @@ namespace Hatsoff
             maps = js.Deserialize<Dictionary<string, Map>>(new JsonTextReader(new StreamReader(Path.Combine(HttpContext.Current.Server.MapPath("~"), @"./Data/maps.json"))));
 
             return;
+            /*
             Dictionary<string, TriggerArea> triggers = new Dictionary<string, TriggerArea>();
 
             triggers.Add("Town", new TriggerArea(200, 200, 100, 100));
@@ -26,6 +27,7 @@ namespace Hatsoff
 
             triggers2.Add("Overworld", new TriggerArea(500, 100, 100, 100));
             maps.Add("Town", new Map(triggers2));
+            */
         }
     }
     /*
