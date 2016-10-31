@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+using System.IO;
 
 namespace Hatsoff
 {
@@ -12,7 +13,10 @@ namespace Hatsoff
 
         public GameData()
         {
-            maps = new Dictionary<string, Map>();
+            JsonSerializer js = new JsonSerializer();
+            maps = js.Deserialize<Dictionary<string, Map>>(new JsonTextReader(new StreamReader(Path.Combine(HttpContext.Current.Server.MapPath("~"), @"./Data/maps.json"))));
+
+            return;
             Dictionary<string, TriggerArea> triggers = new Dictionary<string, TriggerArea>();
 
             triggers.Add("Town", new TriggerArea(200, 200, 100, 100));

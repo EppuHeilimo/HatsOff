@@ -14,6 +14,7 @@ namespace Hatsoff
         public Dictionary<string, TriggerArea> triggerareas;
         public Map(Dictionary<string, TriggerArea> triggers)
         {
+            triggerareas = new Dictionary<string, TriggerArea>();
             triggerareas = triggers;
             mapstate = new MapState();
         }
