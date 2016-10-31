@@ -92,6 +92,7 @@ namespace Hatsoff
             RemotePlayer p;
             connectedPlayers.TryGetValue(clientModel.LastUpdatedBy, out p);
             p.setPosition(clientModel.x, clientModel.y);
+
             _updatedPlayers.Add(clientModel);
             _modelUpdated = true;
         }
@@ -101,7 +102,7 @@ namespace Hatsoff
             int id = NewID();
             RemotePlayer newplayer = new RemotePlayer(connectionid, id);
             connectedPlayers.TryAdd(connectionid, newplayer);
-            _gamedata.maps["Overworld"].mapstate.playerlist.Add(new PlayerActor(id, 0, 0, "Overworld"));
+            _gamedata.maps["Overworld"].mapstate.playerlist.Add(newplayer.getPlayerShape());
             _hubContext.Clients.AllExcept(connectionid).addPlayer(newplayer.getPlayerShape());
             _hubContext.Clients.Client(connectionid).getMyID(id);
         }
@@ -305,6 +306,14 @@ namespace Hatsoff
         {
             this.x = x;
             this.y = y;
+        }
+        public static Vec2 operator +(Vec2 v1, Vec2 v2)
+        {
+            return new Vec2(v1.x + v2.x, v1.y + v2.y);
+        }
+        public static Vec2 operator -(Vec2 v1, Vec2 v2)
+        {
+            return new Vec2(v1.x - v2.x, v1.y - v2.y);
         }
     }
 }
