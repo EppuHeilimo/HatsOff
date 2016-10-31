@@ -26,7 +26,7 @@ $(function () {
     var me = document.createElement('div');
     me.id = "myShape";
     document.getElementsByTagName('body')[0].appendChild(me);
-    var moveShapeHub = $.connection.moveShapeHub,
+    var connectionHub = $.connection.connectionHub,
         $shape = $("#myShape"),
         // Send a maximum of 10 messages per second
         // (mouse movements trigger a lot of messages)
@@ -50,7 +50,7 @@ $(function () {
         return players.find((x) =>x.ID == id);
     }
             
-    moveShapeHub.client.updateShapes = function (models) {
+    connectionHub.client.updateShapes = function (models) {
         for(var i = 0; i < models.length; i++) {
             var a = findPlayerByID(models[i].id);
             if(a)
@@ -85,7 +85,7 @@ $(function () {
         // animation and don't lag behind.
     };
 
-    moveShapeHub.client.playerDisconnected = function(disconnectedPlayers)
+    connectionHub.client.playerDisconnected = function (disconnectedPlayers)
     {
         for (var i = 0; i < disconnectedPlayers.length; i++) {
             var a = findPlayerByID(disconnectedPlayers[i].id);
@@ -99,7 +99,7 @@ $(function () {
 
         }
     }
-    moveShapeHub.client.getMyID = function(ID)
+    connectionHub.client.getMyID = function (ID)
     {
         myId = ID;
         PlayerActor.id = ID;
@@ -116,11 +116,11 @@ $(function () {
         players.push(newplayer);
     }
 
-    moveShapeHub.client.addPlayer = function (model) {
+    connectionHub.client.addPlayer = function (model) {
         addPlayer(model);
     }
 
-    moveShapeHub.client.getWorldInfo = function(worldd)
+    connectionHub.client.getWorldInfo = function (worldd)
     {
         for (var i = 0; i < worldd.map.mapstate.playerlist.length; i++) {
             if(worldd.map.mapstate.playerlist[i].id != myId)
@@ -136,7 +136,7 @@ $(function () {
         GFX.addDrawable(a);
     }
 
-    moveShapeHub.client.addPlayers = function(playerlist)
+    connectionHub.client.addPlayers = function (playerlist)
     {
         for(var i = 0; i < playerlist.length; i++)
         {
@@ -154,13 +154,13 @@ $(function () {
         });
         // Start the client side server update interval
         setInterval(updateServerModel, updateRate);
-        moveShapeHub.server.addPlayer();
-        moveShapeHub.server.getWorldInfo();
+        connectionHub.server.addPlayer();
+        connectionHub.server.getWorldInfo();
     });
     function updateServerModel() {
         // Only update server if we have a new movement
         if (moved) {
-            moveShapeHub.server.updateModel(PlayerActor);
+            connectionHub.server.updateModel(PlayerActor);
             moved = false;
         }
     }

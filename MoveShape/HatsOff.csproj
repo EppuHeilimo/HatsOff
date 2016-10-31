@@ -202,12 +202,17 @@
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="Collision.cs" />
     <Compile Include="Controllers\HomeController.cs" />
+    <Compile Include="CS\Data.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
-    <Compile Include="MoveShape.cs" />
+    <Compile Include="CS\Map.cs" />
+    <Compile Include="CS\Math.cs" />
+    <Compile Include="CS\Server.cs" />
+    <Compile Include="CS\Player.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Startup.cs" />
+    <Compile Include="CS\RemotePlayer.cs" />
+    <Compile Include="CS\Startup.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="assets\font1.png" />

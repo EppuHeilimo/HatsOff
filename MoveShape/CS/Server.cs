@@ -28,7 +28,7 @@ namespace Hatsoff
         {
             // Save our hub context so we can easily use it 
             // to send to its connected clients
-            _hubContext = GlobalHost.ConnectionManager.GetHubContext<MoveShapeHub>();
+            _hubContext = GlobalHost.ConnectionManager.GetHubContext<ConnectionHub>();
 
             _modelUpdated = false;
             connectedPlayers = new ConcurrentDictionary<string, RemotePlayer>();
@@ -117,17 +117,6 @@ namespace Hatsoff
 
         internal void SendWorldInfo(string connectionId)
         {
-            /*
-            foreach (KeyValuePair<string, RemotePlayer> p in connectedPlayers)
-            {
-                if (p.Key == connectionId)
-                    continue;
-                else
-                {
-                    world.playerlist.Add(p.Value.getPlayerShape());
-                }
-            }
-            */
             RemotePlayer p;
             connectedPlayers.TryGetValue(connectionId, out p);
             WorldInfo world = new WorldInfo(_gamedata.maps[p.getPlayerShape().areaname]);
@@ -136,15 +125,15 @@ namespace Hatsoff
         
     }
 
-    public class MoveShapeHub : Hub
+    public class ConnectionHub : Hub
     {
         // Is set via the constructor on each creation
         private Broadcaster _broadcaster;
-        public MoveShapeHub()
+        public ConnectionHub()
             : this(Broadcaster.Instance)
         {
         }
-        public MoveShapeHub(Broadcaster broadcaster)
+        public ConnectionHub(Broadcaster broadcaster)
         {
             _broadcaster = broadcaster;
         }
@@ -171,149 +160,15 @@ namespace Hatsoff
         }
     }
 
-    public class GameData
-    {
-        public Dictionary<string, Map> maps;
 
-        public GameData()
-        {
-            maps = new Dictionary<string, Map>();
-            maps.Add("Overworld", new Map());
-        }
-    }
 
-    public class PlayerActor
-    {
-        // We declare Left and Top as lowercase with 
-        // JsonProperty to sync the client and server models
-        [JsonProperty("x")]
-        public double x { get; set; }
-        [JsonProperty("y")]
-        public double y { get; set; }
-        // We don't want the client to get the "LastUpdatedBy" property
-        [JsonIgnore]
-        public string LastUpdatedBy { get; set; }
-        [JsonProperty("id")]
-        public double id { get; set; }
-        [JsonProperty("areaname")]
-        public string areaname { get; set; }
-        public PlayerActor(double id, double x, double y, string areaname)
-        {
-            this.id = id;
-            this.x = x;
-            this.y = y;
-            this.areaname = areaname;
-        }
-    }
 
-    /*
-     WorldInfo class represents data which is sent only once to player, on join. 
-         */
-    public class WorldInfo
-    {
-        [JsonProperty("map")]
-        public Map map;
-        public WorldInfo(Map currentmap)
-        {
-            map = currentmap;
-        }
-    }
-    public class TriggerArea
-    {
-        [JsonProperty("x")]
-        private double _x;
-        [JsonProperty("y")]
-        private double _y;
-        [JsonProperty("sizex")]
-        private double _sizex;
-        [JsonProperty("sizey")]
-        private double _sizey;
-        public TriggerArea(double x, double y, double sizex, double sizey)
-        {
-            _x = x;
-            _y = y;
-            _sizex = sizex;
-            _sizey = sizey;
-        }
-    }
 
-    public class MapState
-    {
-        [JsonProperty("playerlist")]
-        public List<PlayerActor> playerlist { get; set; }
-        public MapState()
-        {
-            playerlist = new List<PlayerActor>();
-        }
-    }
 
-    public class Map
-    {
-        [JsonProperty("mapstate")]
-        public MapState mapstate;
-        [JsonProperty("triggerareas")]
-        public Dictionary<string, TriggerArea> areas;
-        public Map()
-        {
-            areas = new Dictionary<string, TriggerArea>();
-            areas.Add("TownEntrance", new TriggerArea(200, 200, 100, 100));
-            mapstate = new MapState();
-        }
-    }
 
-    public class RemotePlayer
-    {
-        PlayerActor _playerShape;
-        string _connectionID;
-        int _ID;
-        public RemotePlayer(string connectionID, int ID)
-        {
-            _connectionID = connectionID;
-            _playerShape = new PlayerActor(ID, 0, 0, "Overworld");
-            _playerShape.x = 0;
-            _playerShape.y = 0;
-            _playerShape.LastUpdatedBy = connectionID;
-            _ID = ID;
-            _playerShape.id = ID;
-        }
-        public RemotePlayer(string connectionID, int ID, PlayerActor player)
-        {
-            _connectionID = connectionID;
-            _playerShape = player;
-            _ID = ID;
-        }
-        public PlayerActor getPlayerShape()
-        {
-            return _playerShape;
-        }
 
-        public void setPosition(double left, double top)
-        {
-            _playerShape.x = left;
-            _playerShape.y = top;
-        }
-        public Vec2 getPosition()
-        {
-            return new Vec2(_playerShape.x, _playerShape.y);
-        }
-    }
 
-    public struct Vec2
-    {
-        public double x;
-        public double y;
-        public Vec2(double x, double y)
-        {
-            this.x = x;
-            this.y = y;
-        }
-        public static Vec2 operator +(Vec2 v1, Vec2 v2)
-        {
-            return new Vec2(v1.x + v2.x, v1.y + v2.y);
-        }
-        public static Vec2 operator -(Vec2 v1, Vec2 v2)
-        {
-            return new Vec2(v1.x - v2.x, v1.y - v2.y);
-        }
-    }
+
+
+
 }
