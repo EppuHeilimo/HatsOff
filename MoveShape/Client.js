@@ -150,6 +150,20 @@ $(function () {
         }  
     }
 
+    connectionHub.client.playerLeftArea = function(id)
+    {
+        var a = findPlayerByID(id);
+        a.$shape.remove();
+        var index = players.indexOf(a);
+        if (index > -1) {
+            players.splice(index, 1);
+        }
+    }
+
+    connectionHub.client.playerJoinedArea = function (joinedplayer) {
+        addPlayer(joinedplayer);
+    }
+
     connectionHub.client.addPlayers = function (playerlist)
     {
         for(var i = 0; i < playerlist.length; i++)
@@ -187,6 +201,7 @@ $(function () {
         connectionHub.server.addPlayer();
         connectionHub.server.getWorldInfo();
     });
+
     function updateServerModel() {
         // Only update server if we have a new movement
         if (moved) {
@@ -203,7 +218,7 @@ $(function () {
             }
             if (hit)
             {
-                connectionHub.server.message("hittrigger", area);
+                connectionHub.server.message("areatrigger", hitarea);
             }
 
             moved = false;

@@ -21,8 +21,11 @@ namespace Hatsoff
         public double id { get; set; }
         [JsonProperty("areaname")]
         public string areaname { get; set; }
-        public PlayerActor(double id, double x, double y, string areaname)
+        [JsonIgnore]
+        public string owner { get; set; }
+        public PlayerActor(double id, double x, double y, string areaname, string owner)
         {
+            this.owner = owner;
             this.id = id;
             this.x = x;
             this.y = y;

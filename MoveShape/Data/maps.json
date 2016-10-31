@@ -19,7 +19,7 @@
 		{
 			"Overworld" :
 			{
-				x: 22, y: 909, sizex: 100, sizey: 100, "appearance":  "cottage1"
+				x: 100, y: 909, sizex: 100, sizey: 100, "appearance":  "cottage1"
 			}
 		}
 	}
