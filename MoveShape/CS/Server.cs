@@ -162,6 +162,14 @@ namespace Hatsoff
                 clientsInArea.Add(player.owner);
             }
             _hubContext.Clients.Clients(clientsInArea).playerJoinedArea(p.getPlayerShape());
+            try
+            {
+                _updatedPlayers[p.getPlayerShape().areaname].Remove(p.getPlayerShape());
+            }
+            catch (Exception)
+            {
+
+            }
 
         }
 
@@ -213,7 +221,7 @@ namespace Hatsoff
     public class ConnectionHub : Hub
     {
         // Is set via the constructor on each creation
-        private Broadcaster _broadcaster;
+        private readonly Broadcaster _broadcaster;
         public ConnectionHub()
             : this(Broadcaster.Instance)
         {

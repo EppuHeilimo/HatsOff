@@ -147,7 +147,7 @@ $(function () {
             a.texture = GFX.textures[area.appearance];
             GFX.addDrawable(a);
             area.drawable = a;
-        }  
+        }
     }
 
     connectionHub.client.playerLeftArea = function(id)
