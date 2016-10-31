@@ -15,6 +15,7 @@ class AsyncLoader
 	private loaded: number;
 	private targets: AsyncLoadable[];
 
+
 	public getProgress(): number
 	{
 		if (!this.loading)

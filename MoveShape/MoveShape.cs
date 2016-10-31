@@ -21,8 +21,8 @@ namespace Hatsoff
         private bool _playerDisconnected = false;
         public int _newID = 0;
         private ConcurrentDictionary<string, RemotePlayer> connectedPlayers;
-        private List<ShapeModel> _updatedPlayers = new List<ShapeModel>();
-        private List<ShapeModel> _disconnctedPlayers = new List<ShapeModel>();
+        private List<PlayerActor> _updatedPlayers = new List<PlayerActor>();
+        private List<PlayerActor> _disconnctedPlayers = new List<PlayerActor>();
         public Broadcaster()
         {
             // Save our hub context so we can easily use it 
@@ -44,7 +44,7 @@ namespace Hatsoff
             // in a static hub method or outside of the hub entirely
             if(_modelUpdated)
             {
-                ShapeModel[] array = _updatedPlayers.ToArray();
+                PlayerActor[] array = _updatedPlayers.ToArray();
                 _hubContext.Clients.All.updateShapes(array);
                 _modelUpdated = false;
                 _updatedPlayers.Clear();
@@ -82,12 +82,12 @@ namespace Hatsoff
             _newID++;
             return _newID;
         }
-        public void UpdateShape(ShapeModel clientModel)
+        public void UpdateShape(PlayerActor clientModel)
         {
             //TODO: Make player gradually move ovetime 
             RemotePlayer p;
             connectedPlayers.TryGetValue(clientModel.LastUpdatedBy, out p);
-            p.setPosition(clientModel.Left, clientModel.Top);
+            p.setPosition(clientModel.x, clientModel.y);
 
             _updatedPlayers.Add(clientModel);
             _modelUpdated = true;
@@ -112,7 +112,7 @@ namespace Hatsoff
 
         internal void SendPlayersListTo(string connectionId)
         {
-            List<ShapeModel> playerlist = new List<ShapeModel>();
+            List<PlayerActor> playerlist = new List<PlayerActor>();
             if(connectedPlayers.Count > 1)
             {
                 foreach (KeyValuePair<string, RemotePlayer> p in connectedPlayers)
@@ -142,7 +142,7 @@ namespace Hatsoff
         {
             _broadcaster = broadcaster;
         }
-        public void UpdateModel(ShapeModel clientModel)
+        public void UpdateModel(PlayerActor clientModel)
         {
             clientModel.LastUpdatedBy = Context.ConnectionId;
             // Update the shape model within our broadcaster
@@ -164,14 +164,14 @@ namespace Hatsoff
             return base.OnDisconnected(stopCalled);
         }
     }
-    public class ShapeModel
+    public class PlayerActor
     {
         // We declare Left and Top as lowercase with 
         // JsonProperty to sync the client and server models
-        [JsonProperty("left")]
-        public double Left { get; set; }
-        [JsonProperty("top")]
-        public double Top { get; set; }
+        [JsonProperty("x")]
+        public double x { get; set; }
+        [JsonProperty("y")]
+        public double y { get; set; }
         // We don't want the client to get the "LastUpdatedBy" property
         [JsonIgnore]
         public string LastUpdatedBy { get; set; }
@@ -181,28 +181,28 @@ namespace Hatsoff
 
     public class RemotePlayer
     {
-        ShapeModel _playerShape;
+        PlayerActor _playerShape;
         string _connectionID;
         int _ID;
         public RemotePlayer(string connectionID, int ID)
         {
             _connectionID = connectionID;
-            _playerShape = new ShapeModel();
-            _playerShape.Left = 0;
-            _playerShape.Top = 0;
+            _playerShape = new PlayerActor();
+            _playerShape.x = 0;
+            _playerShape.y = 0;
             _playerShape.LastUpdatedBy = connectionID;
             _ID = ID;
             _playerShape.id = ID;
         }
-        public ShapeModel getPlayerShape()
+        public PlayerActor getPlayerShape()
         {
             return _playerShape;
         }
 
         public void setPosition(double left, double top)
         {
-            _playerShape.Left = left;
-            _playerShape.Top = top;
+            _playerShape.x = left;
+            _playerShape.y = top;
         }
     }
 }

@@ -1,4 +1,7 @@
-{
+
+
+
+/*{
   "compilerOptions": {
     "removeComments": false,
     "sourceMap": true,
@@ -9,4 +12,4 @@
     "node_modules",
     "wwwroot"
   ]
-}
+}*/

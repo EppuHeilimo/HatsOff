@@ -40,79 +40,6 @@ class AsyncLoader {
         return false;
     }
 }
-function initMain() {
-    let canvas = document.getElementById("canvas");
-    //initialize the opengl stuff
-    GFX.start(canvas);
-    //get all the data defs
-    let asyncData = GFX.defineDatas();
-    //and load them, asynchronously
-    asyncData.startLoad();
-    //on window resize function
-    function windowResize() {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        GFX.updateViewport(canvas);
-    }
-    window.addEventListener("resize", windowResize, false);
-    windowResize();
-    function loop() {
-        GFX.update();
-    }
-    function isLoaded() {
-        //if all the asyncdata is loaded
-        if (asyncData.isDone()) {
-            //call loop every 17 milliseconds
-            setInterval(loop, 17);
-            return;
-        }
-        setTimeout(isLoaded, 50);
-    }
-    isLoaded();
-}
-function Vector2New(x = 0, y = 0) {
-    return { x: x, y: y };
-}
-function Vector2FromAngle(ang, len = 1) {
-    return Vector2New(Math.cos(ang * Math.PI / 180) * len, -Math.sin(ang * Math.PI / 180) * len);
-}
-function Vector2Clone(self) {
-    return Vector2New(self.x, self.y);
-}
-function Vector2ScalarMul(self, s) {
-    self.x *= s;
-    self.y *= s;
-}
-function Vector2ScalarDiv(self, s) {
-    self.x /= s;
-    self.y /= s;
-}
-function Vector2Add(self, o) {
-    self.x += o.x;
-    self.y += o.y;
-}
-function Vector2Sub(self, o) {
-    self.x -= o.x;
-    self.y -= o.y;
-}
-function Vector2GetAngle(self) {
-    return Math.atan2(-self.y, self.x) * 180.0 / Math.PI;
-}
-function Vector2Length(self) {
-    return Math.sqrt(self.x * self.x + self.y * self.y);
-}
-function Vector2Normalize(self) {
-    let l = Vector2Length(self);
-    if (l == 0) {
-        self.x = 1;
-        self.y = 0;
-        return;
-    }
-    Vector2ScalarDiv(self, l);
-}
-function Vector2Dot(self, o) {
-    return self.x * o.x + self.y * o.y;
-}
 TextureImports =
     {
         "font1": { "source": "assets/font1.png", "isPowerOfTwo": false },
@@ -479,5 +406,78 @@ class DrawableText {
         }
         sb.restoreShader();
     }
+}
+function initMain() {
+    let canvas = document.getElementById("canvas");
+    //initialize the opengl stuff
+    GFX.start(canvas);
+    //get all the data defs
+    let asyncData = GFX.defineDatas();
+    //and load them, asynchronously
+    asyncData.startLoad();
+    //on window resize function
+    function windowResize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        GFX.updateViewport(canvas);
+    }
+    window.addEventListener("resize", windowResize, false);
+    windowResize();
+    function loop() {
+        GFX.update();
+    }
+    function isLoaded() {
+        //if all the asyncdata is loaded
+        if (asyncData.isDone()) {
+            //call loop every 17 milliseconds
+            setInterval(loop, 17);
+            return;
+        }
+        setTimeout(isLoaded, 50);
+    }
+    isLoaded();
+}
+function Vector2New(x = 0, y = 0) {
+    return { x: x, y: y };
+}
+function Vector2FromAngle(ang, len = 1) {
+    return Vector2New(Math.cos(ang * Math.PI / 180) * len, -Math.sin(ang * Math.PI / 180) * len);
+}
+function Vector2Clone(self) {
+    return Vector2New(self.x, self.y);
+}
+function Vector2ScalarMul(self, s) {
+    self.x *= s;
+    self.y *= s;
+}
+function Vector2ScalarDiv(self, s) {
+    self.x /= s;
+    self.y /= s;
+}
+function Vector2Add(self, o) {
+    self.x += o.x;
+    self.y += o.y;
+}
+function Vector2Sub(self, o) {
+    self.x -= o.x;
+    self.y -= o.y;
+}
+function Vector2GetAngle(self) {
+    return Math.atan2(-self.y, self.x) * 180.0 / Math.PI;
+}
+function Vector2Length(self) {
+    return Math.sqrt(self.x * self.x + self.y * self.y);
+}
+function Vector2Normalize(self) {
+    let l = Vector2Length(self);
+    if (l == 0) {
+        self.x = 1;
+        self.y = 0;
+        return;
+    }
+    Vector2ScalarDiv(self, l);
+}
+function Vector2Dot(self, o) {
+    return self.x * o.x + self.y * o.y;
 }
 //# sourceMappingURL=TSClient.js.map

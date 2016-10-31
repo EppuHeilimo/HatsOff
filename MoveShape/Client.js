@@ -18,13 +18,13 @@ $(function () {
         $shape = $("#myShape"),
         // Send a maximum of 10 messages per second
         // (mouse movements trigger a lot of messages)
-        messageFrequency = 20,
+        messageFrequency = 5,
         // Determine how often to send messages in
         // time to abide by the messageFrequency
         updateRate = 1000 / messageFrequency,
-        shapeModel = {
-            left: 0,
-            top: 0,
+        PlayerActor = {
+            x: 0,
+            y: 0,
             id: 0
         }
     var moved = false;
@@ -41,6 +41,7 @@ $(function () {
             {
                 //Create a new test particle with maximum size of 16 by 16
                 //(defined in Client/gfx/box.ts)
+
                 var dtp = new DrawableTestParticle({ x: 16, y: 16 });
 
                 //Set the particle color to random tone of orange
@@ -49,13 +50,14 @@ $(function () {
                 dtp.color.b = 0.0;
 
                 //Set the particle position
-                dtp.position.x = models[i].left + 50;
-                dtp.position.y = models[i].top + 50;
+                dtp.position.x = models[i].x + 50;
+                dtp.position.y = models[i].y + 50;
 
                 //Hand it to the GFX engine, it'll take care of the rest
+
                 GFX.addDrawable(dtp);
 
-                $("#player" + a.ID).animate({ left: models[i].left + "px", top: models[i].top + "px" }, { duration: updateRate, queue: false });
+                $("#player" + a.ID).animate({ left: models[i].x + "px", top: models[i].y + "px" }, { duration: updateRate, queue: false });
             }
             
             //players[models[index].id].$shape.animate(models[index], { duration: updateRate, queue: false });
@@ -84,7 +86,7 @@ $(function () {
     moveShapeHub.client.getMyID = function(ID)
     {
         myId = ID;
-        shapeModel.id = ID;
+        PlayerActor.id = ID;
     }
 
     addPlayer = function(model)
@@ -94,7 +96,7 @@ $(function () {
         player.className = 'player';
         document.getElementsByTagName('body')[0].appendChild(player);
         var newplayer = new Player($("#" + player.id), model.id);
-        newplayer.$shape.animate({ left: model.left + "px", top: model.top + "px" });
+        newplayer.$shape.animate({ left: model.x + "px", top: model.y + "px" });
         players.push(newplayer);
     }
 
@@ -113,8 +115,8 @@ $(function () {
     $.connection.hub.start().done(function () {
         $shape.draggable({
             drag: function () {
-                shapeModel.left = $shape.offset().left;
-                shapeModel.top = $shape.offset().top;
+                PlayerActor.x = $shape.offset().left;
+                PlayerActor.y = $shape.offset().top;
                 moved = true;
             }
         });
@@ -126,7 +128,7 @@ $(function () {
     function updateServerModel() {
         // Only update server if we have a new movement
         if (moved) {
-            moveShapeHub.server.updateModel(shapeModel);
+            moveShapeHub.server.updateModel(PlayerActor);
             moved = false;
         }
     }
