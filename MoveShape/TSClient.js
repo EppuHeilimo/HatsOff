@@ -66,6 +66,10 @@ var Game;
         Game.keyMap[38] = "up";
         Game.keyMap[39] = "right";
         Game.keyMap[40] = "down";
+        Game.keyMap[65] = "left";
+        Game.keyMap[87] = "up";
+        Game.keyMap[68] = "right";
+        Game.keyMap[83] = "down";
         Game.keyStates = {};
         for (var k in Game.keyMap) {
             if (Game.keyMap.hasOwnProperty(k)) {

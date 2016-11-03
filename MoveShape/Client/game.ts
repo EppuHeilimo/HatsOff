@@ -37,6 +37,12 @@ namespace Game {
         keyMap[39] = "right";
         keyMap[40] = "down";
 
+        keyMap[65] = "left";
+        keyMap[87] = "up";
+        keyMap[68] = "right";
+        keyMap[83] = "down";
+
+
         keyStates = {};
         for (var k in keyMap) {
             if (keyMap.hasOwnProperty(k)) {
