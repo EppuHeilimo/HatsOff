@@ -92,9 +92,9 @@ $(function () {
 
     addPlayer = function(model)
     {
-        var player = new PlayerClient();
+        var player = new InterpolatedPlayerClient();
         player.id = model.id;
-        player.position = Vector2Clone(model);
+        player.teleport(Vector2Clone(model));
         Game.addActor(player);
         players.push(player);
     }
@@ -162,8 +162,7 @@ $(function () {
 
     connectionHub.client.teleport = function (x, y)
     {
-        me.position.x = x;
-        me.position.y = y;
+        me.teleport({ x: x, y: y });
     }
 
     connectionHub.client.changeMap = function ()
@@ -188,11 +187,14 @@ $(function () {
         // Only update server if we have a new movement
         if (me.moved) {
             connectionHub.server.updateModel({x: me.position.x, y: me.position.y, id: me.id});
+            me.moved = false;
+        }
+        if (me.activated)
+        {
             var hit = false;
             var hitarea;
             for (var key in gamedata.maps[currentarea.mapname].triggerareas) {
-                if (key in gamedata.maps[currentarea.mapname].triggerareas)
-                {
+                if (key in gamedata.maps[currentarea.mapname].triggerareas) {
                     var area = gamedata.maps[currentarea.mapname].triggerareas[key];
                     if (!gamedata.maps[currentarea.mapname].triggerareas.hasOwnProperty(key)) continue;
                     if (collisionCircle(me.position, 50, area, 50)) {
@@ -201,12 +203,10 @@ $(function () {
                     }
                 }
             }
-            if (hit)
-            {
+            if (hit) {
                 connectionHub.server.message("areachangetrigger", hitarea);
             }
-
-            me.moved = false;
+            me.activated = false;
         }
     }
 });

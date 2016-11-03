@@ -13,6 +13,7 @@ enum KeyState {
     Released = -1
 }
 namespace Game {
+    export declare var time: number;
     export declare var actors: Set<GameActor>;
     export declare var keyMap: { [keyid: number]: string; }
     export declare var keyStates: { [keyid: number]: KeyState; }
@@ -29,13 +30,15 @@ namespace Game {
 
     export function start(): void {
         actors = new Set<GameActor>();
-
+        time = 0;
 
         keyMap = {};
         keyMap[37] = "left";
         keyMap[38] = "up";
         keyMap[39] = "right";
         keyMap[40] = "down";
+
+        keyMap[32] = "activate";
 
         keyMap[65] = "left";
         keyMap[87] = "up";
@@ -66,6 +69,7 @@ namespace Game {
     }
 
     export function update(): void {
+        time += 1;
         actors.forEach(function (i) {
             i.update();
         });
@@ -84,17 +88,22 @@ namespace Game {
 
 class PlayerClient implements GameActor {
     public position: Vector2;
-    public sprite: DrawableColorBox;
+    public sprite: DrawableTextureBox;
     public id: number;
+    public speed: number;
 
     constructor() {
+        this.speed = 2.88;
         this.position = Vector2New(0, 0);
-        this.sprite = new DrawableColorBox();
-        this.sprite.size.x = 50;
-        this.sprite.size.y = 50;
-        this.sprite.color.r = 0.7;
-        this.sprite.color.g = 0.7;
+        this.sprite = new DrawableTextureBox();
+        this.sprite.texture = GFX.textures["hat1"];
+        this.sprite.size.x = 64;
+        this.sprite.size.y = 64;
+        this.sprite.depth = -1;
 
+    }
+    public teleport(pos: Vector2): void {
+        this.position = Vector2Clone(pos);
     }
 
     public init(): void {
@@ -110,32 +119,84 @@ class PlayerClient implements GameActor {
     }
 }
 
+class InterpolatedPlayerClient extends PlayerClient {
+    public lastPosition: Vector2;
+    constructor() {
+        super()
+        this.lastPosition = Vector2New(0, 0);
+    }
+    
+
+    public init(): void {
+        GFX.addDrawable(this.sprite);
+    }
+
+    public deinit(): void {
+        GFX.removeDrawable(this.sprite);
+    }
+    public teleport(pos: Vector2): void {
+        this.position = Vector2Clone(pos);
+        this.lastPosition = Vector2Clone(pos);
+    }
+
+
+    public update(): void {
+        let diff = Vector2Clone(this.position);
+        Vector2Sub(diff, this.lastPosition)
+        let len = Vector2Length(diff);
+        if (len > this.speed) {
+            Vector2Normalize(diff);
+            Vector2ScalarMul(diff, this.speed);
+            Vector2Add(this.lastPosition, diff);
+            this.sprite.position = Vector2Clone(this.lastPosition);
+            this.sprite.position.y -= Math.abs(Math.sin(Game.time / 4) * 10);
+        }
+        else {
+            this.lastPosition = this.position;
+            this.sprite.position = this.lastPosition;
+        }
+    }
+}
+
 class LocalPlayerClient extends PlayerClient {
     public moved: boolean;
+    public activated: boolean;
     constructor() {
         super();
 
-        this.sprite.color.g = 1.0;
     }
 
     public update(): void {
+        let vel = Vector2New(0,0)
         if (Game.keyStates["up"]) {
-            this.position.y -= 2;
+            vel.y -= 1;
             this.moved = true;
         }
         if (Game.keyStates["down"]) {
-            this.position.y += 2;
+            vel.y += 1;
             this.moved = true;
         }
         if (Game.keyStates["left"]) {
-            this.position.x -= 2;
+            vel.x -= 1;
             this.moved = true;
         }
         if (Game.keyStates["right"]) {
-            this.position.x += 2;
+            vel.x += 1;
             this.moved = true;
         }
+        if (Vector2Length(vel) > 0) {
+            Vector2Normalize(vel);
+            Vector2ScalarMul(vel, this.speed);
+            Vector2Add(this.position, vel);
 
-        super.update();
+            this.sprite.position = Vector2Clone(this.position);
+            this.sprite.position.y -= Math.abs(Math.sin(Game.time / 4) * 10);
+        }
+        else
+            this.sprite.position = Vector2Clone(this.position);
+        if (Game.keyStates["activate"] == KeyState.Pressed)
+        {
+            this.activated = true;
+        }
     }
 }

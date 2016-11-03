@@ -219,6 +219,7 @@
     <Content Include="assets\graphics\castle.png" />
     <Content Include="assets\graphics\castle1.png" />
     <Content Include="assets\graphics\cottage.png" />
+    <Content Include="assets\graphics\tophat.png" />
     <Content Include="assets\graphics\tree1.png" />
     <Content Include="assets\graphics\tree2.png" />
     <Content Include="assets\graphics\tree3.png" />

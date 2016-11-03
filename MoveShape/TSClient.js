@@ -61,11 +61,13 @@ var Game;
     Game.addActor = addActor;
     function start() {
         Game.actors = new Set();
+        Game.time = 0;
         Game.keyMap = {};
         Game.keyMap[37] = "left";
         Game.keyMap[38] = "up";
         Game.keyMap[39] = "right";
         Game.keyMap[40] = "down";
+        Game.keyMap[32] = "activate";
         Game.keyMap[65] = "left";
         Game.keyMap[87] = "up";
         Game.keyMap[68] = "right";
@@ -91,6 +93,7 @@ var Game;
     }
     Game.start = start;
     function update() {
+        Game.time += 1;
         Game.actors.forEach(function (i) {
             i.update();
         });
@@ -108,12 +111,16 @@ var Game;
 })(Game || (Game = {}));
 class PlayerClient {
     constructor() {
+        this.speed = 2.88;
         this.position = Vector2New(0, 0);
-        this.sprite = new DrawableColorBox();
-        this.sprite.size.x = 50;
-        this.sprite.size.y = 50;
-        this.sprite.color.r = 0.7;
-        this.sprite.color.g = 0.7;
+        this.sprite = new DrawableTextureBox();
+        this.sprite.texture = GFX.textures["hat1"];
+        this.sprite.size.x = 64;
+        this.sprite.size.y = 64;
+        this.sprite.depth = -1;
+    }
+    teleport(pos) {
+        this.position = Vector2Clone(pos);
     }
     init() {
         GFX.addDrawable(this.sprite);
@@ -125,29 +132,72 @@ class PlayerClient {
         this.sprite.position = this.position;
     }
 }
+class InterpolatedPlayerClient extends PlayerClient {
+    constructor() {
+        super();
+        this.lastPosition = Vector2New(0, 0);
+    }
+    init() {
+        GFX.addDrawable(this.sprite);
+    }
+    deinit() {
+        GFX.removeDrawable(this.sprite);
+    }
+    teleport(pos) {
+        this.position = Vector2Clone(pos);
+        this.lastPosition = Vector2Clone(pos);
+    }
+    update() {
+        let diff = Vector2Clone(this.position);
+        Vector2Sub(diff, this.lastPosition);
+        let len = Vector2Length(diff);
+        if (len > this.speed) {
+            Vector2Normalize(diff);
+            Vector2ScalarMul(diff, this.speed);
+            Vector2Add(this.lastPosition, diff);
+            this.sprite.position = Vector2Clone(this.lastPosition);
+            this.sprite.position.y -= Math.abs(Math.sin(Game.time / 4) * 10);
+        }
+        else {
+            this.lastPosition = this.position;
+            this.sprite.position = this.lastPosition;
+        }
+    }
+}
 class LocalPlayerClient extends PlayerClient {
     constructor() {
         super();
-        this.sprite.color.g = 1.0;
     }
     update() {
+        let vel = Vector2New(0, 0);
         if (Game.keyStates["up"]) {
-            this.position.y -= 2;
+            vel.y -= 1;
             this.moved = true;
         }
         if (Game.keyStates["down"]) {
-            this.position.y += 2;
+            vel.y += 1;
             this.moved = true;
         }
         if (Game.keyStates["left"]) {
-            this.position.x -= 2;
+            vel.x -= 1;
             this.moved = true;
         }
         if (Game.keyStates["right"]) {
-            this.position.x += 2;
+            vel.x += 1;
             this.moved = true;
         }
-        super.update();
+        if (Vector2Length(vel) > 0) {
+            Vector2Normalize(vel);
+            Vector2ScalarMul(vel, this.speed);
+            Vector2Add(this.position, vel);
+            this.sprite.position = Vector2Clone(this.position);
+            this.sprite.position.y -= Math.abs(Math.sin(Game.time / 4) * 10);
+        }
+        else
+            this.sprite.position = Vector2Clone(this.position);
+        if (Game.keyStates["activate"] == KeyState.Pressed) {
+            this.activated = true;
+        }
     }
 }
 TextureImports =
@@ -155,6 +205,7 @@ TextureImports =
         "font1": { "source": "assets/font1.png", "isPowerOfTwo": false },
         "castle1": { "source": "assets/graphics/castle1.png", "isPowerOfTwo": false },
         "cottage1": { "source": "assets/graphics/cottage.png", "isPowerOfTwo": false },
+        "hat1": { "source": "assets/graphics/tophat.png", "isPowerOfTwo": true },
     };
 ShaderImports =
     {
