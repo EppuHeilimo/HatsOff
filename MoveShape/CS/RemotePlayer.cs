@@ -14,7 +14,7 @@ namespace Hatsoff
         public RemotePlayer(string connectionID, int ID, string areaname)
         {
             _connectionID = connectionID;
-            _playerShape = new PlayerActor(ID, 0, 0, connectionID);
+            _playerShape = new PlayerActor(ID, 0, 0, connectionID, "player", 1);
             _playerShape.x = 0;
             _playerShape.y = 0;
             _playerShape.LastUpdatedBy = connectionID;

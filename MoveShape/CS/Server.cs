@@ -22,7 +22,6 @@ namespace Hatsoff
         private Timer _broadcastLoop;
         private bool _modelUpdated;
         private bool _playerDisconnected = false;
-        private bool _playerChangedMap = false;
         public int _newID = 0;
         private Dictionary<string, MapState> mapstates;
         private ConcurrentDictionary<string, RemotePlayer> connectedPlayers;
