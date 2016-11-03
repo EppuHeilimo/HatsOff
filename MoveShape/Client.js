@@ -22,7 +22,8 @@ $(function () {
 
     var myId;
     var moved = false
-    var world;
+    var currentarea;
+    var gamedata;
     var me = document.createElement('div');
     me.id = "myShape";
     document.getElementsByTagName('body')[0].appendChild(me);
@@ -116,25 +117,25 @@ $(function () {
         addPlayer(model);
     }
 
-    connectionHub.client.getWorldInfo = function (worldd)
+    connectionHub.client.getAreaInfo = function (newarea)
     {
-        for (var i = 0; i < worldd.map.mapstate.playerlist.length; i++) {
-            if(worldd.map.mapstate.playerlist[i].id != myId)
-                addPlayer(worldd.map.mapstate.playerlist[i]);
+        for (var i = 0; i < newarea.map.mapstate.playerlist.length; i++) {
+            if (newarea.map.mapstate.playerlist[i].id != myId)
+                addPlayer(newarea.map.mapstate.playerlist[i]);
         }
 
-        if (world) {
-            for (var j in world.map.triggerareas) {
+        if (currentarea) {
+            for (var j in currentarea.map.triggerareas) {
 
-                var area = world.map.triggerareas[j];
+                var area = currentarea.map.triggerareas[j];
                 GFX.removeDrawable(area.drawable);
             }
         }
-        world = worldd;
-        for (var j in world.map.triggerareas)
+        currentarea = newarea;
+        for (var j in currentarea.map.triggerareas)
         {
-            var area = world.map.triggerareas[j];
-            if (!world.map.triggerareas.hasOwnProperty(j)) continue;
+            var area = currentarea.map.triggerareas[j];
+            if (!currentarea.map.triggerareas.hasOwnProperty(j)) continue;
             a = new DrawableTextureBox();
             a.position.x = area.x;
             a.position.y = area.y;
@@ -144,6 +145,11 @@ $(function () {
             GFX.addDrawable(a);
             area.drawable = a;
         }
+    }
+
+    connectionHub.client.getGameInfo = function (data)
+    {
+        gamedata = data;
     }
 
     connectionHub.client.playerLeftArea = function(id)
@@ -181,7 +187,7 @@ $(function () {
             players[i].$shape.remove();
         }
         players = [];
-        connectionHub.server.getWorldInfo();
+        connectionHub.server.getAreaInfo();
     }
 
     $.connection.hub.start().done(function () {
@@ -195,7 +201,8 @@ $(function () {
         // Start the client side server update interval
         setInterval(updateServerModel, updateRate);
         connectionHub.server.addPlayer();
-        connectionHub.server.getWorldInfo();
+        connectionHub.server.getAreaInfo();
+        connectionHub.server.getGameInfo();
     });
 
     function updateServerModel() {
@@ -205,11 +212,14 @@ $(function () {
             var hit = false;
             var hitarea;
             for (var key in world.map.triggerareas) {
-                var area = world.map.triggerareas[key];
-                if (!world.map.triggerareas.hasOwnProperty(key)) continue;
-                if (collisionCircle(PlayerActor, 50, area, 50)) {
-                    hit = true;
-                    hitarea = key;
+                if (key in world.map)
+                {
+                    var area = world.map.triggerareas[key];
+                    if (!world.map.triggerareas.hasOwnProperty(key)) continue;
+                    if (collisionCircle(PlayerActor, 50, area, 50)) {
+                        hit = true;
+                        hitarea = key;
+                    }
                 }
             }
             if (hit)

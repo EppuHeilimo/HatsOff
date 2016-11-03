@@ -132,9 +132,12 @@ namespace Hatsoff
             connectedPlayers.TryGetValue(connectionId, out p);
             if(cmd == "areatrigger")
             {
-                if (Collision.TestCircleCollision(p.getPosition(), 50, _gamedata.maps[p.getPlayerShape().areaname].triggerareas[attribs].getCenter(), 50))
+                if (_gamedata.maps.ContainsKey(attribs))
                 {
-                    ChangePlayerArea(0, 0, p, connectionId, attribs);
+                    if (Collision.TestCircleCollision(p.getPosition(), 50, _gamedata.maps[p.getPlayerShape().areaname].triggerareas[attribs].getCenter(), 50))
+                    {
+                        ChangePlayerArea(0, 0, p, connectionId, attribs);
+                    }
                 }
             }
         }
@@ -142,7 +145,8 @@ namespace Hatsoff
         private void ChangePlayerArea(double x, double y, RemotePlayer p, string connectionId, string targetArea)
         {
             p.setPosition(x, y);
-            _hubContext.Clients.Client(connectionId).teleport(0, 0);
+            p.getPlayerShape().x = x;
+            p.getPlayerShape().y = y;
             PlayerLeftArea(connectionId, p);
             //delete player from areas playerlist
             _gamedata.maps[p.getPlayerShape().areaname].mapstate.playerlist.Remove(p.getPlayerShape());
@@ -208,12 +212,16 @@ namespace Hatsoff
             }
         }
 
-        internal void SendWorldInfo(string connectionId)
+        internal void SendAreaInfo(string connectionId)
         {
             RemotePlayer p;
             connectedPlayers.TryGetValue(connectionId, out p);
             WorldInfo world = new WorldInfo(_gamedata.maps[p.getPlayerShape().areaname]);
-            _hubContext.Clients.Client(connectionId).getWorldInfo(world);
+            _hubContext.Clients.Client(connectionId).getAreaInfo(world);
+        }
+        public void SendGameInfo(string connectionId)
+        {
+            _hubContext.Clients.Client(connectionId).getAreaInfo(_gamedata);
         }
         
     }
@@ -245,15 +253,19 @@ namespace Hatsoff
         {
             _broadcaster.AddPlayer(Context.ConnectionId);
         }
-        public void GetWorldInfo()
+        public void GetAreaInfo()
         {
-            _broadcaster.SendWorldInfo(Context.ConnectionId);
+            _broadcaster.SendAreaInfo(Context.ConnectionId);
         }
 
         public override Task OnDisconnected(bool stopCalled)
         {
             _broadcaster.PlayerDisconnect(Context.ConnectionId);
             return base.OnDisconnected(stopCalled);
+        }
+        public void GetGameInfo()
+        {
+            _broadcaster.SendGameInfo(Context.ConnectionId);
         }
     }
 
