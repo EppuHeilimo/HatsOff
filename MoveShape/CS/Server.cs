@@ -141,17 +141,18 @@ namespace Hatsoff
                 {
                     if (Collision.TestCircleCollision(p.getPosition(), 50, _gamedata.maps[p.areaname].triggerareas[attribs].getCenter(), 50))
                     {
-                        ChangePlayerArea(0, 0, p, connectionId, attribs);
+                        ChangePlayerArea(p, connectionId, attribs);
                     }
                 }
             }
         }
 
-        private void ChangePlayerArea(double x, double y, RemotePlayer p, string connectionId, string targetArea)
+        private void ChangePlayerArea(RemotePlayer p, string connectionId, string targetArea)
         {
-            p.setPosition(x, y);
-            p.getPlayerShape().x = x;
-            p.getPlayerShape().y = y;
+            Vec2 fromareapos = _gamedata.maps[targetArea].triggerareas[p.areaname].getCenter();
+            p.setPosition(fromareapos.x, fromareapos.y);
+            p.getPlayerShape().x = fromareapos.x;
+            p.getPlayerShape().y = fromareapos.y;
             PlayerLeftArea(connectionId, p);
             //delete player from areas playerlist
             mapstates[p.areaname].playerlist.Remove(p.getPlayerShape());

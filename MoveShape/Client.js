@@ -24,7 +24,7 @@ $(function () {
     var connectionHub = $.connection.connectionHub,
         // Send a maximum of 10 messages per second
         // (mouse movements trigger a lot of messages)
-        messageFrequency = 5,
+        messageFrequency = 10,
         // Determine how often to send messages in
         // time to abide by the messageFrequency
         updateRate = 1000 / messageFrequency
