@@ -334,6 +334,7 @@
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="Client\async.ts" />
+    <TypeScriptCompile Include="Client\game.ts" />
     <TypeScriptCompile Include="Client\gfx\assets.ts" />
     <TypeScriptCompile Include="Client\gfx\box.ts" />
     <TypeScriptCompile Include="Client\gfx\gfx.ts" />
