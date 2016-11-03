@@ -24,6 +24,7 @@ namespace Hatsoff
         private bool _playerDisconnected = false;
         private bool _playerChangedMap = false;
         public int _newID = 0;
+        private Dictionary<string, MapState> mapstates;
         private ConcurrentDictionary<string, RemotePlayer> connectedPlayers;
         //zone, player
         private ConcurrentDictionary<string, List<PlayerActor>> _updatedPlayers;
@@ -44,6 +45,11 @@ namespace Hatsoff
                 BroadcastInterval);
             _gamedata = new GameData();
             _updatedPlayers = new ConcurrentDictionary<string, List<PlayerActor>>();
+            mapstates = new Dictionary<string, MapState>();
+            foreach(KeyValuePair<string, Map> m in _gamedata.maps)
+            {
+                mapstates.Add(m.Key, new MapState());
+            }
         }
         public void Broadcast(object state)
         {
@@ -60,7 +66,7 @@ namespace Hatsoff
                     foreach (KeyValuePair<string, List<PlayerActor>> area in updatedPlayers)
                     {
                         List<string> clientsinarea = new List<string>();
-                        foreach (var player in _gamedata.maps[area.Key].mapstate.playerlist)
+                        foreach (var player in mapstates[area.Key].playerlist)
                         {
                             clientsinarea.Add(player.owner);
                         }
@@ -84,7 +90,7 @@ namespace Hatsoff
             {
                 RemotePlayer dPlayer;
                 connectedPlayers.TryRemove(connectionId, out dPlayer);
-                _gamedata.maps[dPlayer.getPlayerShape().areaname].mapstate.playerlist.Remove(dPlayer.getPlayerShape());
+                mapstates[dPlayer.areaname].playerlist.Remove(dPlayer.getPlayerShape());
                 if (dPlayer != null)
                 {
                     _disconnctedPlayers.Add(dPlayer.getPlayerShape());
@@ -113,14 +119,14 @@ namespace Hatsoff
             if (p.getPlayerShape().LastUpdatedBy == p.getPlayerShape().owner)
             {
                 p.setPosition(player.x, player.y);
-                if (_updatedPlayers.ContainsKey(p.getPlayerShape().areaname))
+                if (_updatedPlayers.ContainsKey(p.areaname))
                 {
-                    _updatedPlayers[player.areaname].Add(p.getPlayerShape());
+                    _updatedPlayers[p.areaname].Add(p.getPlayerShape());
                 }
                 else
                 {
-                    _updatedPlayers.TryAdd(p.getPlayerShape().areaname, new List<PlayerActor>());
-                    _updatedPlayers[p.getPlayerShape().areaname].Add(p.getPlayerShape());                  
+                    _updatedPlayers.TryAdd(p.areaname, new List<PlayerActor>());
+                    _updatedPlayers[p.areaname].Add(p.getPlayerShape());                  
                 }
                 _modelUpdated = true;
             }
@@ -130,11 +136,11 @@ namespace Hatsoff
         {
             RemotePlayer p;
             connectedPlayers.TryGetValue(connectionId, out p);
-            if(cmd == "areatrigger")
+            if(cmd == "areachangetrigger")
             {
                 if (_gamedata.maps.ContainsKey(attribs))
                 {
-                    if (Collision.TestCircleCollision(p.getPosition(), 50, _gamedata.maps[p.getPlayerShape().areaname].triggerareas[attribs].getCenter(), 50))
+                    if (Collision.TestCircleCollision(p.getPosition(), 50, _gamedata.maps[p.areaname].triggerareas[attribs].getCenter(), 50))
                     {
                         ChangePlayerArea(0, 0, p, connectionId, attribs);
                     }
@@ -149,10 +155,10 @@ namespace Hatsoff
             p.getPlayerShape().y = y;
             PlayerLeftArea(connectionId, p);
             //delete player from areas playerlist
-            _gamedata.maps[p.getPlayerShape().areaname].mapstate.playerlist.Remove(p.getPlayerShape());
+            mapstates[p.areaname].playerlist.Remove(p.getPlayerShape());
             //add the player to the new area
-            _gamedata.maps[targetArea].mapstate.playerlist.Add(p.getPlayerShape());
-            p.getPlayerShape().areaname = targetArea;
+            mapstates[targetArea].playerlist.Add(p.getPlayerShape());
+            p.areaname = targetArea;
             PlayerJoinedArea(connectionId, p);
             ChangeMap(connectionId);
         }
@@ -160,7 +166,7 @@ namespace Hatsoff
         public void PlayerJoinedArea(string connectionId, RemotePlayer p)
         {
             List<string> clientsInArea = new List<string>();
-            foreach (PlayerActor player in _gamedata.maps[p.getPlayerShape().areaname].mapstate.playerlist)
+            foreach (PlayerActor player in mapstates[p.areaname].playerlist)
             {
                 if (connectionId == player.owner) continue;
                 clientsInArea.Add(player.owner);
@@ -168,7 +174,7 @@ namespace Hatsoff
             _hubContext.Clients.Clients(clientsInArea).playerJoinedArea(p.getPlayerShape());
             try
             {
-                _updatedPlayers[p.getPlayerShape().areaname].Remove(p.getPlayerShape());
+                _updatedPlayers[p.areaname].Remove(p.getPlayerShape());
             }
             catch (Exception)
             {
@@ -180,7 +186,7 @@ namespace Hatsoff
         public void PlayerLeftArea(string connectionId, RemotePlayer p)
         {
             List<string> clientsInArea = new List<string>();
-            foreach (PlayerActor player in _gamedata.maps[p.getPlayerShape().areaname].mapstate.playerlist)
+            foreach (PlayerActor player in mapstates[p.areaname].playerlist)
             {
                 if(connectionId == player.owner) continue;
                 clientsInArea.Add(player.owner);
@@ -197,9 +203,9 @@ namespace Hatsoff
         public void AddPlayer(string connectionid)
         {
             int id = NewID();
-            RemotePlayer newplayer = new RemotePlayer(connectionid, id);
+            RemotePlayer newplayer = new RemotePlayer(connectionid, id, "Overworld");
             connectedPlayers.TryAdd(connectionid, newplayer);
-            _gamedata.maps["Overworld"].mapstate.playerlist.Add(newplayer.getPlayerShape());
+            mapstates["Overworld"].playerlist.Add(newplayer.getPlayerShape());
             PlayerJoinedArea(connectionid, newplayer);
             _hubContext.Clients.Client(connectionid).getMyID(id);
         }
@@ -216,12 +222,12 @@ namespace Hatsoff
         {
             RemotePlayer p;
             connectedPlayers.TryGetValue(connectionId, out p);
-            WorldInfo world = new WorldInfo(_gamedata.maps[p.getPlayerShape().areaname]);
+            WorldInfo world = new WorldInfo(mapstates[p.areaname], p.areaname);
             _hubContext.Clients.Client(connectionId).getAreaInfo(world);
         }
         public void SendGameInfo(string connectionId)
         {
-            _hubContext.Clients.Client(connectionId).getAreaInfo(_gamedata);
+            _hubContext.Clients.Client(connectionId).getGameInfo(_gamedata);
         }
         
     }

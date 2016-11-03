@@ -33,11 +33,14 @@ namespace Hatsoff
      */
     public class WorldInfo
     {
-        [JsonProperty("map")]
-        public Map map;
-        public WorldInfo(Map currentmap)
+        [JsonProperty("mapstate")]
+        public MapState mapstate;
+        [JsonProperty("mapname")]
+        public string mapname;
+        public WorldInfo(MapState currentmap, string mapname)
         {
-            map = currentmap;
+            this.mapname = mapname;
+            mapstate = currentmap;
         }
     }
 }

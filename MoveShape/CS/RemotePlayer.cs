@@ -10,15 +10,17 @@ namespace Hatsoff
         PlayerActor _playerShape;
         string _connectionID;
         int _ID;
-        public RemotePlayer(string connectionID, int ID)
+        public string areaname;
+        public RemotePlayer(string connectionID, int ID, string areaname)
         {
             _connectionID = connectionID;
-            _playerShape = new PlayerActor(ID, 0, 0, "Overworld", connectionID);
+            _playerShape = new PlayerActor(ID, 0, 0, connectionID);
             _playerShape.x = 0;
             _playerShape.y = 0;
             _playerShape.LastUpdatedBy = connectionID;
             _ID = ID;
             _playerShape.id = ID;
+            this.areaname = areaname;
         }
         public RemotePlayer(string connectionID, int ID, PlayerActor player)
         {

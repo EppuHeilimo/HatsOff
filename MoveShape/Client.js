@@ -119,23 +119,23 @@ $(function () {
 
     connectionHub.client.getAreaInfo = function (newarea)
     {
-        for (var i = 0; i < newarea.map.mapstate.playerlist.length; i++) {
-            if (newarea.map.mapstate.playerlist[i].id != myId)
-                addPlayer(newarea.map.mapstate.playerlist[i]);
+        for (var i = 0; i < newarea.mapstate.playerlist.length; i++) {
+            if (newarea.mapstate.playerlist[i].id != myId)
+                addPlayer(newarea.mapstate.playerlist[i]);
         }
 
         if (currentarea) {
-            for (var j in currentarea.map.triggerareas) {
+            for (var j in gamedata.maps[currentarea.mapname].triggerareas) {
 
-                var area = currentarea.map.triggerareas[j];
+                var area = gamedata.maps[currentarea.mapname].triggerareas[j];
                 GFX.removeDrawable(area.drawable);
             }
         }
         currentarea = newarea;
-        for (var j in currentarea.map.triggerareas)
+        for (var j in gamedata.maps[currentarea.mapname].triggerareas)
         {
-            var area = currentarea.map.triggerareas[j];
-            if (!currentarea.map.triggerareas.hasOwnProperty(j)) continue;
+            var area = gamedata.maps[currentarea.mapname].triggerareas[j];
+            if (!gamedata.maps[currentarea.mapname].triggerareas.hasOwnProperty(j)) continue;
             a = new DrawableTextureBox();
             a.position.x = area.x;
             a.position.y = area.y;
@@ -201,8 +201,9 @@ $(function () {
         // Start the client side server update interval
         setInterval(updateServerModel, updateRate);
         connectionHub.server.addPlayer();
-        connectionHub.server.getAreaInfo();
         connectionHub.server.getGameInfo();
+        connectionHub.server.getAreaInfo();
+
     });
 
     function updateServerModel() {
@@ -211,11 +212,11 @@ $(function () {
             connectionHub.server.updateModel(PlayerActor);
             var hit = false;
             var hitarea;
-            for (var key in world.map.triggerareas) {
-                if (key in world.map)
+            for (var key in gamedata.maps[currentarea.mapname].triggerareas) {
+                if (key in gamedata.maps[currentarea.mapname].triggerareas)
                 {
-                    var area = world.map.triggerareas[key];
-                    if (!world.map.triggerareas.hasOwnProperty(key)) continue;
+                    var area = gamedata.maps[currentarea.mapname].triggerareas[key];
+                    if (!gamedata.maps[currentarea.mapname].triggerareas.hasOwnProperty(key)) continue;
                     if (collisionCircle(PlayerActor, 50, area, 50)) {
                         hit = true;
                         hitarea = key;
@@ -224,8 +225,7 @@ $(function () {
             }
             if (hit)
             {
-                connectionHub.server.message("areatrigger", hitarea);
-                
+                connectionHub.server.message("areachangetrigger", hitarea);
             }
 
             moved = false;
