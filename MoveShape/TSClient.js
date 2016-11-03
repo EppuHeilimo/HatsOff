@@ -40,6 +40,112 @@ class AsyncLoader {
         return false;
     }
 }
+var KeyState;
+(function (KeyState) {
+    KeyState[KeyState["Up"] = 0] = "Up";
+    KeyState[KeyState["Down"] = 1] = "Down";
+    KeyState[KeyState["Pressed"] = 2] = "Pressed";
+    KeyState[KeyState["Released"] = -1] = "Released";
+})(KeyState || (KeyState = {}));
+var Game;
+(function (Game) {
+    function removeActor(act) {
+        act.deinit();
+        Game.actors.delete(act);
+    }
+    Game.removeActor = removeActor;
+    function addActor(act) {
+        act.init();
+        Game.actors.add(act);
+    }
+    Game.addActor = addActor;
+    function start() {
+        Game.actors = new Set();
+        Game.keyMap = {};
+        Game.keyMap[37] = "left";
+        Game.keyMap[38] = "up";
+        Game.keyMap[39] = "right";
+        Game.keyMap[40] = "down";
+        Game.keyStates = {};
+        for (var k in Game.keyMap) {
+            if (Game.keyMap.hasOwnProperty(k)) {
+                Game.keyStates[Game.keyMap[k]] = KeyState.Up;
+            }
+        }
+        window.addEventListener("keydown", function (ev) {
+            if (ev.keyCode in Game.keyMap) {
+                var v = Game.keyMap[ev.keyCode];
+                Game.keyStates[v] = KeyState.Pressed;
+            }
+        }, false);
+        window.addEventListener("keyup", function (ev) {
+            if (ev.keyCode in Game.keyMap) {
+                var v = Game.keyMap[ev.keyCode];
+                Game.keyStates[v] = KeyState.Released;
+            }
+        }, false);
+    }
+    Game.start = start;
+    function update() {
+        Game.actors.forEach(function (i) {
+            i.update();
+        });
+        for (var k in Game.keyStates) {
+            if (Game.keyStates.hasOwnProperty(k)) {
+                let v = Game.keyStates[k];
+                if (v == KeyState.Released)
+                    Game.keyStates[k] = KeyState.Up;
+                if (v == KeyState.Pressed)
+                    Game.keyStates[k] = KeyState.Down;
+            }
+        }
+    }
+    Game.update = update;
+})(Game || (Game = {}));
+class PlayerClient {
+    constructor() {
+        this.position = Vector2New(0, 0);
+        this.sprite = new DrawableColorBox();
+        this.sprite.size.x = 50;
+        this.sprite.size.y = 50;
+        this.sprite.color.r = 0.7;
+        this.sprite.color.g = 0.7;
+    }
+    init() {
+        GFX.addDrawable(this.sprite);
+    }
+    deinit() {
+        GFX.removeDrawable(this.sprite);
+    }
+    update() {
+        this.sprite.position = this.position;
+    }
+}
+class LocalPlayerClient extends PlayerClient {
+    constructor() {
+        super();
+        this.sprite.color.g = 1.0;
+    }
+    update() {
+        if (Game.keyStates["up"]) {
+            this.position.y -= 2;
+            this.moved = true;
+        }
+        if (Game.keyStates["down"]) {
+            this.position.y += 2;
+            this.moved = true;
+        }
+        if (Game.keyStates["left"]) {
+            this.position.x -= 2;
+            this.moved = true;
+        }
+        if (Game.keyStates["right"]) {
+            this.position.x += 2;
+            this.moved = true;
+        }
+        super.update();
+    }
+}
 TextureImports =
     {
         "font1": { "source": "assets/font1.png", "isPowerOfTwo": false },
@@ -424,6 +530,7 @@ class DrawableText {
 }
 function initMain() {
     let canvas = document.getElementById("canvas");
+    Game.start();
     //initialize the opengl stuff
     GFX.start(canvas);
     //get all the data defs
@@ -439,6 +546,7 @@ function initMain() {
     window.addEventListener("resize", windowResize, false);
     windowResize();
     function loop() {
+        Game.update();
         GFX.update();
     }
     function isLoaded() {

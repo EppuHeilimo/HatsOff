@@ -4,6 +4,7 @@ function initMain()
 {
 	let canvas = <HTMLCanvasElement> document.getElementById("canvas");
 
+    Game.start();
     //initialize the opengl stuff
 	GFX.start(canvas);
 
@@ -25,7 +26,8 @@ function initMain()
 	windowResize();
 
 	function loop()
-	{
+    {
+        Game.update();
 		GFX.update();
 	}
 

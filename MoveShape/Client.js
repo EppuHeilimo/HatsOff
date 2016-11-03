@@ -10,11 +10,6 @@ function collisionCircle(centera, rada, centerb, radb) {
 }
 
 $(function () {
-    function Player(s, i)
-    {
-        this.$shape = s;
-        this.ID = i;
-    }
 
     var players = [];
 
@@ -24,27 +19,20 @@ $(function () {
     var moved = false
     var currentarea;
     var gamedata;
-    var me = document.createElement('div');
-    me.id = "myShape";
-    document.getElementsByTagName('body')[0].appendChild(me);
+    var me = new LocalPlayerClient();
+    Game.addActor(me);
     var connectionHub = $.connection.connectionHub,
-        $shape = $("#myShape"),
         // Send a maximum of 10 messages per second
         // (mouse movements trigger a lot of messages)
         messageFrequency = 5,
         // Determine how often to send messages in
         // time to abide by the messageFrequency
-        updateRate = 1000 / messageFrequency,
-        PlayerActor = {
-            x: 0,
-            y: 0,
-            id: 0
-        },
+        updateRate = 1000 / messageFrequency
     
 
     findPlayerByID = function (id)
     {
-        return players.find((x) =>x.ID == id);
+        return players.find((x) =>x.id == id);
     }
             
     connectionHub.client.updateShapes = function (models) {
@@ -70,7 +58,7 @@ $(function () {
 
                 GFX.addDrawable(dtp);
 
-                $("#player" + a.ID).animate({ left: models[i].x + "px", top: models[i].y + "px" }, { duration: updateRate, queue: false });
+                a.position = Vector2Clone(models[i]);
             }
             
             //players[models[index].id].$shape.animate(models[index], { duration: updateRate, queue: false });
@@ -87,7 +75,7 @@ $(function () {
         for (var i = 0; i < disconnectedPlayers.length; i++) {
             var a = findPlayerByID(disconnectedPlayers[i].id);
             if (a) {
-                a.$shape.remove();
+                Game.removeActor(a);
                 var index = players.indexOf(a);
                 if (index > -1) {
                     players.splice(index, 1);
@@ -99,18 +87,16 @@ $(function () {
     connectionHub.client.getMyID = function (ID)
     {
         myId = ID;
-        PlayerActor.id = ID;
+        me.id = ID;
     }
 
     addPlayer = function(model)
     {
-        var player = document.createElement('div');
-        player.id = "player" + model.id;
-        player.className = 'player';
-        document.getElementsByTagName('body')[0].appendChild(player);
-        var newplayer = new Player($("#" + player.id), model.id);
-        newplayer.$shape.animate({ left: model.x + "px", top: model.y + "px" });
-        players.push(newplayer);
+        var player = new PlayerClient();
+        player.id = model.id;
+        player.position = Vector2Clone(model);
+        Game.addActor(player);
+        players.push(player);
     }
 
     connectionHub.client.addPlayer = function (model) {
@@ -155,7 +141,7 @@ $(function () {
     connectionHub.client.playerLeftArea = function(id)
     {
         var a = findPlayerByID(id);
-        a.$shape.remove();
+        Game.removeActor(a);
         var index = players.indexOf(a);
         if (index > -1) {
             players.splice(index, 1);
@@ -176,28 +162,20 @@ $(function () {
 
     connectionHub.client.teleport = function (x, y)
     {
-        PlayerActor.x = x;
-        PlayerActor.y = y;
-        $shape.animate({ left: x + "px", top: y + "px" });
+        me.position.x = x;
+        me.position.y = y;
     }
 
     connectionHub.client.changeMap = function ()
     {
         for (var i = 0; i < players.length; i++) {
-            players[i].$shape.remove();
+            Game.removeActor(players[i])
         }
         players = [];
         connectionHub.server.getAreaInfo();
     }
 
     $.connection.hub.start().done(function () {
-        $shape.draggable({
-            drag: function () {
-                PlayerActor.x = $shape.offset().left;
-                PlayerActor.y = $shape.offset().top;
-                moved = true;
-            }
-        });
         // Start the client side server update interval
         setInterval(updateServerModel, updateRate);
         connectionHub.server.addPlayer();
@@ -208,8 +186,8 @@ $(function () {
 
     function updateServerModel() {
         // Only update server if we have a new movement
-        if (moved) {
-            connectionHub.server.updateModel(PlayerActor);
+        if (me.moved) {
+            connectionHub.server.updateModel({x: me.position.x, y: me.position.y, id: me.id});
             var hit = false;
             var hitarea;
             for (var key in gamedata.maps[currentarea.mapname].triggerareas) {
@@ -217,7 +195,7 @@ $(function () {
                 {
                     var area = gamedata.maps[currentarea.mapname].triggerareas[key];
                     if (!gamedata.maps[currentarea.mapname].triggerareas.hasOwnProperty(key)) continue;
-                    if (collisionCircle(PlayerActor, 50, area, 50)) {
+                    if (collisionCircle(me.position, 50, area, 50)) {
                         hit = true;
                         hitarea = key;
                     }
@@ -228,7 +206,7 @@ $(function () {
                 connectionHub.server.message("areachangetrigger", hitarea);
             }
 
-            moved = false;
+            me.moved = false;
         }
     }
 });
