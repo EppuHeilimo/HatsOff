@@ -100,11 +100,9 @@ namespace Hatsoff
                 RemotePlayer dPlayer;
                 connectedPlayers.TryRemove(connectionId, out dPlayer);
                 mapstates[dPlayer.areaname].playerlist.Remove(dPlayer.GetPlayerShape());
-                if (dPlayer != null)
-                {
-                    _disconnctedPlayers.Add(dPlayer.GetPlayerShape());
-                    _playerDisconnected = true;
-                }
+                _disconnctedPlayers.Add(dPlayer.GetPlayerShape());
+                _playerDisconnected = true;
+                
 
             }
             catch (ArgumentNullException ex)
@@ -114,7 +112,7 @@ namespace Hatsoff
 
         }
 
-        public int NewID()
+        public int NewId()
         {
             _newID++;
             return _newID;
@@ -218,6 +216,7 @@ namespace Hatsoff
             {
                 if(connectionId == player.owner) continue;
                 clientsInArea.Add(player.owner);
+                
             }
             _hubContext.Clients.Clients(clientsInArea).playerLeftArea(p.GetPlayerShape().id);
            
@@ -232,7 +231,7 @@ namespace Hatsoff
 
         public void AddPlayer(string connectionid)
         {
-            int id = NewID();
+            int id = NewId();
             RemotePlayer newplayer = new RemotePlayer(connectionid, id, "Overworld");
             connectedPlayers.TryAdd(connectionid, newplayer);
             mapstates["Overworld"].playerlist.Add(newplayer.GetPlayerShape());
