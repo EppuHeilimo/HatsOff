@@ -28,6 +28,7 @@ namespace Hatsoff
         //zone, player
         private ConcurrentDictionary<string, List<PlayerActor>> _updatedPlayers;
         private List<PlayerActor> _disconnctedPlayers = new List<PlayerActor>();
+        private QuadTree overworldcollisions;
         public Broadcaster()
         {
             // Save our hub context so we can easily use it 
@@ -49,10 +50,20 @@ namespace Hatsoff
             {
                 mapstates.Add(m.Key, new MapState());
             }
+            overworldcollisions = new QuadTree(0, new Rectangle(new Vec2(1600, 1600), 3200, 3200));
+            /*
+            foreach (var area in _gamedata.maps["Overworld"].triggerareas)
+            {
+                overworldcollisions.Insert(new CollisionCircle(area.Value.getCenter(), 50));
+            }
+            */
+            for (int i = 0; i < 10; i++)
+            {
+                overworldcollisions.Insert(new CollisionCircle(new Vec2(25, i * 50 + 925), 30));
+            }
         }
         public void Broadcast(object state)
         {
-
             // This is how we can access the Clients property 
             // in a static hub method or outside of the hub entirely
             if(_modelUpdated)
@@ -72,7 +83,6 @@ namespace Hatsoff
                         _hubContext.Clients.Clients(clientsinarea).updateShapes(area.Value);
                     }
                     _modelUpdated = false;
-
                 }
 
             }
@@ -89,10 +99,10 @@ namespace Hatsoff
             {
                 RemotePlayer dPlayer;
                 connectedPlayers.TryRemove(connectionId, out dPlayer);
-                mapstates[dPlayer.areaname].playerlist.Remove(dPlayer.getPlayerShape());
+                mapstates[dPlayer.areaname].playerlist.Remove(dPlayer.GetPlayerShape());
                 if (dPlayer != null)
                 {
-                    _disconnctedPlayers.Add(dPlayer.getPlayerShape());
+                    _disconnctedPlayers.Add(dPlayer.GetPlayerShape());
                     _playerDisconnected = true;
                 }
 
@@ -115,19 +125,37 @@ namespace Hatsoff
             RemotePlayer p;
             connectedPlayers.TryGetValue(player.LastUpdatedBy, out p);
             //Check that the owner was the one who moved the actor
-            if (p.getPlayerShape().LastUpdatedBy == p.getPlayerShape().owner)
+            if (p.GetPlayerShape().LastUpdatedBy == p.GetPlayerShape().owner)
             {
-                p.setPosition(player.x, player.y);
-                if (_updatedPlayers.ContainsKey(p.areaname))
+                List<CollisionCircle> posCollisions = new List<CollisionCircle>();
+                bool hit = false;
+                overworldcollisions.Retrieve(posCollisions, new CollisionCircle(p.GetPosition(), 50));
+                foreach (var collision in posCollisions)
                 {
-                    _updatedPlayers[p.areaname].Add(p.getPlayerShape());
+                    if (Collision.TestCircleCollision(new Vec2(player.x, player.y), 30, collision.getCenter(), 30))
+                    {
+                        hit = true;
+                    }
+                }
+                if (hit)
+                {
+                    Vec2 temp = p.GetRecordedPos(1);
+                    _hubContext.Clients.Client(p.GetPlayerShape().LastUpdatedBy).teleport(temp.x, temp.y);
                 }
                 else
                 {
-                    _updatedPlayers.TryAdd(p.areaname, new List<PlayerActor>());
-                    _updatedPlayers[p.areaname].Add(p.getPlayerShape());                  
+                    p.SetPosition(player.x, player.y);
+                    if (_updatedPlayers.ContainsKey(p.areaname))
+                    {
+                        _updatedPlayers[p.areaname].Add(p.GetPlayerShape());
+                    }
+                    else
+                    {
+                        _updatedPlayers.TryAdd(p.areaname, new List<PlayerActor>());
+                        _updatedPlayers[p.areaname].Add(p.GetPlayerShape());
+                    }
+                    _modelUpdated = true;
                 }
-                _modelUpdated = true;
             }
         }
 
@@ -139,7 +167,7 @@ namespace Hatsoff
             {
                 if (_gamedata.maps.ContainsKey(attribs))
                 {
-                    if (Collision.TestCircleCollision(p.getPosition(), 50, _gamedata.maps[p.areaname].triggerareas[attribs].getCenter(), 50))
+                    if (Collision.TestCircleCollision(p.GetPosition(), 50, _gamedata.maps[p.areaname].triggerareas[attribs].getCenter(), 50))
                     {
                         ChangePlayerArea(p, connectionId, attribs);
                     }
@@ -150,17 +178,17 @@ namespace Hatsoff
         private void ChangePlayerArea(RemotePlayer p, string connectionId, string targetArea)
         {
             Vec2 fromareapos = _gamedata.maps[targetArea].triggerareas[p.areaname].getCenter();
-            p.setPosition(fromareapos.x, fromareapos.y);
-            p.getPlayerShape().x = fromareapos.x;
-            p.getPlayerShape().y = fromareapos.y;
+            p.SetPosition(fromareapos.x, fromareapos.y);
+            p.GetPlayerShape().x = fromareapos.x;
+            p.GetPlayerShape().y = fromareapos.y;
             PlayerLeftArea(connectionId, p);
             //delete player from areas playerlist
-            mapstates[p.areaname].playerlist.Remove(p.getPlayerShape());
+            mapstates[p.areaname].playerlist.Remove(p.GetPlayerShape());
             //add the player to the new area
-            mapstates[targetArea].playerlist.Add(p.getPlayerShape());
+            mapstates[targetArea].playerlist.Add(p.GetPlayerShape());
             p.areaname = targetArea;
             PlayerJoinedArea(connectionId, p);
-            ChangeMap(connectionId);
+            ChangeMap(connectionId, fromareapos);
         }
 
         public void PlayerJoinedArea(string connectionId, RemotePlayer p)
@@ -171,10 +199,10 @@ namespace Hatsoff
                 if (connectionId == player.owner) continue;
                 clientsInArea.Add(player.owner);
             }
-            _hubContext.Clients.Clients(clientsInArea).playerJoinedArea(p.getPlayerShape());
+            _hubContext.Clients.Clients(clientsInArea).playerJoinedArea(p.GetPlayerShape());
             try
             {
-                _updatedPlayers[p.areaname].Remove(p.getPlayerShape());
+                _updatedPlayers[p.areaname].Remove(p.GetPlayerShape());
             }
             catch (Exception)
             {
@@ -191,13 +219,15 @@ namespace Hatsoff
                 if(connectionId == player.owner) continue;
                 clientsInArea.Add(player.owner);
             }
-            _hubContext.Clients.Clients(clientsInArea).playerLeftArea(p.getPlayerShape().id);
+            _hubContext.Clients.Clients(clientsInArea).playerLeftArea(p.GetPlayerShape().id);
            
         }
 
-        private void ChangeMap(string connectionId)
+        private void ChangeMap(string connectionId, Vec2 newpos)
         {
+            
             _hubContext.Clients.Client(connectionId).changeMap();
+            _hubContext.Clients.Client(connectionId).teleport(newpos.x, newpos.y);
         }
 
         public void AddPlayer(string connectionid)
@@ -205,7 +235,7 @@ namespace Hatsoff
             int id = NewID();
             RemotePlayer newplayer = new RemotePlayer(connectionid, id, "Overworld");
             connectedPlayers.TryAdd(connectionid, newplayer);
-            mapstates["Overworld"].playerlist.Add(newplayer.getPlayerShape());
+            mapstates["Overworld"].playerlist.Add(newplayer.GetPlayerShape());
             PlayerJoinedArea(connectionid, newplayer);
             _hubContext.Clients.Client(connectionid).getMyID(id);
         }

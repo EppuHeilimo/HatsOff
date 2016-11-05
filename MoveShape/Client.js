@@ -16,7 +16,7 @@ $(function () {
     //players.find((x)=>x.ID == 3);
 
     var myId;
-    var moved = false
+    var moved = false;
     var currentarea;
     var gamedata;
     var me = new LocalPlayerClient();
@@ -186,6 +186,7 @@ $(function () {
     function updateServerModel() {
         // Only update server if we have a new movement
         if (me.moved) {
+            console.log(me.position);
             connectionHub.server.updateModel({x: me.position.x, y: me.position.y, id: me.id});
             me.moved = false;
         }

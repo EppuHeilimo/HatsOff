@@ -15,6 +15,7 @@ namespace Hatsoff
         {
             JsonSerializer js = new JsonSerializer();
             maps = js.Deserialize<Dictionary<string, Map>>(new JsonTextReader(new StreamReader(Path.Combine(System.Web.Hosting.HostingEnvironment.MapPath("~"), @"Data\maps.json"))));
+
             /*
             Dictionary<string, TriggerArea> triggers = new Dictionary<string, TriggerArea>();
 
