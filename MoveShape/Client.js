@@ -206,7 +206,7 @@ $(function () {
             if (hit) {
                 connectionHub.server.message("areachangetrigger", hitarea);
             }
-            me.activated = false;
         }
+        me.activated = false;
     }
 });

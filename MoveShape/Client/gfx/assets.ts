@@ -17,6 +17,13 @@ TextureImports =
     "castle1": { "source": "assets/graphics/castle1.png", "isPowerOfTwo": false },
     "cottage1": { "source": "assets/graphics/cottage.png", "isPowerOfTwo": false },
     "hat1": { "source": "assets/graphics/tophat.png", "isPowerOfTwo": true },
+
+    "deepwater": { "source": "assets/graphics/deepwater.png", "isPowerOfTwo": true },
+    "dirtroad": { "source": "assets/graphics/dirtroad.png", "isPowerOfTwo": true },
+    "grass": { "source": "assets/graphics/grass.png", "isPowerOfTwo": true },
+    "sand": { "source": "assets/graphics/sand.png", "isPowerOfTwo": true },
+    "shallowwater": { "source": "assets/graphics/shallowwater.png", "isPowerOfTwo": true },
+    "woodenbridge": { "source": "assets/graphics/woodenbridge.png", "isPowerOfTwo": true }
 };
 
 declare var ShaderImports : {[key:string] : ShaderSource};
@@ -35,6 +42,11 @@ ShaderImports =
 	"text":
 	{
         "vert":"assets/shaders/font.vs",
+        "frag":"assets/shaders/basic.fs"
+	},
+	"map":
+	{
+        "vert":"assets/shaders/map.vs",
         "frag":"assets/shaders/basic.fs"
 	},
 	"colored":

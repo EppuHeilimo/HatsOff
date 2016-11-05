@@ -93,7 +93,7 @@ class PlayerClient implements GameActor {
     public speed: number;
 
     constructor() {
-        this.speed = 2.88;
+        this.speed = 8;
         this.position = Vector2New(0, 0);
         this.sprite = new DrawableTextureBox();
         this.sprite.texture = GFX.textures["hat1"];
@@ -198,5 +198,7 @@ class LocalPlayerClient extends PlayerClient {
         {
             this.activated = true;
         }
+
+        GFX.centerCameraOn(this.position);
     }
 }

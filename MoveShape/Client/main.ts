@@ -1,6 +1,6 @@
 ﻿
 
-function initMain()
+function initMain(loadedCallback : () => void)
 {
 	let canvas = <HTMLCanvasElement> document.getElementById("canvas");
 
@@ -11,6 +11,10 @@ function initMain()
     //get all the data defs
     let asyncData = GFX.defineDatas();
     //and load them, asynchronously
+
+    TileMaps["Overworld"] = new TileMap("Overworld", "assets/map.json");
+
+    asyncData.addElement(TileMaps["Overworld"]);
 	asyncData.startLoad();
 
 
@@ -36,6 +40,7 @@ function initMain()
         //if all the asyncdata is loaded
 		if (asyncData.isDone())
         {
+        	loadedCallback();
             //call loop every 17 milliseconds
 			setInterval(loop,17);
 			return;

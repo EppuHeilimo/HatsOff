@@ -35,7 +35,8 @@ namespace GFX
 	export declare var currentShader : Shader; //Currently bound shader (used to get uniforms and such)
     export declare var renderSize: Vector2; //"screen size"
 	export declare var drawables: Set<Drawable>; //list of things to draw
-
+    export declare var tileMap: DrawableTileMap;
+     
 	export function removeDrawable(drw : Drawable)
 	{
 		drawables.delete(drw);
@@ -90,7 +91,9 @@ namespace GFX
 	export function start(canvas : any) : void
 	{
         drawables = new Set<Drawable>();
+        tileMap = new DrawableTileMap();
 
+        addDrawable(tileMap);
         //get open gl context
 		gl = canvas.getContext("webgl");
 		quadBuffer = gl.createBuffer();
@@ -180,6 +183,12 @@ namespace GFX
 	export function bindBuffer() : void
 	{
 		gl.bindBuffer(gl.ARRAY_BUFFER, quadBuffer);
+		bindAttributePointers();
+	}
+
+	export function bindAttributePointers() : void
+	{
+
         let vt = currentShader.attributes["position"];
         if (vt >= 0)
 			gl.vertexAttribPointer(vt, 2, gl.FLOAT, false, 4 * 4, 0);
@@ -187,10 +196,32 @@ namespace GFX
 		vt = currentShader.attributes["texcoord"];
         if (vt >= 0)
 			gl.vertexAttribPointer(vt, 2, gl.FLOAT, false, 4 * 4, 4 * 2);
-	}
+
+    }
+
+    export function centerCameraOn(pos: Vector2): void {
+        camera.x = pos.x - renderSize.x / 2;
+        camera.y = pos.y - renderSize.y / 2;
+    }
 
 	export function update() : void
     {
+        let curmap = tileMap.map;
+        if (curmap)
+        {
+            let lowerLeft = Vector2Clone(camera);
+            Vector2Add(lowerLeft, renderSize);
+            let mapsize = Vector2Clone(curmap.sizeInTiles);
+            Vector2ScalarMul(mapsize, curmap.tileSize);
+            if (lowerLeft.x > mapsize.x)
+                camera.x -= (lowerLeft.x - mapsize.x);
+            if (lowerLeft.y > mapsize.y)
+                camera.y -= (lowerLeft.y - mapsize.y);
+            if (camera.x < 0)
+                camera.x = 0;
+            if (camera.y < 0)
+                camera.y = 0;
+        }
         //draw all gfx stuff
 
         //bind the "basic" shader
