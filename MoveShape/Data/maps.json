@@ -25,9 +25,14 @@
 		{
 			"Overworld" :
 			{
-				x: 100, y: 909, sizex: 100, sizey: 100, "appearance":  "cottage1"
+                x: 100,
+                y: 64,
+                sizex: 100,
+                sizey: 100,
+                "appearance": "cottage1"
+
 			}
 		},
-        "tilemap": "assets/EiOleTownMappiaViela.json"
+        "tilemap": "assets/town.json"
 	}
 }

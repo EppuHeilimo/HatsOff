@@ -14,6 +14,7 @@ declare var TileMaps : {[key:string] : TileMap};
 TileMaps = {};
 TileMapImports = {};
 TileMapImports["Overworld"] = "assets/map.json";
+TileMapImports["Town"] = "assets/town.json";
 
 
 class TileMap implements AsyncLoadable

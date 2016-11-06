@@ -648,6 +648,7 @@ class DrawableText {
 TileMaps = {};
 TileMapImports = {};
 TileMapImports["Overworld"] = "assets/map.json";
+TileMapImports["Town"] = "assets/town.json";
 class TileMap {
     constructor(name, src) {
         this.tileSize = 64;
