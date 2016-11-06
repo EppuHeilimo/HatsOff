@@ -203,6 +203,7 @@
     <Compile Include="CS\Collision.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="CS\Data.cs" />
+    <Compile Include="CS\TileMap.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>

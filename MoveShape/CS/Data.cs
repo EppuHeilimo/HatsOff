@@ -16,6 +16,21 @@ namespace Hatsoff
             JsonSerializer js = new JsonSerializer();
             maps = js.Deserialize<Dictionary<string, Map>>(new JsonTextReader(new StreamReader(Path.Combine(System.Web.Hosting.HostingEnvironment.MapPath("~"), @"Data\maps.json"))));
 
+
+            foreach (var map in maps)
+            {
+                //construct tilemaps for our maps
+                map.Value.tilemap = new TileMap();
+                try
+                {
+                    //and try to load them from Map.tilemapsource
+                    map.Value.tilemap.load(new StreamReader(Path.Combine(System.Web.Hosting.HostingEnvironment.MapPath("~"), map.Value.tilemapsource)));
+                }
+                catch (Exception e)
+                {
+                    System.Diagnostics.Debug.WriteLine(e.Message);
+                }
+            }
             /*
             Dictionary<string, TriggerArea> triggers = new Dictionary<string, TriggerArea>();
 

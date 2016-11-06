@@ -8,6 +8,12 @@ namespace Hatsoff
 {
     public class Map
     {
+        [JsonIgnore]
+        public TileMap tilemap;
+         
+        [JsonProperty("tilemap")]
+        public string tilemapsource;
+
         [JsonProperty("triggerareas")]
         public Dictionary<string, TriggerArea> triggerareas;
         public Map(Dictionary<string, TriggerArea> triggers)

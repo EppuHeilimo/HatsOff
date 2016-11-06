@@ -1,17 +1,23 @@
 ﻿{
 	"Overworld" :
 	{
-		triggerareas :
-		{
-			"Town" :
-			{
-				x: 400, y: 600, sizex: 100, sizey: 100, "appearance": "castle1"
-			},
-			"SomeMagicPlace" :
-			{
-				x: 288, y: 345, sizex: 80, sizey: 150, "appearance": "castle1"
-			}
-		}
+        triggerareas: {
+            "Town": {
+                x: 400,
+                y: 600,
+                sizex: 100,
+                sizey: 100,
+                "appearance": "castle1"
+            },
+            "SomeMagicPlace": {
+                x: 288,
+                y: 345,
+                sizex: 80,
+                sizey: 150,
+                "appearance": "castle1"
+            }
+        },
+        "tilemap": "assets/map.json"
 	},
 	"Town" :
 	{
@@ -21,6 +27,7 @@
 			{
 				x: 100, y: 909, sizex: 100, sizey: 100, "appearance":  "cottage1"
 			}
-		}
+		},
+        "tilemap": "assets/EiOleTownMappiaViela.json"
 	}
 }
