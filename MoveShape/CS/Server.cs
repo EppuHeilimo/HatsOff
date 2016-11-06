@@ -135,6 +135,17 @@ namespace Hatsoff
                         hit = true;
                     }
                 }
+                //Temporary simple tile check
+                var tm = p.areaname;
+                Map map;
+                if (_gamedata.maps.TryGetValue(tm, out map))
+                {
+                    var tile = map.tilemap.getTileInRealCoordinates((int)player.x, (int)player.y);
+                    if ((tile == null) || (tile.tileDef == null) || tile.tileDef.isBlocking)
+                        hit = true;
+                }
+
+
                 if (hit)
                 {
                     Vec2 temp = p.GetRecordedPos(1);
