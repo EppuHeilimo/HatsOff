@@ -144,15 +144,19 @@ class DrawableTileMap implements Drawable
             return;
 
 
-        let determOff = function(x, y, scale)
+        let determOff = function(x, y, scale, depth? :number )
         {
+            
+            depth = (depth >= 0) ? depth : 4;
             let v = Vector2New(
-                (10000 + Math.sin(x * 1.1311 + y * 11.411) * 10000) % 1, 
-                (10000 + Math.sin(x * 14.389 + y * 1.5031) * 10000) % 1);
+                (123456 + Math.sin((x * 433113.11 + 15733) + (y * 114.11 + 234)) * 123456) % 1, 
+                (123456 + Math.sin((x * 9143.89 + 77.33) + (y * 87150.31 + 0.435)) * 123456) % 1);
             v.x *= scale;
             v.x -= scale / 2;
             v.y *= scale;
             v.y -= scale / 2;
+            if (depth > 1)
+                return determOff(v.y, v.x, scale, depth - 1);
             return v;
         };
 
@@ -174,7 +178,7 @@ class DrawableTileMap implements Drawable
             }
 
             //How wonky you want your tilemaps?
-            let wonkiness = 0;
+            let wonkiness = 24;
             let p1 = determOff(x, y, wonkiness);
             let p2 = determOff(x + 1, y, wonkiness);
             let p3 = determOff(x, y + 1, wonkiness);
