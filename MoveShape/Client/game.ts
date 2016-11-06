@@ -17,6 +17,12 @@ namespace Game {
     export declare var actors: Set<GameActor>;
     export declare var keyMap: { [keyid: number]: string; }
     export declare var keyStates: { [keyid: number]: KeyState; }
+    export declare var nextMap: string;
+
+
+    export function changeMap(map: string) {
+        nextMap = map;
+    }
 
     export function removeActor(act: GameActor) {
         act.deinit();
@@ -31,6 +37,7 @@ namespace Game {
     export function start(): void {
         actors = new Set<GameActor>();
         time = 0;
+        nextMap = null;
 
         keyMap = {};
         keyMap[37] = "left";
@@ -69,6 +76,10 @@ namespace Game {
     }
 
     export function update(): void {
+        if (nextMap) {
+            GFX.tileMap.setMap(TileMaps[nextMap]);
+            nextMap = null;
+        }
         time += 1;
         actors.forEach(function (i) {
             i.update();

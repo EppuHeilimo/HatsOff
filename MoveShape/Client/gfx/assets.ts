@@ -94,7 +94,9 @@ class Texture implements AsyncLoadable
 		this.size = Vector2New(0,0);
 		this.texture = 0;
 	}
-
+    getSourceName(): string {
+        return "Texture " + this.name + " at " + this.source;
+    }
 	load(callback : (success: boolean) => void) : void
 	{
 		this.image = new Image();
@@ -103,8 +105,8 @@ class Texture implements AsyncLoadable
 		let us = this;
 		this.image.onerror = function()
 		{
-			console.log("Failed to load image ",imstr);
-			callback(true);
+			
+			callback(false);
 		}
 		this.image.onload = function()
 		{
@@ -160,6 +162,9 @@ class Shader implements AsyncLoadable
 		this.sourceFrag = srcf;
 	}
 
+    getSourceName(): string {
+        return "Shader " + this.name + " at " + this.sourceFrag + " & " + this.sourceVert;
+    }
 	load(callback : (success: boolean) => void) : void
 	{
 		let us = this;
@@ -172,28 +177,35 @@ class Shader implements AsyncLoadable
 		this.attributes = {};
 
 		function bothLoad()
-		{
-			us.program = GFX.gl.createProgram();
-        	GFX.gl.attachShader(us.program, us.shaderVert);
-        	GFX.gl.attachShader(us.program, us.shaderFrag);
-        	GFX.gl.linkProgram(us.program);
+        {
+            try 
+            {
+			    us.program = GFX.gl.createProgram();
+        	    GFX.gl.attachShader(us.program, us.shaderVert);
+        	    GFX.gl.attachShader(us.program, us.shaderFrag);
+        	    GFX.gl.linkProgram(us.program);
 
 
-        	for (var key in ShaderUniforms)
-			{
-			    if (!ShaderUniforms.hasOwnProperty(key)) continue;
+        	    for (var key in ShaderUniforms)
+			    {
+			        if (!ShaderUniforms.hasOwnProperty(key)) continue;
 
-			    us.uniforms[key] = GFX.gl.getUniformLocation(us.program,ShaderUniforms[key]);
-			}
+			        us.uniforms[key] = GFX.gl.getUniformLocation(us.program,ShaderUniforms[key]);
+			    }
 
-			for (var key in ShaderAttributes)
-			{
-			    if (!ShaderAttributes.hasOwnProperty(key)) continue;
+			    for (var key in ShaderAttributes)
+			    {
+			        if (!ShaderAttributes.hasOwnProperty(key)) continue;
 
-			    us.attributes[key] = GFX.gl.getAttribLocation(us.program,ShaderAttributes[key]);
-			}
+			        us.attributes[key] = GFX.gl.getAttribLocation(us.program,ShaderAttributes[key]);
+			    }
 
-			callback(true);
+                callback(true);
+            }
+            catch (e) {
+                console.log(e);
+                callback(false);
+            }
 		}
 
 

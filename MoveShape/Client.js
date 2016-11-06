@@ -131,6 +131,8 @@ $(function () {
             GFX.addDrawable(a);
             area.drawable = a;
         }
+
+        Game.changeMap(currentarea.mapname);
     }
 
     connectionHub.client.getGameInfo = function (data)

@@ -26,12 +26,17 @@ class AsyncLoader {
         this.loading = true;
         for (let i = 0; i < this.targets.length; i++) {
             var us = this;
-            let loadCallBack = function () {
-                us.finishLoad(true);
+            let loadCallBackGen = function (ist) {
+                var nowThis = ist;
+                return function (success) {
+                    if (success == false)
+                        console.log("Failed to load", nowThis.getSourceName());
+                    us.finishLoad(true);
+                };
             };
             setTimeout(function (target, callBack) {
                 target.load(callBack);
-            }, 0, this.targets[i], loadCallBack);
+            }, 0, this.targets[i], loadCallBackGen(this.targets[i]));
         }
     }
     isDone() {
@@ -49,6 +54,10 @@ var KeyState;
 })(KeyState || (KeyState = {}));
 var Game;
 (function (Game) {
+    function changeMap(map) {
+        Game.nextMap = map;
+    }
+    Game.changeMap = changeMap;
     function removeActor(act) {
         act.deinit();
         Game.actors.delete(act);
@@ -62,6 +71,7 @@ var Game;
     function start() {
         Game.actors = new Set();
         Game.time = 0;
+        Game.nextMap = null;
         Game.keyMap = {};
         Game.keyMap[37] = "left";
         Game.keyMap[38] = "up";
@@ -93,6 +103,10 @@ var Game;
     }
     Game.start = start;
     function update() {
+        if (Game.nextMap) {
+            GFX.tileMap.setMap(TileMaps[Game.nextMap]);
+            Game.nextMap = null;
+        }
         Game.time += 1;
         Game.actors.forEach(function (i) {
             i.update();
@@ -262,14 +276,16 @@ class Texture {
         this.size = Vector2New(0, 0);
         this.texture = 0;
     }
+    getSourceName() {
+        return "Texture " + this.name + " at " + this.source;
+    }
     load(callback) {
         this.image = new Image();
         let str = "Loaded image " + this.name + ":" + this.source;
         let imstr = this.name + ":" + this.source;
         let us = this;
         this.image.onerror = function () {
-            console.log("Failed to load image ", imstr);
-            callback(true);
+            callback(false);
         };
         this.image.onload = function () {
             us.texture = GFX.gl.createTexture();
@@ -302,6 +318,9 @@ class Shader {
         this.sourceVert = srcv;
         this.sourceFrag = srcf;
     }
+    getSourceName() {
+        return "Shader " + this.name + " at " + this.sourceFrag + " & " + this.sourceVert;
+    }
     load(callback) {
         let us = this;
         let str = "Loaded shader " + this.name + ":" + this.sourceFrag + " & " + this.sourceVert;
@@ -310,21 +329,27 @@ class Shader {
         this.uniforms = {};
         this.attributes = {};
         function bothLoad() {
-            us.program = GFX.gl.createProgram();
-            GFX.gl.attachShader(us.program, us.shaderVert);
-            GFX.gl.attachShader(us.program, us.shaderFrag);
-            GFX.gl.linkProgram(us.program);
-            for (var key in ShaderUniforms) {
-                if (!ShaderUniforms.hasOwnProperty(key))
-                    continue;
-                us.uniforms[key] = GFX.gl.getUniformLocation(us.program, ShaderUniforms[key]);
+            try {
+                us.program = GFX.gl.createProgram();
+                GFX.gl.attachShader(us.program, us.shaderVert);
+                GFX.gl.attachShader(us.program, us.shaderFrag);
+                GFX.gl.linkProgram(us.program);
+                for (var key in ShaderUniforms) {
+                    if (!ShaderUniforms.hasOwnProperty(key))
+                        continue;
+                    us.uniforms[key] = GFX.gl.getUniformLocation(us.program, ShaderUniforms[key]);
+                }
+                for (var key in ShaderAttributes) {
+                    if (!ShaderAttributes.hasOwnProperty(key))
+                        continue;
+                    us.attributes[key] = GFX.gl.getAttribLocation(us.program, ShaderAttributes[key]);
+                }
+                callback(true);
             }
-            for (var key in ShaderAttributes) {
-                if (!ShaderAttributes.hasOwnProperty(key))
-                    continue;
-                us.attributes[key] = GFX.gl.getAttribLocation(us.program, ShaderAttributes[key]);
+            catch (e) {
+                console.log(e);
+                callback(false);
             }
-            callback(true);
         }
         let xht = new XMLHttpRequest();
         xht.open("GET", this.sourceFrag, true);
@@ -621,6 +646,8 @@ class DrawableText {
     }
 }
 TileMaps = {};
+TileMapImports = {};
+TileMapImports["Overworld"] = "assets/map.json";
 class TileMap {
     constructor(name, src) {
         this.tileSize = 64;
@@ -630,10 +657,16 @@ class TileMap {
         this.tileDefs = {};
         this.objects = [];
     }
+    getSourceName() {
+        return "Tilemap " + this.name + " at " + this.source;
+    }
     load(callback) {
         let us = this;
         let doTM = function (tm) {
             let name = tm.name;
+            //only consider tilemaps with names
+            //beginning with "terrain" 
+            //TODO: properly handle object tilemaps
             if (name.slice(0, 7) != "terrain")
                 return;
             let firstGid = tm.firstgid;
@@ -651,19 +684,30 @@ class TileMap {
         xht.open("GET", this.source, true);
         xht.overrideMimeType('text/plain');
         xht.onload = function () {
-            let jsondata = JSON.parse(this.responseText);
-            us.sizeInTiles.x = jsondata.width;
-            us.sizeInTiles.y = jsondata.height;
-            for (let i = 0; i < jsondata.tilesets.length; i++) {
-                doTM(jsondata.tilesets[i]);
+            try {
+                //this.responseText should be valid JSON
+                let jsondata = JSON.parse(this.responseText);
+                //see the Tiled JSON export format
+                us.sizeInTiles.x = jsondata.width;
+                us.sizeInTiles.y = jsondata.height;
+                for (let i = 0; i < jsondata.tilesets.length; i++) {
+                    doTM(jsondata.tilesets[i]);
+                }
+                for (let i = 0; i < jsondata.layers.length; i++) {
+                    let lay = jsondata.layers[i];
+                    //TODO: check the corrects layers based on name
+                    //instead of type
+                    //TODO: properly handle object layers
+                    if (lay.type != "tilelayer")
+                        continue;
+                    us.tiles = lay.data;
+                }
+                callback(true);
             }
-            for (let i = 0; i < jsondata.layers.length; i++) {
-                let lay = jsondata.layers[i];
-                if (lay.type != "tilelayer")
-                    continue;
-                us.tiles = lay.data;
+            catch (e) {
+                console.log(e);
+                callback(false);
             }
-            callback(true);
         };
         xht.onerror = function () {
             callback(false);
@@ -679,10 +723,22 @@ class DrawableTileMap {
     }
     setMap(map) {
         this.map = map;
+        //clear the previous buffers
         for (var i = this.buffers.length - 1; i >= 0; i--) {
             GFX.gl.deleteBuffer(this.buffers[i].buffer);
         }
         this.buffers = [];
+        if (!map)
+            return;
+        let determOff = function (x, y, scale) {
+            let v = Vector2New((10000 + Math.sin(x * 1.1311 + y * 11.411) * 10000) % 1, (10000 + Math.sin(x * 14.389 + y * 1.5031) * 10000) % 1);
+            v.x *= scale;
+            v.x -= scale / 2;
+            v.y *= scale;
+            v.y -= scale / 2;
+            return v;
+        };
+        //vertex arrays
         let tiles = {};
         let x = 0;
         let y = 0;
@@ -696,15 +752,22 @@ class DrawableTileMap {
             if (!(gid in tiles)) {
                 tiles[gid] = [];
             }
+            //How wonky you want your tilemaps?
+            let wonkiness = 0;
+            let p1 = determOff(x, y, wonkiness);
+            let p2 = determOff(x + 1, y, wonkiness);
+            let p3 = determOff(x, y + 1, wonkiness);
+            let p4 = determOff(x + 1, y + 1, wonkiness);
             let base = Vector2New(x, y);
             let ts = map.tileSize; //tile size
             Vector2ScalarMul(base, ts);
-            tiles[gid].push(base.x, base.y, 0, 0);
-            tiles[gid].push(base.x + ts, base.y, 1.0, 0);
-            tiles[gid].push(base.x, base.y + ts, 0, 1.0);
-            tiles[gid].push(base.x, base.y + ts, 0, 1.0);
-            tiles[gid].push(base.x + ts, base.y, 1.0, 0);
-            tiles[gid].push(base.x + ts, base.y + ts, 1.0, 1.0);
+            //two triangles
+            tiles[gid].push(base.x + p1.x, base.y + p1.x, 0, 0);
+            tiles[gid].push(base.x + ts + p2.x, base.y + p2.x, 1.0, 0);
+            tiles[gid].push(base.x + p3.x, base.y + ts + p3.x, 0, 1.0);
+            tiles[gid].push(base.x + p3.x, base.y + ts + p3.x, 0, 1.0);
+            tiles[gid].push(base.x + ts + p2.x, base.y + p2.x, 1.0, 0);
+            tiles[gid].push(base.x + ts + p4.x, base.y + ts + p4.x, 1.0, 1.0);
         }
         for (let gid in tiles) {
             if (!tiles.hasOwnProperty(gid))
@@ -712,7 +775,6 @@ class DrawableTileMap {
             let arr = tiles[gid];
             let buf = { buffer: null, texture: map.tileDefs[gid].texture, count: arr.length / 4 };
             buf.buffer = GFX.gl.createBuffer();
-            console.log(arr.length, arr.length / 4, arr.length / (4 * 6));
             GFX.gl.bindBuffer(GFX.gl.ARRAY_BUFFER, buf.buffer);
             GFX.gl.bufferData(GFX.gl.ARRAY_BUFFER, new Float32Array(arr), GFX.gl.STATIC_DRAW);
             this.buffers.push(buf);
@@ -742,9 +804,14 @@ function initMain(loadedCallback) {
     GFX.start(canvas);
     //get all the data defs
     let asyncData = GFX.defineDatas();
+    //add tilemap data defs
+    for (let key in TileMapImports) {
+        if (!TileMapImports.hasOwnProperty(key))
+            continue;
+        TileMaps[key] = new TileMap(key, TileMapImports[key]);
+        asyncData.addElement(TileMaps[key]);
+    }
     //and load them, asynchronously
-    TileMaps["Overworld"] = new TileMap("Overworld", "assets/map.json");
-    asyncData.addElement(TileMaps["Overworld"]);
     asyncData.startLoad();
     //on window resize function
     function windowResize() {

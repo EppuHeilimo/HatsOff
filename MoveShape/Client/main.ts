@@ -10,11 +10,17 @@ function initMain(loadedCallback : () => void)
 
     //get all the data defs
     let asyncData = GFX.defineDatas();
+
+    //add tilemap data defs
+    for (let key in TileMapImports) {
+        if (!TileMapImports.hasOwnProperty(key))
+            continue;
+        TileMaps[key] = new TileMap(key, TileMapImports[key]);
+        asyncData.addElement(TileMaps[key]);
+    }
+
     //and load them, asynchronously
 
-    TileMaps["Overworld"] = new TileMap("Overworld", "assets/map.json");
-
-    asyncData.addElement(TileMaps["Overworld"]);
 	asyncData.startLoad();
 
 

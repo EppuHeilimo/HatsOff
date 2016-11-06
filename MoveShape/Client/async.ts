@@ -1,6 +1,7 @@
 interface AsyncLoadable
 {
-	load(callback : (success: boolean) => void) : void;
+    load(callback: (success: boolean) => void): void;
+    getSourceName(): string;
 }
 
 class AsyncLoader
@@ -48,16 +49,20 @@ class AsyncLoader
 		for (let i = 0; i < this.targets.length; i++)
 		{
 			var us = this;
-			let loadCallBack = function()
-			{
-				us.finishLoad(true);
-			};
+            let loadCallBackGen = function (ist: AsyncLoadable) {
+                var nowThis = ist;
+                return function (success: boolean) {
+                    if (success == false)
+                        console.log("Failed to load", nowThis.getSourceName());
+                    us.finishLoad(true);
+                };
+            };
 			
 			setTimeout(
 				function (target : AsyncLoadable, callBack: (success: boolean) => void)
 				{
 					target.load(callBack);
-				}, 0, this.targets[i], loadCallBack);
+                }, 0, this.targets[i], loadCallBackGen(this.targets[i]));
 		}
 	}
 

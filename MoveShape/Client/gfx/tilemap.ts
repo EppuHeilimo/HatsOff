@@ -8,8 +8,12 @@ interface TileMapObject
 	position : Vector2;
 	size : Vector2;
 }
+
+declare var TileMapImports: { [key: string]: string };
 declare var TileMaps : {[key:string] : TileMap};
 TileMaps = {};
+TileMapImports = {};
+TileMapImports["Overworld"] = "assets/map.json";
 
 
 class TileMap implements AsyncLoadable
@@ -31,22 +35,31 @@ class TileMap implements AsyncLoadable
 		this.objects = [];
 	}
 
+    getSourceName(): string {
+        return "Tilemap " + this.name + " at " + this.source;
+    }
+
 	load(callback : (success: boolean) => void) : void
 	{
 		let us = this;
 
 		let doTM = function(tm)
 		{
-			let name = tm.name;
+            let name = tm.name;
+
+            //only consider tilemaps with names
+            //beginning with "terrain" 
+            //TODO: properly handle object tilemaps
 			if (name.slice(0,7) != "terrain")
-				return;
+                return;
 			let firstGid = tm.firstgid;
 			for (let key in tm.tiles)
 			{
 				if (!tm.tiles.hasOwnProperty(key))
 					continue;
 
-				let num = parseInt(key) + firstGid;
+                let num = parseInt(key) + firstGid;
+
 				let img = tm.tiles[key].image;
 				img = img.slice(0,img.indexOf('.'));
 				let tex = GFX.textures[img];
@@ -58,23 +71,34 @@ class TileMap implements AsyncLoadable
 		xht.open("GET",this.source,true);
 		xht.overrideMimeType('text/plain');
 		xht.onload = function()
-		{
-			let jsondata = JSON.parse(this.responseText);
-			us.sizeInTiles.x = jsondata.width;
-			us.sizeInTiles.y = jsondata.height;
-			for (let i = 0; i < jsondata.tilesets.length; i++)
-			{
-				doTM(jsondata.tilesets[i]);
-			}
+        {
+            try {
+                //this.responseText should be valid JSON
+                let jsondata = JSON.parse(this.responseText);
 
-			for (let i = 0; i < jsondata.layers.length; i++)
-			{
-				let lay = jsondata.layers[i];
-				if (lay.type != "tilelayer")
-					continue;
-				us.tiles = lay.data;
-			}
-			callback(true);
+                //see the Tiled JSON export format
+
+                us.sizeInTiles.x = jsondata.width;
+                us.sizeInTiles.y = jsondata.height;
+                for (let i = 0; i < jsondata.tilesets.length; i++) {
+                    doTM(jsondata.tilesets[i]);
+                }
+
+                for (let i = 0; i < jsondata.layers.length; i++) {
+                    let lay = jsondata.layers[i];
+                    //TODO: check the corrects layers based on name
+                    //instead of type
+                    //TODO: properly handle object layers
+                    if (lay.type != "tilelayer")
+                        continue;
+                    us.tiles = lay.data;
+                }
+                callback(true);
+            }
+            catch (e) {
+                console.log(e);
+                callback(false);
+            }
 		};
 		xht.onerror = function()
 		{
@@ -109,12 +133,30 @@ class DrawableTileMap implements Drawable
 
 	public setMap(map : TileMap) : void
 	{
-		this.map = map;
+        this.map = map;
+        //clear the previous buffers
 		for (var i = this.buffers.length - 1; i >= 0; i--) {
 			GFX.gl.deleteBuffer(this.buffers[i].buffer);
 		}
-		this.buffers = [];
+        this.buffers = [];
 
+        if (!map)
+            return;
+
+
+        let determOff = function(x, y, scale)
+        {
+            let v = Vector2New(
+                (10000 + Math.sin(x * 1.1311 + y * 11.411) * 10000) % 1, 
+                (10000 + Math.sin(x * 14.389 + y * 1.5031) * 10000) % 1);
+            v.x *= scale;
+            v.x -= scale / 2;
+            v.y *= scale;
+            v.y -= scale / 2;
+            return v;
+        };
+
+        //vertex arrays
 		let tiles = <{[gid : string] : number[]}>{};
 		let x = 0; 
 		let y = 0;
@@ -129,18 +171,27 @@ class DrawableTileMap implements Drawable
 			if (!(gid in tiles))
 			{
 				tiles[gid] = []
-			}
+            }
+
+            //How wonky you want your tilemaps?
+            let wonkiness = 0;
+            let p1 = determOff(x, y, wonkiness);
+            let p2 = determOff(x + 1, y, wonkiness);
+            let p3 = determOff(x, y + 1, wonkiness);
+            let p4 = determOff(x + 1, y + 1, wonkiness);
 			
             let base = Vector2New(x, y);
             let ts = map.tileSize; //tile size
 			Vector2ScalarMul(base,ts);
 
-			tiles[gid].push(base.x,base.y,0,0);
-			tiles[gid].push(base.x+ts,base.y,1.0,0);
-			tiles[gid].push(base.x,base.y+ts,0,1.0);
-			tiles[gid].push(base.x,base.y+ts,0,1.0);
-			tiles[gid].push(base.x+ts,base.y,1.0,0);
-			tiles[gid].push(base.x+ts,base.y+ts,1.0,1.0);
+            //two triangles
+            tiles[gid].push(base.x + p1.x, base.y + p1.x,0,0);
+            tiles[gid].push(base.x + ts + p2.x, base.y + p2.x,1.0,0);
+            tiles[gid].push(base.x + p3.x, base.y + ts + p3.x, 0, 1.0);
+
+            tiles[gid].push(base.x + p3.x, base.y + ts + p3.x,0,1.0);
+            tiles[gid].push(base.x + ts + p2.x, base.y + p2.x,1.0,0);
+            tiles[gid].push(base.x + ts + p4.x, base.y + ts + p4.x,1.0,1.0);
 		}
 
 		for (let gid in tiles)
@@ -150,7 +201,7 @@ class DrawableTileMap implements Drawable
 			let arr = tiles[gid];
 			let buf = {buffer: null, texture: map.tileDefs[gid].texture, count: arr.length / 4};
 			buf.buffer = GFX.gl.createBuffer();
-			console.log(arr.length, arr.length / 4, arr.length / (4*6));
+			
 			GFX.gl.bindBuffer(GFX.gl.ARRAY_BUFFER, buf.buffer);
        		GFX.gl.bufferData(GFX.gl.ARRAY_BUFFER, new Float32Array(arr), GFX.gl.STATIC_DRAW);
 
