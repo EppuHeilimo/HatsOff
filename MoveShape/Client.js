@@ -229,4 +229,27 @@ $(function () {
         }
         me.activated = false;
     }
+
+    // Some crazy shite
+    let canvas = document.getElementById("canvas");
+
+    canvas.onmousemove = function (event) { getCursorPosition(canvas, event) }
+
+    function getCursorPosition(canvas, event) {
+        var rect = canvas.getBoundingClientRect();
+        var x = event.clientX - rect.left + GFX.camera.x;
+        var y = event.clientY - rect.top + GFX.camera.y;
+        console.log("x: " + x + " y: " + y);
+    }
+
+    for (var key in gamedata.maps[currentarea.mapname].triggerareas) {
+        if (key in gamedata.maps[currentarea.mapname].triggerareas) {
+            var area = gamedata.maps[currentarea.mapname].triggerareas[key];
+            if (!gamedata.maps[currentarea.mapname].triggerareas.hasOwnProperty(key)) continue;
+            if (collisionCircle(me.position, 50, area, 50)) {
+                hit = true;
+                hitarea = key;
+            }
+        }
+    }
 });
