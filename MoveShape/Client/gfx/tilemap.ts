@@ -223,18 +223,14 @@ class DrawableTileMap implements Drawable
 		let gl = GFX.gl;
 		for (let i = 0; i < this.buffers.length; i++)
 		{
-			let buf = this.buffers[i];
-		    try {
-                gl.bindBuffer(gl.ARRAY_BUFFER, buf.buffer);
-                GFX.bindAttributePointers();
-                gl.bindTexture(gl.TEXTURE_2D, buf.texture.texture);
-                gl.uniform1f(GFX.currentShader.uniforms["depth"], 0.8);
-                gl.uniform2f(GFX.currentShader.uniforms["position"], -GFX.camera.x, -GFX.camera.y);
-                gl.drawArrays(gl.TRIANGLES, 0, buf.count);
-		    } catch (e) {
-		        console.log("Missing texture");
-		    } 
+            let buf = this.buffers[i];
 
+            gl.bindBuffer(gl.ARRAY_BUFFER, buf.buffer);
+            GFX.bindAttributePointers();
+            gl.bindTexture(gl.TEXTURE_2D, buf.texture.texture);
+            gl.uniform1f(GFX.currentShader.uniforms["depth"], 0.8);
+            gl.uniform2f(GFX.currentShader.uniforms["position"], -GFX.camera.x, -GFX.camera.y);
+            gl.drawArrays(gl.TRIANGLES, 0, buf.count);
 
 		}
 		GFX.bindBuffer();
