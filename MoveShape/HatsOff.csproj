@@ -358,6 +358,7 @@
     <TypeScriptCompile Include="Client\game.ts" />
     <TypeScriptCompile Include="Client\gfx\assets.ts" />
     <TypeScriptCompile Include="Client\gfx\box.ts" />
+    <TypeScriptCompile Include="Client\chat.ts" />
     <TypeScriptCompile Include="Client\gfx\gfx.ts" />
     <TypeScriptCompile Include="Client\gfx\text.ts" />
     <TypeScriptCompile Include="Client\gfx\tilemap.ts" />

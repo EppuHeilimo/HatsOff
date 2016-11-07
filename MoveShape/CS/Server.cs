@@ -30,7 +30,7 @@ namespace Hatsoff
         private ConcurrentDictionary<string, List<PlayerActor>> _updatedPlayers;
         private List<PlayerActor> _disconnctedPlayers = new List<PlayerActor>();
         private QuadTree overworldcollisions;
-        private ConcurrentDictionary<RemotePlayer, List<string>> _sentMessages;
+        private ConcurrentDictionary<string, ConcurrentDictionary<RemotePlayer, List<string>>> _sentMessages;
         public Broadcaster()
         {
             // Save our hub context so we can easily use it 
@@ -40,7 +40,7 @@ namespace Hatsoff
             _modelUpdated = false;
             _newMessage = false;
             connectedPlayers = new ConcurrentDictionary<string, RemotePlayer>();
-            _sentMessages = new ConcurrentDictionary<RemotePlayer, List<string>>();
+            _sentMessages = new ConcurrentDictionary<string, ConcurrentDictionary<RemotePlayer, List<string>>>();
             // Start the broadcast loop
             _broadcastLoop = new Timer(
                 Broadcast,
@@ -61,6 +61,10 @@ namespace Hatsoff
                 overworldcollisions.Insert(new CollisionCircle(area.Value.getCenter(), 50));
             }
             */
+            foreach(KeyValuePair<string, MapState> m in mapstates)
+            {
+                _sentMessages.TryAdd(m.Key, new ConcurrentDictionary<RemotePlayer, List<string>>());
+            }
         }
         public void Broadcast(object state)
         {
@@ -93,20 +97,28 @@ namespace Hatsoff
                 _hubContext.Clients.All.playerDisconnected(_disconnctedPlayers);
                 _playerDisconnected = false;
             }
+
             if(_newMessage)
             {
-                foreach(KeyValuePair<RemotePlayer, List<string>> p in _sentMessages )
+                foreach(KeyValuePair<string, ConcurrentDictionary<RemotePlayer, List<string>>> area in _sentMessages )
                 {
-                    List<string> clientsinarea = new List<string>();
-                    foreach (var player in mapstates[p.Key.areaname].playerlist)
+                    if(area.Value.Count > 0)
                     {
-                        clientsinarea.Add(player.owner);
+                        foreach(KeyValuePair<RemotePlayer, List<string>> p in area.Value)
+                        {
+                            List<string> clientsinarea = new List<string>();
+                            foreach (var player in mapstates[p.Key.areaname].playerlist)
+                            {
+                                clientsinarea.Add(player.owner);
+                            }
+                            _hubContext.Clients.Clients(clientsinarea).say(p.Key.GetPlayerShape(), p.Value);
+                        }
+                        area.Value.Clear();
                     }
-                    _hubContext.Clients.Clients(clientsinarea).say(p.Key.GetPlayerShape(), p.Value);
                 }
                 _newMessage = false;
 
-                _sentMessages.Clear();
+
             }
             if(somethingchanged)
             {
@@ -127,9 +139,8 @@ namespace Hatsoff
                 mapstates[dPlayer.areaname].playerlist.Remove(dPlayer.GetPlayerShape());
                 _disconnctedPlayers.Add(dPlayer.GetPlayerShape());
                 _playerDisconnected = true;
-                
-
             }
+
             catch (ArgumentNullException ex)
             {
                 
@@ -164,7 +175,6 @@ namespace Hatsoff
                                 
                         }
                     }
-                    
                 }
                 
                 //Temporary simple tile check
@@ -305,22 +315,24 @@ namespace Hatsoff
             _hubContext.Clients.Client(connectionId).getGameInfo(_gamedata);
         }
 
-        internal void NewMessage(PlayerActor player)
+        internal void NewMessage(PlayerActor player, string message)
         {
             //TODO: Make player gradually move ovetime 
             RemotePlayer p;
             connectedPlayers.TryGetValue(player.LastUpdatedBy, out p);
-            if (_sentMessages.ContainsKey(p))
+            ConcurrentDictionary<RemotePlayer, List<string>> areamessages;
+            _sentMessages.TryGetValue(p.areaname, out areamessages);
+            if (areamessages.ContainsKey(p))
             {
                 List<string> messages;
-                _sentMessages.TryGetValue(p, out messages);
-                messages.Add("Hi!");
+                areamessages.TryGetValue(p, out messages);
+                messages.Add(message);
             }
             else
             {
                 List<string> messages = new List<string>();
-                messages.Add("Hi!");
-                _sentMessages.TryAdd(p, messages);
+                messages.Add(message);
+                areamessages.TryAdd(p, messages);
             }
             _newMessage = true;
         }
@@ -357,10 +369,10 @@ namespace Hatsoff
         {
             _broadcaster.SendAreaInfo(Context.ConnectionId);
         }
-        public void NewMessage(PlayerActor p)
+        public void NewMessage(PlayerActor p, string message)
         {
             p.LastUpdatedBy = Context.ConnectionId;
-            _broadcaster.NewMessage(p);
+            _broadcaster.NewMessage(p, message);
         }
 
         public override Task OnDisconnected(bool stopCalled)

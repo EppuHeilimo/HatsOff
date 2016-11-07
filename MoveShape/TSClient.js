@@ -231,6 +231,10 @@ class PlayerClient {
         GFX.removeDrawable(this.sprite);
         GFX.removeDrawable(this.text);
     }
+    showmessage(mes) {
+        this.text.text = mes;
+        setTimeout(function () { this.text.text = ""; }, 2000);
+    }
     update() {
         this.text.position.x = this.position.x;
         this.text.position.y = this.position.y - 30;
@@ -301,6 +305,7 @@ class LocalPlayerClient extends PlayerClient {
         else
             this.sprite.position = Vector2Clone(this.position);
         if (this.moved) {
+            console.log(this.position);
             let coll = Game.testMapCollision(this.position, { x: 32, y: 32 });
             if (coll.found) {
                 console.log(coll);
@@ -536,6 +541,36 @@ class DrawableTestParticle extends DrawableColorBox {
         super.draw();
     }
 }
+var CHAT;
+(function (CHAT) {
+    function newMessage(message) {
+        if (this.messages.length < 10) {
+            let mes = new DrawableText();
+            mes.setTexture(GFX.textures["font1"]);
+            mes.depth = -1;
+            mes.position.y = 930 - 10 * CHAT.messageindex;
+            mes.position.x = 10;
+            mes.screenSpace = true;
+            mes.text = message;
+            GFX.addDrawable(mes);
+            this.messages.push(mes);
+            this.messageindex++;
+        }
+        else {
+            if (this.messageindex > 9)
+                this.messageindex = 0;
+            this.messages[this.messageindex].text = message;
+            this.messageindex++;
+        }
+        console.log(message);
+    }
+    CHAT.newMessage = newMessage;
+    function init() {
+        CHAT.messages = new Array();
+        CHAT.messageindex = 0;
+    }
+    CHAT.init = init;
+})(CHAT || (CHAT = {}));
 class ShaderBinder {
     useShader(shader) {
         this.lastShader = GFX.currentShader;

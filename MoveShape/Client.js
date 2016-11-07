@@ -35,7 +35,7 @@ $(function () {
         return players.find((x) =>x.id == id);
     }
 
-    connectionHub.client.say = function sayHi(p, messages)
+    connectionHub.client.say = function(p, messages)
     {
         var p;
         var playerid = p.id;
@@ -47,9 +47,8 @@ $(function () {
         {
             p = me;
         }
-        p.text.text = messages[messages.length - 1];
-        setTimeout(function () { p.text.text = ""; }, 2000);
-
+        //p.showmessage(messages[messages.length - 1]);
+        CHAT.newMessage(messages[messages.length - 1]);
     }
 
 
@@ -201,7 +200,7 @@ $(function () {
         connectionHub.server.addPlayer();
         connectionHub.server.getGameInfo();
         connectionHub.server.getAreaInfo();
-
+        CHAT.init();
     });
 
     function updateServerModel() {
@@ -230,7 +229,8 @@ $(function () {
         }
         if (me.sayed)
         {
-            connectionHub.server.newMessage(me);
+            connectionHub.server.newMessage(me, "Hi");
+            me.sayed = false;
         }
         me.activated = false;
     }

@@ -18,6 +18,7 @@ namespace Game {
     export declare var keyMap: { [keyid: number]: string; }
     export declare var keyStates: { [keyid: number]: KeyState; }
     export declare var nextMap: string;
+    
 
 	export function testMapCollision(center : Vector2, size : Vector2) : BoxCollisionResult
 	{
@@ -167,6 +168,8 @@ namespace Game {
 
 }
 
+
+
 class PlayerClient implements GameActor {
     public position: Vector2;
     public sprite: DrawableTextureBox;
@@ -199,6 +202,12 @@ class PlayerClient implements GameActor {
     public deinit(): void {
         GFX.removeDrawable(this.sprite);
         GFX.removeDrawable(this.text);
+    }
+
+    public showmessage(mes: string): void
+    {
+        this.text.text = mes;
+        setTimeout(function () { this.text.text = ""; }, 2000);
     }
 
     public update(): void {
@@ -288,13 +297,15 @@ class LocalPlayerClient extends PlayerClient {
             this.sprite.position = Vector2Clone(this.position);
 		
 		if (this.moved)
-		{
+        {
+            console.log(this.position);
 			let coll = Game.testMapCollision(this.position, {x:32, y:32});
 			if (coll.found)
             {
                 console.log(coll)
 				this.position.x -= coll.offset.x;
-				this.position.y -= coll.offset.y;
+                this.position.y -= coll.offset.y;
+
 			}
 		}
 		
