@@ -13,7 +13,7 @@ declare var TileMapImports: { [key: string]: string };
 declare var TileMaps : {[key:string] : TileMap};
 TileMaps = {};
 TileMapImports = {};
-TileMapImports["Overworld"] = "assets/map.json";
+TileMapImports["Overworld"] = "assets/overworld.json";
 TileMapImports["Town"] = "assets/smalltown.json";
 
 
@@ -24,6 +24,7 @@ class TileMap implements AsyncLoadable
 	public sizeInTiles : Vector2;
 	public tileDefs : {[gid : string] : TileDef};
 	public tiles : number[];
+	public collision : boolean[];
     public objects: TileMapObject[];
     public tileSize: number= 64;
 
@@ -38,6 +39,18 @@ class TileMap implements AsyncLoadable
 
     getSourceName(): string {
         return "Tilemap " + this.name + " at " + this.source;
+    }
+
+    getTileIndex(p: Vector2): number {
+        if (p.x < 0)
+            return -1;
+        if (p.y < 0)
+            return -1;
+        if (p.x >= this.sizeInTiles.x)
+            return -1;
+        if (p.y >= this.sizeInTiles.y)
+            return -1;
+        return p.x + p.y * this.sizeInTiles.x;
     }
 
 	load(callback : (success: boolean) => void) : void
@@ -84,7 +97,11 @@ class TileMap implements AsyncLoadable
                 for (let i = 0; i < jsondata.tilesets.length; i++) {
                     doTM(jsondata.tilesets[i]);
                 }
-
+                us.collision = new Array(us.sizeInTiles.x * us.sizeInTiles.y);
+                us.tiles = [];
+				for (let i = 0; i < us.collision.length; i++)
+					us.collision[i] = false;
+				
                 for (let i = 0; i < jsondata.layers.length; i++) {
                     let lay = jsondata.layers[i];
                     //TODO: check the corrects layers based on name
@@ -92,7 +109,15 @@ class TileMap implements AsyncLoadable
                     //TODO: properly handle object layers
                     if (lay.type != "tilelayer")
                         continue;
-                    us.tiles = lay.data;
+					if (lay.name == "terrain")
+					{
+						us.tiles = lay.data;
+					}
+					else if (lay.name == "collision")
+					{
+						for (let i = 0; i < us.collision.length; i++)
+							us.collision[i] = (lay.data[i] > 0);
+					}
                 }
                 callback(true);
             }
@@ -179,7 +204,7 @@ class DrawableTileMap implements Drawable
             }
 
             //How wonky you want your tilemaps?
-            let wonkiness = 24;
+            let wonkiness = 16;
             let p1 = determOff(x, y, wonkiness);
             let p2 = determOff(x + 1, y, wonkiness);
             let p3 = determOff(x, y + 1, wonkiness);

@@ -19,7 +19,76 @@ namespace Game {
     export declare var keyStates: { [keyid: number]: KeyState; }
     export declare var nextMap: string;
 
-
+	export function testMapCollision(center : Vector2, size : Vector2) : BoxCollisionResult
+	{
+		let b = {offset: {x:0,y:0}, found: false};
+		if (center.x - size.x / 2 < 0)
+		{
+			b.offset.x = (center.x - size.x / 2);
+			b.found = true;
+			return b;
+		}
+		
+		if (center.y - size.y / 2 < 0)
+		{
+            b.offset.y = (center.y - size.y / 2);
+			b.found = true;
+			return b;
+		}
+		
+		if (GFX.tileMap.map)
+		{
+			let map = GFX.tileMap.map;
+			let mapx = map.sizeInTiles.x * map.tileSize;
+			let mapy = map.sizeInTiles.y * map.tileSize;
+			if (center.x + size.x / 2 > mapx)
+			{
+                b.offset.x = (center.x + size.x / 2) - mapx;
+				b.found = true;
+				return b;
+			}
+			
+			if (center.y + size.y / 2 > mapy)
+			{
+                b.offset.y = (center.y + size.y / 2) - mapy;
+				b.found = true;
+				return b;
+			}
+			let tryMatrix = <Vector2[]>[];
+			
+			tryMatrix.push(Vector2New(0,0));
+			tryMatrix.push(Vector2New(1,0));
+			tryMatrix.push(Vector2New(0,1));
+			tryMatrix.push(Vector2New(-1,0));
+			tryMatrix.push(Vector2New(0,-1));
+			tryMatrix.push(Vector2New(1,1));
+			tryMatrix.push(Vector2New(-1,-1));
+			tryMatrix.push(Vector2New(1,-1));
+			tryMatrix.push(Vector2New(-1,1));
+            
+			
+			let base = {x: Math.floor(center.x / map.tileSize), y: Math.floor(center.y / map.tileSize)};
+			for (let i = 0; i < tryMatrix.length; i++)
+			{
+				let vs = tryMatrix[i];
+				let cm = Vector2Clone(base);
+				Vector2Add(cm, vs);
+				let ind = map.getTileIndex(cm);
+				if (ind == -1 || map.collision[ind])
+				{
+					Vector2ScalarMul(cm, map.tileSize);
+					cm.x += map.tileSize / 2;
+					cm.y += map.tileSize / 2;
+                    let res = Collision.testBoxCollision(center, size, cm, { x: map.tileSize, y: map.tileSize });
+                    (<any>res).fjhh = vs;
+                    (<any>res).ffjhh = cm;
+					if (res.found)
+						return res;
+				}
+			}
+		}
+		return b;
+	}
     export function changeMap(map: string) {
         nextMap = map;
     }
@@ -215,6 +284,18 @@ class LocalPlayerClient extends PlayerClient {
         }
         else
             this.sprite.position = Vector2Clone(this.position);
+		
+		if (this.moved)
+		{
+			let coll = Game.testMapCollision(this.position, {x:32, y:32});
+			if (coll.found)
+            {
+                console.log(coll)
+				this.position.x -= coll.offset.x;
+				this.position.y -= coll.offset.y;
+			}
+		}
+		
         if (Game.keyStates["activate"] == KeyState.Pressed)
         {
             this.activated = true;

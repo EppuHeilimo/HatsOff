@@ -299,7 +299,7 @@
     <Content Include="assets\shaders\inverted.fs" />
     <Content Include="Data\maps.json" />
     <Content Include="assets\graphics\readme" />
-    <Content Include="assets\map.json" />
+    <Content Include="assets\overworld.json" />
     <Content Include="assets\shaders\map.vs" />
     <Content Include="assets\town.json" />
     <Content Include="assets\smalltown.json" />
@@ -354,6 +354,7 @@
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="Client\async.ts" />
+    <TypeScriptCompile Include="Client\collision.ts" />
     <TypeScriptCompile Include="Client\game.ts" />
     <TypeScriptCompile Include="Client\gfx\assets.ts" />
     <TypeScriptCompile Include="Client\gfx\box.ts" />
