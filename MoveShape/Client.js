@@ -35,9 +35,10 @@ $(function () {
         return players.find((x) =>x.id == id);
     }
 
-    connectionHub.client.sayHi = function sayHi(playerid)
+    connectionHub.client.say = function sayHi(p, messages)
     {
         var p;
+        var playerid = p.id;
         if (playerid != me.id)
         {
             p = findPlayerByID(playerid);
@@ -46,7 +47,7 @@ $(function () {
         {
             p = me;
         }
-        p.text.text = "HI!";
+        p.text.text = messages[messages.length - 1];
         setTimeout(function () { p.text.text = ""; }, 2000);
 
     }
@@ -226,6 +227,10 @@ $(function () {
             if (hit) {
                 connectionHub.server.message("areachangetrigger", hitarea);
             }
+        }
+        if (me.sayed)
+        {
+            connectionHub.server.newMessage(me);
         }
         me.activated = false;
     }

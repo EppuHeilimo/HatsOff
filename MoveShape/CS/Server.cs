@@ -21,6 +21,7 @@ namespace Hatsoff
         private readonly IHubContext _hubContext;
         private Timer _broadcastLoop;
         private bool _modelUpdated;
+        private bool _newMessage;
         private bool _playerDisconnected = false;
         public int _newID = 0;
         private Dictionary<string, MapState> mapstates;
@@ -29,6 +30,7 @@ namespace Hatsoff
         private ConcurrentDictionary<string, List<PlayerActor>> _updatedPlayers;
         private List<PlayerActor> _disconnctedPlayers = new List<PlayerActor>();
         private QuadTree overworldcollisions;
+        private ConcurrentDictionary<RemotePlayer, List<string>> _sentMessages;
         public Broadcaster()
         {
             // Save our hub context so we can easily use it 
@@ -36,7 +38,9 @@ namespace Hatsoff
             _hubContext = GlobalHost.ConnectionManager.GetHubContext<ConnectionHub>();
 
             _modelUpdated = false;
+            _newMessage = false;
             connectedPlayers = new ConcurrentDictionary<string, RemotePlayer>();
+            _sentMessages = new ConcurrentDictionary<RemotePlayer, List<string>>();
             // Start the broadcast loop
             _broadcastLoop = new Timer(
                 Broadcast,
@@ -89,6 +93,21 @@ namespace Hatsoff
                 _hubContext.Clients.All.playerDisconnected(_disconnctedPlayers);
                 _playerDisconnected = false;
             }
+            if(_newMessage)
+            {
+                foreach(KeyValuePair<RemotePlayer, List<string>> p in _sentMessages )
+                {
+                    List<string> clientsinarea = new List<string>();
+                    foreach (var player in mapstates[p.Key.areaname].playerlist)
+                    {
+                        clientsinarea.Add(player.owner);
+                    }
+                    _hubContext.Clients.Clients(clientsinarea).say(p.Key.GetPlayerShape(), p.Value);
+                }
+                _newMessage = false;
+
+                _sentMessages.Clear();
+            }
             if(somethingchanged)
             {
                 overworldcollisions.Clear();
@@ -131,21 +150,23 @@ namespace Hatsoff
             //Check that the owner was the one who moved the actor
             if (p.GetPlayerShape().LastUpdatedBy == p.GetPlayerShape().owner)
             {
-                List<CollisionCircle> posCollisions = new List<CollisionCircle>();
                 bool hit = false;
+
+                List<CollisionCircle> posCollisions = new List<CollisionCircle>();
+                    
                 overworldcollisions.Retrieve(posCollisions, new CollisionCircle(p.getCollCircle()));
                 foreach (var collision in posCollisions)
                 {
                     if (Collision.TestCircleCollision(new Vec2(player.x, player.y), 30, collision.getCenter(), 30))
                     {
-                        if(collision.getType() == CollisionCircle.ObjectType.PLAYER && (RemotePlayer)collision.getObject() != p)
+                        if (collision.getType() == CollisionCircle.ObjectType.PLAYER && (RemotePlayer)collision.getObject() != p)
                         {
-                            _hubContext.Clients.Client(player.LastUpdatedBy).sayHi(p.GetPlayerShape().id);
-                            RemotePlayer op = (RemotePlayer)collision.getObject();
-                            _hubContext.Clients.Client(op.GetPlayerShape().LastUpdatedBy).sayHi(p.GetPlayerShape().id);
+                                
                         }
                     }
+                    
                 }
+                
                 //Temporary simple tile check
                 var tm = p.areaname;
                 Map map;
@@ -283,7 +304,26 @@ namespace Hatsoff
         {
             _hubContext.Clients.Client(connectionId).getGameInfo(_gamedata);
         }
-        
+
+        internal void NewMessage(PlayerActor player)
+        {
+            //TODO: Make player gradually move ovetime 
+            RemotePlayer p;
+            connectedPlayers.TryGetValue(player.LastUpdatedBy, out p);
+            if (_sentMessages.ContainsKey(p))
+            {
+                List<string> messages;
+                _sentMessages.TryGetValue(p, out messages);
+                messages.Add("Hi!");
+            }
+            else
+            {
+                List<string> messages = new List<string>();
+                messages.Add("Hi!");
+                _sentMessages.TryAdd(p, messages);
+            }
+            _newMessage = true;
+        }
     }
 
     public class ConnectionHub : Hub
@@ -316,6 +356,11 @@ namespace Hatsoff
         public void GetAreaInfo()
         {
             _broadcaster.SendAreaInfo(Context.ConnectionId);
+        }
+        public void NewMessage(PlayerActor p)
+        {
+            p.LastUpdatedBy = Context.ConnectionId;
+            _broadcaster.NewMessage(p);
         }
 
         public override Task OnDisconnected(bool stopCalled)

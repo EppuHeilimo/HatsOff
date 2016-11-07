@@ -161,6 +161,7 @@ var Game;
         Game.keyMap[39] = "right";
         Game.keyMap[40] = "down";
         Game.keyMap[32] = "activate";
+        Game.keyMap[8] = "say";
         Game.keyMap[65] = "left";
         Game.keyMap[87] = "up";
         Game.keyMap[68] = "right";
@@ -309,6 +310,9 @@ class LocalPlayerClient extends PlayerClient {
         }
         if (Game.keyStates["activate"] == KeyState.Pressed) {
             this.activated = true;
+        }
+        if (Game.keyStates["say"] == KeyState.Released) {
+            this.sayed = true;
         }
         super.update();
         GFX.centerCameraOn(this.position);

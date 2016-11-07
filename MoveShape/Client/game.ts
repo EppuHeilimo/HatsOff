@@ -115,6 +115,7 @@ namespace Game {
         keyMap[40] = "down";
 
         keyMap[32] = "activate";
+        keyMap[8] = "say";
 
         keyMap[65] = "left";
         keyMap[87] = "up";
@@ -251,6 +252,7 @@ class InterpolatedPlayerClient extends PlayerClient {
 class LocalPlayerClient extends PlayerClient {
     public moved: boolean;
     public activated: boolean;
+    public sayed: boolean;
     constructor() {
         super();
 
@@ -299,6 +301,10 @@ class LocalPlayerClient extends PlayerClient {
         if (Game.keyStates["activate"] == KeyState.Pressed)
         {
             this.activated = true;
+        }
+        if (Game.keyStates["say"] == KeyState.Released)
+        {
+            this.sayed = true;
         }
         super.update();
         GFX.centerCameraOn(this.position);
