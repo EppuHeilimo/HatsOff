@@ -141,7 +141,7 @@ namespace Hatsoff
                 if (_gamedata.maps.TryGetValue(tm, out map))
                 {
                     var tile = map.tilemap.getTileInRealCoordinates((int)player.x, (int)player.y);
-                    if ((tile == null) || (tile.tileDef == null) || tile.tileDef.isBlocking)
+                    if ((tile == null) || tile.isBlocking)
                         hit = true;
                 }
 
@@ -314,16 +314,4 @@ namespace Hatsoff
             _broadcaster.SendGameInfo(Context.ConnectionId);
         }
     }
-
-
-
-
-
-
-
-
-
-
-
-
 }

@@ -17,7 +17,7 @@
                 "appearance": "castle1"
             }
         },
-        "tilemap": "assets/map.json"
+        "tilemap": "assets/overworld.json"
 	},
 	"Town" :
 	{

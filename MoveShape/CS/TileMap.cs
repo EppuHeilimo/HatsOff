@@ -48,17 +48,18 @@ namespace Hatsoff
     public class Tile
     {
         //Might be null
+        public bool isBlocking;
         public TileDefinition tileDef;
-        public Tile(TileDefinition tileDef)
+        public Tile(TileDefinition tileDef, bool collision)
         {
             this.tileDef = tileDef;
+			this.isBlocking = collision;
         }
     }
 
     //Tile type
     public class TileDefinition
     {
-        public bool isBlocking;
         public string image;
     }
 
@@ -113,50 +114,54 @@ namespace Hatsoff
                 return false;
             tileDefinitions = new Dictionary<int, TileDefinition>();
 
-            //TODO: make this not stupid
-            //a list of all blocking tile images
-            var blockingTiles = new HashSet<string>();
-            blockingTiles.Add("deepwater.png");
-            blockingTiles.Add("shallowwater.png");
             foreach (var k in map.tilesets)
             {
                 foreach (var pair in k.tiles)
                 {
                     var gid = pair.Key + k.firstgid;
                     TileDefinition tiledef = new TileDefinition();
-                    tiledef.isBlocking = false;
-                    if (blockingTiles.Contains(pair.Value.image))
-                        tiledef.isBlocking = true;
-
                     tiledef.image = pair.Value.image;
                     tileDefinitions.Add(gid, tiledef);
                 }
             }
             Tiled.Layer tilelayer = null;
+            Tiled.Layer colllayer = null;
             foreach (var lay in map.layers)
             {
                 if (lay.type != "tilelayer")
                     continue;
-                tilelayer = lay;
+                if (lay.name == "terrain")
+					tilelayer = lay;
+				if (lay.name == "collision")
+					colllayer = lay;
             }
             if (tilelayer == null)
                 return false;
 
             if (tilelayer.data.Count != map.width * map.height)
                 return false;
+			
+			
+            if (colllayer == null || colllayer.data.Count != map.width * map.height)
+                colllayer = null;
 
             _height = map.height;
             _width = map.width;
             tiles = new List<Tile>();
             
+			int i = 0;
             foreach (var k in tilelayer.data)
             {
-                
+				bool collision = false;
+                if (colllayer != null)
+					collision = colllayer.data[i] > 0;
+				
                 TileDefinition td = null;
                 tileDefinitions.TryGetValue(k, out td);
 
-                Tile t = new Tile(td);
+                Tile t = new Tile(td, collision);
                 tiles.Add(t);
+				i++;
             }
             
             return true;

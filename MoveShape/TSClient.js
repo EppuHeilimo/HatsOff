@@ -45,6 +45,32 @@ class AsyncLoader {
         return false;
     }
 }
+var Collision;
+(function (Collision) {
+    function testBoxCollision(center1, size1, center2, size2) {
+        let delta = Vector2Clone(center2);
+        Vector2Sub(delta, center1);
+        let csize = Vector2Clone(size1);
+        Vector2Add(csize, size2);
+        Vector2ScalarDiv(csize, 2);
+        let delta2 = Vector2Clone(delta);
+        delta2.x = Math.abs(delta2.x);
+        delta2.y = Math.abs(delta2.y);
+        Vector2Sub(delta2, csize);
+        let result = { offset: { x: 0, y: 0 }, found: false };
+        if (delta2.x <= 0 && delta2.y <= 0) {
+            result.found = true;
+            if (delta2.x < delta2.y)
+                result.offset.y = delta2.y;
+            else
+                result.offset.x = delta2.x;
+            result.offset.x *= -Math.sign(delta.x);
+            result.offset.y *= -Math.sign(delta.y);
+        }
+        return result;
+    }
+    Collision.testBoxCollision = testBoxCollision;
+})(Collision || (Collision = {}));
 var KeyState;
 (function (KeyState) {
     KeyState[KeyState["Up"] = 0] = "Up";
@@ -54,6 +80,63 @@ var KeyState;
 })(KeyState || (KeyState = {}));
 var Game;
 (function (Game) {
+    function testMapCollision(center, size) {
+        let b = { offset: { x: 0, y: 0 }, found: false };
+        if (center.x - size.x / 2 < 0) {
+            b.offset.x = (center.x - size.x / 2);
+            b.found = true;
+            return b;
+        }
+        if (center.y - size.y / 2 < 0) {
+            b.offset.y = (center.y - size.y / 2);
+            b.found = true;
+            return b;
+        }
+        if (GFX.tileMap.map) {
+            let map = GFX.tileMap.map;
+            let mapx = map.sizeInTiles.x * map.tileSize;
+            let mapy = map.sizeInTiles.y * map.tileSize;
+            if (center.x + size.x / 2 > mapx) {
+                b.offset.x = (center.x + size.x / 2) - mapx;
+                b.found = true;
+                return b;
+            }
+            if (center.y + size.y / 2 > mapy) {
+                b.offset.y = (center.y + size.y / 2) - mapy;
+                b.found = true;
+                return b;
+            }
+            let tryMatrix = [];
+            tryMatrix.push(Vector2New(0, 0));
+            tryMatrix.push(Vector2New(1, 0));
+            tryMatrix.push(Vector2New(0, 1));
+            tryMatrix.push(Vector2New(-1, 0));
+            tryMatrix.push(Vector2New(0, -1));
+            tryMatrix.push(Vector2New(1, 1));
+            tryMatrix.push(Vector2New(-1, -1));
+            tryMatrix.push(Vector2New(1, -1));
+            tryMatrix.push(Vector2New(-1, 1));
+            let base = { x: Math.floor(center.x / map.tileSize), y: Math.floor(center.y / map.tileSize) };
+            for (let i = 0; i < tryMatrix.length; i++) {
+                let vs = tryMatrix[i];
+                let cm = Vector2Clone(base);
+                Vector2Add(cm, vs);
+                let ind = map.getTileIndex(cm);
+                if (ind == -1 || map.collision[ind]) {
+                    Vector2ScalarMul(cm, map.tileSize);
+                    cm.x += map.tileSize / 2;
+                    cm.y += map.tileSize / 2;
+                    let res = Collision.testBoxCollision(center, size, cm, { x: map.tileSize, y: map.tileSize });
+                    res.fjhh = vs;
+                    res.ffjhh = cm;
+                    if (res.found)
+                        return res;
+                }
+            }
+        }
+        return b;
+    }
+    Game.testMapCollision = testMapCollision;
     function changeMap(map) {
         Game.nextMap = map;
     }
@@ -209,6 +292,14 @@ class LocalPlayerClient extends PlayerClient {
         }
         else
             this.sprite.position = Vector2Clone(this.position);
+        if (this.moved) {
+            let coll = Game.testMapCollision(this.position, { x: 32, y: 32 });
+            if (coll.found) {
+                console.log(coll);
+                this.position.x -= coll.offset.x;
+                this.position.y -= coll.offset.y;
+            }
+        }
         if (Game.keyStates["activate"] == KeyState.Pressed) {
             this.activated = true;
         }
@@ -650,7 +741,7 @@ class DrawableText {
 }
 TileMaps = {};
 TileMapImports = {};
-TileMapImports["Overworld"] = "assets/map.json";
+TileMapImports["Overworld"] = "assets/overworld.json";
 TileMapImports["Town"] = "assets/smalltown.json";
 class TileMap {
     constructor(name, src) {
@@ -663,6 +754,17 @@ class TileMap {
     }
     getSourceName() {
         return "Tilemap " + this.name + " at " + this.source;
+    }
+    getTileIndex(p) {
+        if (p.x < 0)
+            return -1;
+        if (p.y < 0)
+            return -1;
+        if (p.x >= this.sizeInTiles.x)
+            return -1;
+        if (p.y >= this.sizeInTiles.y)
+            return -1;
+        return p.x + p.y * this.sizeInTiles.x;
     }
     load(callback) {
         let us = this;
@@ -697,6 +799,10 @@ class TileMap {
                 for (let i = 0; i < jsondata.tilesets.length; i++) {
                     doTM(jsondata.tilesets[i]);
                 }
+                us.collision = new Array(us.sizeInTiles.x * us.sizeInTiles.y);
+                us.tiles = [];
+                for (let i = 0; i < us.collision.length; i++)
+                    us.collision[i] = false;
                 for (let i = 0; i < jsondata.layers.length; i++) {
                     let lay = jsondata.layers[i];
                     //TODO: check the corrects layers based on name
@@ -704,7 +810,13 @@ class TileMap {
                     //TODO: properly handle object layers
                     if (lay.type != "tilelayer")
                         continue;
-                    us.tiles = lay.data;
+                    if (lay.name == "terrain") {
+                        us.tiles = lay.data;
+                    }
+                    else if (lay.name == "collision") {
+                        for (let i = 0; i < us.collision.length; i++)
+                            us.collision[i] = (lay.data[i] > 0);
+                    }
                 }
                 callback(true);
             }
@@ -760,7 +872,7 @@ class DrawableTileMap {
                 tiles[gid] = [];
             }
             //How wonky you want your tilemaps?
-            let wonkiness = 24;
+            let wonkiness = 16;
             let p1 = determOff(x, y, wonkiness);
             let p2 = determOff(x + 1, y, wonkiness);
             let p3 = determOff(x, y + 1, wonkiness);
