@@ -131,19 +131,25 @@ class PlayerClient {
         this.sprite.texture = GFX.textures["hat1"];
         this.sprite.size.x = 64;
         this.sprite.size.y = 64;
-        this.sprite.depth = -1;
+        this.sprite.depth = -0.9;
+        this.text = new DrawableText();
+        this.text.setTexture(GFX.textures["font1"]);
+        this.text.depth = -1;
     }
     teleport(pos) {
         this.position = Vector2Clone(pos);
     }
     init() {
         GFX.addDrawable(this.sprite);
+        GFX.addDrawable(this.text);
     }
     deinit() {
         GFX.removeDrawable(this.sprite);
+        GFX.removeDrawable(this.text);
     }
     update() {
-        this.sprite.position = this.position;
+        this.text.position.x = this.position.x;
+        this.text.position.y = this.position.y - 30;
     }
 }
 class InterpolatedPlayerClient extends PlayerClient {
@@ -176,6 +182,7 @@ class InterpolatedPlayerClient extends PlayerClient {
             this.lastPosition = this.position;
             this.sprite.position = this.lastPosition;
         }
+        super.update();
     }
 }
 class LocalPlayerClient extends PlayerClient {
@@ -212,6 +219,7 @@ class LocalPlayerClient extends PlayerClient {
         if (Game.keyStates["activate"] == KeyState.Pressed) {
             this.activated = true;
         }
+        super.update();
         GFX.centerCameraOn(this.position);
     }
 }
@@ -607,7 +615,7 @@ var GFX;
 class DrawableText {
     constructor() {
         this.visible = true;
-        this.screenSpace = true;
+        this.screenSpace = false;
         this.text = "";
         this.depth = 0;
         this.characterScale = 1;

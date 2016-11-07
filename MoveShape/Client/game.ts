@@ -102,6 +102,7 @@ class PlayerClient implements GameActor {
     public sprite: DrawableTextureBox;
     public id: number;
     public speed: number;
+    public text: DrawableText;
 
     constructor() {
         this.speed = 8;
@@ -110,7 +111,10 @@ class PlayerClient implements GameActor {
         this.sprite.texture = GFX.textures["hat1"];
         this.sprite.size.x = 64;
         this.sprite.size.y = 64;
-        this.sprite.depth = -1;
+        this.sprite.depth = -0.9;
+        this.text = new DrawableText();
+        this.text.setTexture(GFX.textures["font1"]);
+        this.text.depth = -1;
 
     }
     public teleport(pos: Vector2): void {
@@ -119,14 +123,18 @@ class PlayerClient implements GameActor {
 
     public init(): void {
         GFX.addDrawable(this.sprite);
+        GFX.addDrawable(this.text);
     }
 
     public deinit(): void {
         GFX.removeDrawable(this.sprite);
+        GFX.removeDrawable(this.text);
     }
 
     public update(): void {
-        this.sprite.position = this.position;
+       
+        this.text.position.x = this.position.x;
+        this.text.position.y = this.position.y - 30;
     }
 }
 
@@ -165,7 +173,9 @@ class InterpolatedPlayerClient extends PlayerClient {
         else {
             this.lastPosition = this.position;
             this.sprite.position = this.lastPosition;
+
         }
+        super.update();
     }
 }
 
@@ -209,7 +219,7 @@ class LocalPlayerClient extends PlayerClient {
         {
             this.activated = true;
         }
-
+        super.update();
         GFX.centerCameraOn(this.position);
     }
 }

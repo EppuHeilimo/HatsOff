@@ -9,7 +9,7 @@ class DrawableText implements Drawable
 	public characterScale : number;
 	public depth : number;
 	public position : Vector2;
-	public screenSpace : boolean = true;
+	public screenSpace : boolean = false;
     constructor()
 	{
 		this.text = "";

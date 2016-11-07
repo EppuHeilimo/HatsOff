@@ -57,13 +57,10 @@ namespace Hatsoff
                 overworldcollisions.Insert(new CollisionCircle(area.Value.getCenter(), 50));
             }
             */
-            for (int i = 0; i < 10; i++)
-            {
-                overworldcollisions.Insert(new CollisionCircle(new Vec2(25, i * 50 + 925), 30));
-            }
         }
         public void Broadcast(object state)
         {
+            bool somethingchanged = _modelUpdated || _playerDisconnected;
             // This is how we can access the Clients property 
             // in a static hub method or outside of the hub entirely
             if(_modelUpdated)
@@ -84,12 +81,21 @@ namespace Hatsoff
                     }
                     _modelUpdated = false;
                 }
+                
 
             }
             if (_playerDisconnected)
             {
                 _hubContext.Clients.All.playerDisconnected(_disconnctedPlayers);
                 _playerDisconnected = false;
+            }
+            if(somethingchanged)
+            {
+                overworldcollisions.Clear();
+                foreach (KeyValuePair<string, RemotePlayer> p in connectedPlayers)
+                {
+                    overworldcollisions.Insert(p.Value.getCollCircle());
+                }
             }
         }
 
@@ -127,12 +133,17 @@ namespace Hatsoff
             {
                 List<CollisionCircle> posCollisions = new List<CollisionCircle>();
                 bool hit = false;
-                overworldcollisions.Retrieve(posCollisions, new CollisionCircle(p.GetPosition(), 50));
+                overworldcollisions.Retrieve(posCollisions, new CollisionCircle(p.getCollCircle()));
                 foreach (var collision in posCollisions)
                 {
                     if (Collision.TestCircleCollision(new Vec2(player.x, player.y), 30, collision.getCenter(), 30))
                     {
-                        hit = true;
+                        if(collision.getType() == CollisionCircle.ObjectType.PLAYER && (RemotePlayer)collision.getObject() != p)
+                        {
+                            _hubContext.Clients.Client(player.LastUpdatedBy).sayHi(p.GetPlayerShape().id);
+                            RemotePlayer op = (RemotePlayer)collision.getObject();
+                            _hubContext.Clients.Client(op.GetPlayerShape().LastUpdatedBy).sayHi(p.GetPlayerShape().id);
+                        }
                     }
                 }
                 //Temporary simple tile check
@@ -149,6 +160,8 @@ namespace Hatsoff
                 if (hit)
                 {
                     Vec2 temp = p.GetRecordedPos(1);
+                    p.SetPosition(temp.x, temp.y);
+                    _modelUpdated = true;
                     _hubContext.Clients.Client(p.GetPlayerShape().LastUpdatedBy).teleport(temp.x, temp.y);
                 }
                 else
@@ -248,6 +261,7 @@ namespace Hatsoff
             mapstates["Overworld"].playerlist.Add(newplayer.GetPlayerShape());
             PlayerJoinedArea(connectionid, newplayer);
             _hubContext.Clients.Client(connectionid).getMyID(id);
+            overworldcollisions.Insert(new CollisionCircle(newplayer.getCollCircle()));
         }
 
         public static Broadcaster Instance

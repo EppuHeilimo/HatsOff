@@ -34,6 +34,24 @@ $(function () {
     {
         return players.find((x) =>x.id == id);
     }
+
+    connectionHub.client.sayHi = function sayHi(playerid)
+    {
+        var p;
+        if (playerid != me.id)
+        {
+            p = findPlayerByID(playerid);
+        }
+        else
+        {
+            p = me;
+        }
+        p.text.text = "HI!";
+        setTimeout(function () { p.text.text = ""; }, 2000);
+
+    }
+
+
             
     connectionHub.client.updateShapes = function (models) {
         for(var i = 0; i < models.length; i++) {
@@ -188,7 +206,6 @@ $(function () {
     function updateServerModel() {
         // Only update server if we have a new movement
         if (me.moved) {
-            console.log(me.position);
             connectionHub.server.updateModel({x: me.position.x, y: me.position.y, id: me.id});
             me.moved = false;
         }

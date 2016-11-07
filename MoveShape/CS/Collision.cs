@@ -17,33 +17,61 @@ namespace Hatsoff
         }  
     }
 
+
+
+
     public class CollisionCircle
     {
+        public enum ObjectType
+        {
+            PLAYER,
+            NPC
+        }
         Vec2 _center;
         double _radius;
+        Object _object;
+        ObjectType _type;
 
-        public CollisionCircle(Vec2 center, double radius)
+        public CollisionCircle(Vec2 center, double radius, Object obj, ObjectType type)
         {
             _center = center;
             _radius = radius;
+            _object = obj;
+            _type = type;
         }
 
         public CollisionCircle(CollisionCircle circle)
         {
             _center = circle.getCenter();
             _radius = circle.getRadius();
+            _object = circle.getObject();
+            _type = circle.getType();
         }
+
 
         public Vec2 getCenter()
         {
             return _center;
         }
 
+        public Object getObject()
+        {
+            return _object;
+        }
+        public ObjectType getType()
+        {
+            return _type;
+        }
+
         public double getRadius()
         {
             return _radius;
         }
-        
+
+        internal void setPosition(Vec2 pos)
+        {
+            this._center = pos;
+        }
     }
 
     public struct Rectangle
