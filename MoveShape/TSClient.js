@@ -221,6 +221,7 @@ TextureImports =
         "castle1": { "source": "assets/graphics/castle1.png", "isPowerOfTwo": false },
         "castle": { "source": "assets/graphics/castle.png", "isPowerOfTwo": false },
         "townexit": { "source": "assets/graphics/townexit.png", "isPowerOfTwo": false },
+        "citywall": { "source": "assets/graphics/citywall.png", "isPowerOfTwo": false },
         "cottage1": { "source": "assets/graphics/cottage.png", "isPowerOfTwo": false },
         "hat1": { "source": "assets/graphics/tophat.png", "isPowerOfTwo": true },
         "deepwater": { "source": "assets/graphics/deepwater.png", "isPowerOfTwo": true },
