@@ -2152,31 +2152,31 @@
             {
              "0":
                 {
-                 "image":"graphics\/deepwater.png"
+                 "image":"deepwater.png"
                 },
              "1":
                 {
-                 "image":"graphics\/dirtroad.png"
+                 "image":"dirtroad.png"
                 },
              "10":
                 {
-                 "image":"graphics\/woodenbridge.png"
+                 "image":"woodenbridge.png"
                 },
              "11":
                 {
-                 "image":"graphics\/citywall.png"
+                 "image":"citywall.png"
                 },
              "2":
                 {
-                 "image":"graphics\/grass.png"
+                 "image":"grass.png"
                 },
              "3":
                 {
-                 "image":"graphics\/sand.png"
+                 "image":"sand.png"
                 },
              "4":
                 {
-                 "image":"graphics\/shallowwater.png"
+                 "image":"shallowwater.png"
                 }
             },
          "tilewidth":64
@@ -2193,35 +2193,35 @@
             {
              "0":
                 {
-                 "image":"graphics\/cottage.png"
+                 "image":"cottage.png"
                 },
              "1":
                 {
-                 "image":"graphics\/sign.png"
+                 "image":"sign.png"
                 },
              "2":
                 {
-                 "image":"graphics\/townexit.png"
+                 "image":"townexit.png"
                 },
              "3":
                 {
-                 "image":"graphics\/tree1.png"
+                 "image":"tree1.png"
                 },
              "4":
                 {
-                 "image":"graphics\/tree2.png"
+                 "image":"tree2.png"
                 },
              "5":
                 {
-                 "image":"graphics\/tree3.png"
+                 "image":"tree3.png"
                 },
              "6":
                 {
-                 "image":"graphics\/tree4.png"
+                 "image":"tree4.png"
                 },
              "7":
                 {
-                 "image":"graphics\/tree5.png"
+                 "image":"tree5.png"
                 }
             },
          "tilewidth":128

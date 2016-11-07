@@ -219,6 +219,7 @@
     <Content Include="assets\font1.png" />
     <Content Include="assets\graphics\castle.png" />
     <Content Include="assets\graphics\castle1.png" />
+    <Content Include="assets\graphics\citywall.png" />
     <Content Include="assets\graphics\cottage.png" />
     <Content Include="assets\graphics\deepwater.png" />
     <Content Include="assets\graphics\dirtroad.png" />
@@ -227,6 +228,7 @@
     <Content Include="assets\graphics\shallowwater.png" />
     <Content Include="assets\graphics\sign.png" />
     <Content Include="assets\graphics\tophat.png" />
+    <Content Include="assets\graphics\townexit.png" />
     <Content Include="assets\graphics\tree1.png" />
     <Content Include="assets\graphics\tree2.png" />
     <Content Include="assets\graphics\tree3.png" />

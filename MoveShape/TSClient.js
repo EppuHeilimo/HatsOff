@@ -219,6 +219,8 @@ TextureImports =
     {
         "font1": { "source": "assets/font1.png", "isPowerOfTwo": false },
         "castle1": { "source": "assets/graphics/castle1.png", "isPowerOfTwo": false },
+        "castle": { "source": "assets/graphics/castle.png", "isPowerOfTwo": false },
+        "townexit": { "source": "assets/graphics/townexit.png", "isPowerOfTwo": false },
         "cottage1": { "source": "assets/graphics/cottage.png", "isPowerOfTwo": false },
         "hat1": { "source": "assets/graphics/tophat.png", "isPowerOfTwo": true },
         "deepwater": { "source": "assets/graphics/deepwater.png", "isPowerOfTwo": true },
@@ -648,7 +650,7 @@ class DrawableText {
 TileMaps = {};
 TileMapImports = {};
 TileMapImports["Overworld"] = "assets/map.json";
-TileMapImports["Town"] = "assets/town.json";
+TileMapImports["Town"] = "assets/smalltown.json";
 class TileMap {
     constructor(name, src) {
         this.tileSize = 64;
@@ -790,12 +792,17 @@ class DrawableTileMap {
         let gl = GFX.gl;
         for (let i = 0; i < this.buffers.length; i++) {
             let buf = this.buffers[i];
-            gl.bindBuffer(gl.ARRAY_BUFFER, buf.buffer);
-            GFX.bindAttributePointers();
-            gl.bindTexture(gl.TEXTURE_2D, buf.texture.texture);
-            gl.uniform1f(GFX.currentShader.uniforms["depth"], 0.8);
-            gl.uniform2f(GFX.currentShader.uniforms["position"], -GFX.camera.x, -GFX.camera.y);
-            gl.drawArrays(gl.TRIANGLES, 0, buf.count);
+            try {
+                gl.bindBuffer(gl.ARRAY_BUFFER, buf.buffer);
+                GFX.bindAttributePointers();
+                gl.bindTexture(gl.TEXTURE_2D, buf.texture.texture);
+                gl.uniform1f(GFX.currentShader.uniforms["depth"], 0.8);
+                gl.uniform2f(GFX.currentShader.uniforms["position"], -GFX.camera.x, -GFX.camera.y);
+                gl.drawArrays(gl.TRIANGLES, 0, buf.count);
+            }
+            catch (e) {
+                console.log("Missing texture");
+            }
         }
         GFX.bindBuffer();
         sb.restoreShader();

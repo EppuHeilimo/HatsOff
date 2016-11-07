@@ -7,7 +7,7 @@
                 y: 600,
                 sizex: 100,
                 sizey: 100,
-                "appearance": "castle1"
+                "appearance": "castle"
             },
             "SomeMagicPlace": {
                 x: 288,
@@ -21,18 +21,18 @@
 	},
 	"Town" :
 	{
-		triggerareas :
-		{
-			"Overworld" :
-			{
-                x: 100,
-                y: 64,
-                sizex: 100,
-                sizey: 100,
-                "appearance": "cottage1"
+		    triggerareas :
+		    {
+		    	"Overworld" :
+		    	{
+                    x: 100,
+                    y: 64,
+                    sizex: 100,
+                    sizey: 100,
+                    "appearance": "townexit"
 
-			}
-		},
-        "tilemap": "assets/town.json"
+		    	}
+		    },
+        "tilemap": "assets/smalltown.json"
 	}
 }
