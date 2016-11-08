@@ -17,12 +17,8 @@ namespace Hatsoff
         public RemotePlayer(string connectionID, int ID, string areaname)
         {
             _connectionId = connectionID;
-            _playerShape = new PlayerActor(ID, 0, 0, connectionID, "player", 1);
-            _playerShape.x = 0;
-            _playerShape.y = 0;
+            _playerShape = new PlayerActor(ID, 0, 0, connectionID, "player" + ID, 1);
             _playerShape.LastUpdatedBy = connectionID;
-            _id = ID;
-            _playerShape.id = ID;
             this.areaname = areaname;
             _recordedpositions = new Vec2[10];
             _collisionCircle = new CollisionCircle(new Vec2(_playerShape.x,_playerShape.y), 30, this, CollisionCircle.ObjectType.PLAYER);

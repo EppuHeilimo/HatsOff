@@ -166,6 +166,47 @@ var Game;
         Game.keyMap[87] = "up";
         Game.keyMap[68] = "right";
         Game.keyMap[83] = "down";
+        Game.keyMap[16] = "shift";
+        Game.keyMap[13] = "enter";
+        /*
+        keyMap[48] = "0";
+        keyMap[49] = "1";
+        keyMap[50] = "2";
+        keyMap[51] = "3";
+        keyMap[52] = "4";
+        keyMap[53] = "5";
+        keyMap[54] = "6";
+        keyMap[55] = "7";
+        keyMap[56] = "8";
+        keyMap[57] = "9";
+
+        keyMap[65] = "a";
+        keyMap[66] = "b";
+        keyMap[67] = "c";
+        keyMap[68] = "d";
+        keyMap[69] = "e";
+        keyMap[70] = "f";
+        keyMap[71] = "g";
+        keyMap[72] = "h";
+        keyMap[73] = "í";
+        keyMap[74] = "j";
+        keyMap[75] = "k";
+        keyMap[76] = "l";
+        keyMap[77] = "m";
+        keyMap[78] = "n";
+        keyMap[79] = "o";
+        keyMap[80] = "p";
+        keyMap[81] = "q";
+        keyMap[82] = "r";
+        keyMap[83] = "s";
+        keyMap[84] = "t";
+        keyMap[85] = "u";
+        keyMap[86] = "v";
+        keyMap[87] = "w";
+        keyMap[88] = "x";
+        keyMap[89] = "y";
+        keyMap[90] = "z";
+        */
         Game.keyStates = {};
         for (var k in Game.keyMap) {
             if (Game.keyMap.hasOwnProperty(k)) {
@@ -176,6 +217,17 @@ var Game;
             if (ev.keyCode in Game.keyMap) {
                 var v = Game.keyMap[ev.keyCode];
                 Game.keyStates[v] = KeyState.Pressed;
+            }
+            if (Chat.chatactivated) {
+                if (ev.key.length === 1) {
+                    if (ev.shiftKey)
+                        Chat.addKeyToCurrentMessage(ev.key, true);
+                    else
+                        Chat.addKeyToCurrentMessage(ev.key, false);
+                }
+                else if (ev.keyCode === 8) {
+                    Chat.deleteLastKeyFromCurrentMessage();
+                }
             }
         }, false);
         window.addEventListener("keyup", function (ev) {
@@ -278,46 +330,56 @@ class LocalPlayerClient extends PlayerClient {
         super();
     }
     update() {
-        let vel = Vector2New(0, 0);
-        if (Game.keyStates["up"]) {
-            vel.y -= 1;
-            this.moved = true;
-        }
-        if (Game.keyStates["down"]) {
-            vel.y += 1;
-            this.moved = true;
-        }
-        if (Game.keyStates["left"]) {
-            vel.x -= 1;
-            this.moved = true;
-        }
-        if (Game.keyStates["right"]) {
-            vel.x += 1;
-            this.moved = true;
-        }
-        if (Vector2Length(vel) > 0) {
-            Vector2Normalize(vel);
-            Vector2ScalarMul(vel, this.speed);
-            Vector2Add(this.position, vel);
-            this.sprite.position = Vector2Clone(this.position);
-            this.sprite.position.y -= Math.abs(Math.sin(Game.time / 4) * 10);
-        }
-        else
-            this.sprite.position = Vector2Clone(this.position);
-        if (this.moved) {
-            console.log(this.position);
-            let coll = Game.testMapCollision(this.position, { x: 32, y: 32 });
-            if (coll.found) {
-                console.log(coll);
-                this.position.x -= coll.offset.x;
-                this.position.y -= coll.offset.y;
+        if (!Chat.chatactivated) {
+            let vel = Vector2New(0, 0);
+            if (Game.keyStates["up"]) {
+                vel.y -= 1;
+                this.moved = true;
+            }
+            if (Game.keyStates["down"]) {
+                vel.y += 1;
+                this.moved = true;
+            }
+            if (Game.keyStates["left"]) {
+                vel.x -= 1;
+                this.moved = true;
+            }
+            if (Game.keyStates["right"]) {
+                vel.x += 1;
+                this.moved = true;
+            }
+            if (Vector2Length(vel) > 0) {
+                Vector2Normalize(vel);
+                Vector2ScalarMul(vel, this.speed);
+                Vector2Add(this.position, vel);
+                this.sprite.position = Vector2Clone(this.position);
+                this.sprite.position.y -= Math.abs(Math.sin(Game.time / 4) * 10);
+            }
+            else
+                this.sprite.position = Vector2Clone(this.position);
+            if (this.moved) {
+                console.log(this.position);
+                let coll = Game.testMapCollision(this.position, { x: 32, y: 32 });
+                if (coll.found) {
+                    console.log(coll);
+                    this.position.x -= coll.offset.x;
+                    this.position.y -= coll.offset.y;
+                }
+            }
+            if (Game.keyStates["activate"] == KeyState.Pressed) {
+                this.activated = true;
             }
         }
-        if (Game.keyStates["activate"] == KeyState.Pressed) {
-            this.activated = true;
+        else {
         }
-        if (Game.keyStates["say"] == KeyState.Released) {
-            this.sayed = true;
+        if (Game.keyStates["enter"] == KeyState.Pressed) {
+            if (Chat.chatactivated) {
+                Chat.sendCurrentMessage();
+                Chat.chatactivated = false;
+            }
+            else {
+                Chat.chatactivated = true;
+            }
         }
         super.update();
         GFX.centerCameraOn(this.position);
@@ -541,36 +603,77 @@ class DrawableTestParticle extends DrawableColorBox {
         super.draw();
     }
 }
-var CHAT;
-(function (CHAT) {
+var Chat;
+(function (Chat) {
     function newMessage(message) {
-        if (this.messages.length < 10) {
+        let temp = Array();
+        for (let i = 0; i < Chat.messages.length; i++) {
+            temp.push(Chat.messages[i].text);
+        }
+        for (let i = 0; i < Chat.messages.length - 1; i++) {
+            Chat.messages[i + 1].text = temp[i];
+        }
+        Chat.messages[0].text = message;
+        console.log(message);
+    }
+    Chat.newMessage = newMessage;
+    function init() {
+        Chat.messages = new Array();
+        Chat.messageindex = 0;
+        for (let i = 0; i < 10; i++) {
             let mes = new DrawableText();
             mes.setTexture(GFX.textures["font1"]);
             mes.depth = -1;
-            mes.position.y = 930 - 10 * CHAT.messageindex;
-            mes.position.x = 10;
+            mes.characterScale = 1.3;
+            mes.position.y = 30 + (15 * i);
+            mes.position.x = 50;
             mes.screenSpace = true;
-            mes.text = message;
+            mes.text = "";
             GFX.addDrawable(mes);
             this.messages.push(mes);
-            this.messageindex++;
+        }
+        Chat.chatactivated = false;
+        Chat.currentmessage = new DrawableText();
+        Chat.currentmessage.setTexture(GFX.textures["font1"]);
+        Chat.currentmessage.depth = -1;
+        Chat.currentmessage.characterScale = 2;
+        Chat.currentmessage.position.y = 800;
+        Chat.currentmessage.position.x = 50;
+        Chat.currentmessage.screenSpace = true;
+        Chat.currentmessage.text = "";
+        GFX.addDrawable(Chat.currentmessage);
+        Chat.sentmessage = false;
+    }
+    Chat.init = init;
+    function sendCurrentMessage() {
+        if (Chat.currentmessage.text.length > 0) {
+            Chat.lastmessage = Chat.currentmessage.text;
+            Chat.sentmessage = true;
+            Chat.currentmessage.text = "";
+        }
+    }
+    Chat.sendCurrentMessage = sendCurrentMessage;
+    function addKeyToCurrentMessage(char, capitalized) {
+        if (capitalized) {
+            Chat.currentmessage.text = Chat.currentmessage.text + char.toUpperCase();
         }
         else {
-            if (this.messageindex > 9)
-                this.messageindex = 0;
-            this.messages[this.messageindex].text = message;
-            this.messageindex++;
+            Chat.currentmessage.text = Chat.currentmessage.text + char;
         }
-        console.log(message);
     }
-    CHAT.newMessage = newMessage;
-    function init() {
-        CHAT.messages = new Array();
-        CHAT.messageindex = 0;
+    Chat.addKeyToCurrentMessage = addKeyToCurrentMessage;
+    function deleteLastKeyFromCurrentMessage() {
+        Chat.currentmessage.text = Chat.currentmessage.text.slice(0, -1);
     }
-    CHAT.init = init;
-})(CHAT || (CHAT = {}));
+    Chat.deleteLastKeyFromCurrentMessage = deleteLastKeyFromCurrentMessage;
+    function clear() {
+        for (let i = 0; i < Chat.messages.length; i++) {
+            Chat.messages[i].text = "";
+        }
+        Chat.messageindex = 0;
+    }
+    Chat.clear = clear;
+})(Chat || (Chat = {}));
 class ShaderBinder {
     useShader(shader) {
         this.lastShader = GFX.currentShader;

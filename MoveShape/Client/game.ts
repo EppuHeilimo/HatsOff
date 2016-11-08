@@ -123,7 +123,48 @@ namespace Game {
         keyMap[68] = "right";
         keyMap[83] = "down";
 
+        keyMap[16] = "shift";
+        keyMap[13] = "enter";
 
+        /*
+        keyMap[48] = "0";
+        keyMap[49] = "1";
+        keyMap[50] = "2";
+        keyMap[51] = "3";
+        keyMap[52] = "4";
+        keyMap[53] = "5";
+        keyMap[54] = "6";
+        keyMap[55] = "7";
+        keyMap[56] = "8";
+        keyMap[57] = "9";
+
+        keyMap[65] = "a";
+        keyMap[66] = "b";
+        keyMap[67] = "c";
+        keyMap[68] = "d";
+        keyMap[69] = "e";
+        keyMap[70] = "f";
+        keyMap[71] = "g";
+        keyMap[72] = "h";
+        keyMap[73] = "í";
+        keyMap[74] = "j";
+        keyMap[75] = "k";
+        keyMap[76] = "l";
+        keyMap[77] = "m";
+        keyMap[78] = "n";
+        keyMap[79] = "o";
+        keyMap[80] = "p";
+        keyMap[81] = "q";
+        keyMap[82] = "r";
+        keyMap[83] = "s";
+        keyMap[84] = "t";
+        keyMap[85] = "u";
+        keyMap[86] = "v";
+        keyMap[87] = "w";
+        keyMap[88] = "x";
+        keyMap[89] = "y";
+        keyMap[90] = "z";
+        */
         keyStates = {};
         for (var k in keyMap) {
             if (keyMap.hasOwnProperty(k)) {
@@ -134,6 +175,17 @@ namespace Game {
             if (ev.keyCode in keyMap) {
                 var v = keyMap[ev.keyCode];
                 keyStates[v] = KeyState.Pressed;
+            }
+            if (Chat.chatactivated) {
+                if (ev.key.length === 1) {
+                    if (ev.shiftKey)
+                        Chat.addKeyToCurrentMessage(ev.key, true);
+                    else
+                        Chat.addKeyToCurrentMessage(ev.key, false);       
+                }
+                else if (ev.keyCode === 8) {
+                    Chat.deleteLastKeyFromCurrentMessage();
+                }
             }
         }, false);
 
@@ -261,62 +313,73 @@ class InterpolatedPlayerClient extends PlayerClient {
 class LocalPlayerClient extends PlayerClient {
     public moved: boolean;
     public activated: boolean;
-    public sayed: boolean;
+    public sentMessage: boolean;
     constructor() {
         super();
 
     }
 
     public update(): void {
-        let vel = Vector2New(0,0)
-        if (Game.keyStates["up"]) {
-            vel.y -= 1;
-            this.moved = true;
-        }
-        if (Game.keyStates["down"]) {
-            vel.y += 1;
-            this.moved = true;
-        }
-        if (Game.keyStates["left"]) {
-            vel.x -= 1;
-            this.moved = true;
-        }
-        if (Game.keyStates["right"]) {
-            vel.x += 1;
-            this.moved = true;
-        }
-        if (Vector2Length(vel) > 0) {
-            Vector2Normalize(vel);
-            Vector2ScalarMul(vel, this.speed);
-            Vector2Add(this.position, vel);
+        if (!Chat.chatactivated)
+        {
+            let vel = Vector2New(0, 0)
+            if (Game.keyStates["up"]) {
+                vel.y -= 1;
+                this.moved = true;
+            }
+            if (Game.keyStates["down"]) {
+                vel.y += 1;
+                this.moved = true;
+            }
+            if (Game.keyStates["left"]) {
+                vel.x -= 1;
+                this.moved = true;
+            }
+            if (Game.keyStates["right"]) {
+                vel.x += 1;
+                this.moved = true;
+            }
+            if (Vector2Length(vel) > 0) {
+                Vector2Normalize(vel);
+                Vector2ScalarMul(vel, this.speed);
+                Vector2Add(this.position, vel);
 
-            this.sprite.position = Vector2Clone(this.position);
-            this.sprite.position.y -= Math.abs(Math.sin(Game.time / 4) * 10);
+                this.sprite.position = Vector2Clone(this.position);
+                this.sprite.position.y -= Math.abs(Math.sin(Game.time / 4) * 10);
+            }
+            else
+                this.sprite.position = Vector2Clone(this.position);
+
+            if (this.moved) {
+                console.log(this.position);
+                let coll = Game.testMapCollision(this.position, { x: 32, y: 32 });
+                if (coll.found) {
+                    console.log(coll)
+                    this.position.x -= coll.offset.x;
+                    this.position.y -= coll.offset.y;
+
+                }
+            }
+
+            if (Game.keyStates["activate"] == KeyState.Pressed) {
+                this.activated = true;
+            }
         }
         else
-            this.sprite.position = Vector2Clone(this.position);
-		
-		if (this.moved)
         {
-            console.log(this.position);
-			let coll = Game.testMapCollision(this.position, {x:32, y:32});
-			if (coll.found)
-            {
-                console.log(coll)
-				this.position.x -= coll.offset.x;
-                this.position.y -= coll.offset.y;
 
-			}
-		}
-		
-        if (Game.keyStates["activate"] == KeyState.Pressed)
-        {
-            this.activated = true;
         }
-        if (Game.keyStates["say"] == KeyState.Released)
-        {
-            this.sayed = true;
+       
+        if (Game.keyStates["enter"] == KeyState.Pressed) {
+            if (Chat.chatactivated) {        
+                Chat.sendCurrentMessage();       
+                Chat.chatactivated = false;
+            } else {
+                Chat.chatactivated = true;
+            }
+            
         }
+        
         super.update();
         GFX.centerCameraOn(this.position);
     }

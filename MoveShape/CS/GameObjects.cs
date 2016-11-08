@@ -8,10 +8,15 @@ namespace Hatsoff
 {
     public class PlayerActor
     {
-        struct PlayerInfo
+        public struct PlayerInfo
         {
             [JsonProperty("playername")]
-            string playername { get; set; }
+            public string playername { get; set; }
+
+            public PlayerInfo(string name)
+            {
+                playername = name;
+            }
         }
         struct Stats
         {
@@ -66,13 +71,15 @@ namespace Hatsoff
         public double y { get; set; }
         // We don't want the client to get the "LastUpdatedBy" property
         [JsonProperty("playerinfo")]
-        PlayerInfo playerinfo { get; set; }
+        public PlayerInfo playerinfo { get; set; }
         [JsonIgnore]
         Inventory inventory { get; set; }
         [JsonIgnore]
         Stats stats { get; set; }
         [JsonIgnore]
         public string LastUpdatedBy { get; set; }
+        [JsonProperty("name")]
+        public string name { get; set; }
         [JsonProperty("id")]
         public double id { get; set; }
         [JsonIgnore]
@@ -88,6 +95,7 @@ namespace Hatsoff
             stats = new Stats(10, 100);
             inventory = new Inventory(9);
             this.level = level;
+            name = playername;
         }
     }
     public class Item

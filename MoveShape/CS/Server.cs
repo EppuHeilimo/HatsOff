@@ -326,12 +326,12 @@ namespace Hatsoff
             {
                 List<string> messages;
                 areamessages.TryGetValue(p, out messages);
-                messages.Add(message);
+                messages.Add(player.name + ": " + message);
             }
             else
             {
                 List<string> messages = new List<string>();
-                messages.Add(message);
+                messages.Add(player.name + ": " + message);
                 areamessages.TryAdd(p, messages);
             }
             _newMessage = true;

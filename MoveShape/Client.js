@@ -1,8 +1,8 @@
 ﻿
 function collisionCircle(centera, rada, centerb, radb) {
     var delta = {}
-    delta.x = centerb.x - centera.x
-    delta.y = centerb.y - centera.y
+    delta.x = centerb.x - centera.x;
+    delta.y = centerb.y - centera.y;
 
     if (Math.sqrt(delta.x * delta.x + delta.y * delta.y) < (rada + radb))
         return true;
@@ -35,10 +35,10 @@ $(function () {
         return players.find((x) =>x.id == id);
     }
 
-    connectionHub.client.say = function(p, messages)
+    connectionHub.client.say = function(sender, messages)
     {
         var p;
-        var playerid = p.id;
+        var playerid = sender.id;
         if (playerid != me.id)
         {
             p = findPlayerByID(playerid);
@@ -48,7 +48,7 @@ $(function () {
             p = me;
         }
         //p.showmessage(messages[messages.length - 1]);
-        CHAT.newMessage(messages[messages.length - 1]);
+        Chat.newMessage(sender.name + messages[messages.length - 1]);
     }
 
 
@@ -192,6 +192,7 @@ $(function () {
         }
         players = [];
         connectionHub.server.getAreaInfo();
+        Chat.clear();
     }
 
     $.connection.hub.start().done(function () {
@@ -200,7 +201,7 @@ $(function () {
         connectionHub.server.addPlayer();
         connectionHub.server.getGameInfo();
         connectionHub.server.getAreaInfo();
-        CHAT.init();
+        Chat.init();
     });
 
     function updateServerModel() {
@@ -227,10 +228,10 @@ $(function () {
                 connectionHub.server.message("areachangetrigger", hitarea);
             }
         }
-        if (me.sayed)
+        if (Chat.sentmessage)
         {
-            connectionHub.server.newMessage(me, "Hi");
-            me.sayed = false;
+            connectionHub.server.newMessage(me, Chat.lastmessage);
+            Chat.sentmessage = false;
         }
         me.activated = false;
     }
