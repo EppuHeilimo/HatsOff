@@ -239,13 +239,13 @@ $(function () {
     // Some crazy shite
     let canvas = document.getElementById("canvas");
 
-    canvas.onmousemove = function (event) { getCursorPosition(canvas, event) }
+    canvas.onclick = function (event) { getCursorPosition(canvas, event) }
 
     function getCursorPosition(canvas, event) {
         var rect = canvas.getBoundingClientRect();
         var x = event.clientX - rect.left + GFX.camera.x;
         var y = event.clientY - rect.top + GFX.camera.y;
-        console.log("x: " + x + " y: " + y);
+        console.log("Haha, you clicked! x: " + x + " y: " + y);
     }
 
     for (var key in gamedata.maps[currentarea.mapname].triggerareas) {
