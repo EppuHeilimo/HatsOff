@@ -40,6 +40,7 @@ function initMain(loadedCallback : () => void)
 
 	function loop()
     {
+        Chat.loop();
         Game.update();
 		GFX.update();
 	}
