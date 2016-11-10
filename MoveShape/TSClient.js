@@ -45,89 +45,6 @@ class AsyncLoader {
         return false;
     }
 }
-var Chat;
-(function (Chat) {
-    function newMessage(message) {
-        let temp = Array();
-        for (let i = 0; i < Chat.messages.length; i++) {
-            temp.push(Chat.messages[i].text);
-        }
-        for (let i = 0; i < Chat.messages.length - 1; i++) {
-            Chat.messages[i + 1].text = temp[i];
-        }
-        Chat.messages[0].text = message;
-        console.log(message);
-    }
-    Chat.newMessage = newMessage;
-    function windowResize() {
-        Chat.currentmessage.position.y = window.innerHeight - 25;
-        for (let i = 0; i < Chat.messages.length; i++) {
-            Chat.messages[i].position.y = window.innerHeight - 50 - i * 20;
-        }
-    }
-    Chat.windowResize = windowResize;
-    function init() {
-        Chat.messages = new Array();
-        Chat.messageindex = 0;
-        for (let i = 0; i < 10; i++) {
-            let mes = new DrawableText();
-            mes.setTexture(GFX.textures["font1"]);
-            mes.depth = -1;
-            mes.characterScale = 2;
-            mes.position.y = window.innerHeight - 50 - i * 20;
-            mes.position.x = 20;
-            mes.screenSpace = true;
-            mes.text = "";
-            GFX.addDrawable(mes);
-            this.messages.push(mes);
-        }
-        Chat.chatactivated = false;
-        Chat.currentmessage = new DrawableText();
-        Chat.currentmessage.setTexture(GFX.textures["font1"]);
-        Chat.currentmessage.depth = -1;
-        Chat.currentmessage.characterScale = 2;
-        Chat.currentmessage.position.y = window.innerHeight - 25;
-        Chat.currentmessage.position.x = 20;
-        Chat.currentmessage.screenSpace = true;
-        Chat.currentmessage.text = "Press enter to chat";
-        GFX.addDrawable(Chat.currentmessage);
-        Chat.sentmessage = false;
-        Chat.initialized = true;
-    }
-    Chat.init = init;
-    function clearCurrentMessage() {
-        Chat.currentmessage.text = "";
-    }
-    Chat.clearCurrentMessage = clearCurrentMessage;
-    function sendCurrentMessage() {
-        if (Chat.currentmessage.text.length > 0) {
-            Chat.lastmessage = Chat.currentmessage.text;
-            Chat.sentmessage = true;
-            Chat.currentmessage.text = "Press enter to chat";
-        }
-    }
-    Chat.sendCurrentMessage = sendCurrentMessage;
-    function addKeyToCurrentMessage(char, capitalized) {
-        if (capitalized) {
-            Chat.currentmessage.text = Chat.currentmessage.text + char.toUpperCase();
-        }
-        else {
-            Chat.currentmessage.text = Chat.currentmessage.text + char;
-        }
-    }
-    Chat.addKeyToCurrentMessage = addKeyToCurrentMessage;
-    function deleteLastKeyFromCurrentMessage() {
-        Chat.currentmessage.text = Chat.currentmessage.text.slice(0, -1);
-    }
-    Chat.deleteLastKeyFromCurrentMessage = deleteLastKeyFromCurrentMessage;
-    function clear() {
-        for (let i = 0; i < Chat.messages.length; i++) {
-            Chat.messages[i].text = "";
-        }
-        Chat.messageindex = 0;
-    }
-    Chat.clear = clear;
-})(Chat || (Chat = {}));
 var Collision;
 (function (Collision) {
     function testBoxCollision(center1, size1, center2, size2) {
@@ -685,6 +602,89 @@ class DrawableTestParticle extends DrawableColorBox {
         super.draw();
     }
 }
+var Chat;
+(function (Chat) {
+    function newMessage(message) {
+        let temp = Array();
+        for (let i = 0; i < Chat.messages.length; i++) {
+            temp.push(Chat.messages[i].text);
+        }
+        for (let i = 0; i < Chat.messages.length - 1; i++) {
+            Chat.messages[i + 1].text = temp[i];
+        }
+        Chat.messages[0].text = message;
+        console.log(message);
+    }
+    Chat.newMessage = newMessage;
+    function windowResize() {
+        Chat.currentmessage.position.y = window.innerHeight - 25;
+        for (let i = 0; i < Chat.messages.length; i++) {
+            Chat.messages[i].position.y = window.innerHeight - 50 - i * 20;
+        }
+    }
+    Chat.windowResize = windowResize;
+    function init() {
+        Chat.messages = new Array();
+        Chat.messageindex = 0;
+        for (let i = 0; i < 10; i++) {
+            let mes = new DrawableText();
+            mes.setTexture(GFX.textures["font1"]);
+            mes.depth = -1;
+            mes.characterScale = 2;
+            mes.position.y = window.innerHeight - 50 - i * 20;
+            mes.position.x = 20;
+            mes.screenSpace = true;
+            mes.text = "";
+            GFX.addDrawable(mes);
+            this.messages.push(mes);
+        }
+        Chat.chatactivated = false;
+        Chat.currentmessage = new DrawableText();
+        Chat.currentmessage.setTexture(GFX.textures["font1"]);
+        Chat.currentmessage.depth = -1;
+        Chat.currentmessage.characterScale = 2;
+        Chat.currentmessage.position.y = window.innerHeight - 25;
+        Chat.currentmessage.position.x = 20;
+        Chat.currentmessage.screenSpace = true;
+        Chat.currentmessage.text = "Press enter to chat";
+        GFX.addDrawable(Chat.currentmessage);
+        Chat.sentmessage = false;
+        Chat.initialized = true;
+    }
+    Chat.init = init;
+    function clearCurrentMessage() {
+        Chat.currentmessage.text = "";
+    }
+    Chat.clearCurrentMessage = clearCurrentMessage;
+    function sendCurrentMessage() {
+        if (Chat.currentmessage.text.length > 0) {
+            Chat.lastmessage = Chat.currentmessage.text;
+            Chat.sentmessage = true;
+            Chat.currentmessage.text = "Press enter to chat";
+        }
+    }
+    Chat.sendCurrentMessage = sendCurrentMessage;
+    function addKeyToCurrentMessage(char, capitalized) {
+        if (capitalized) {
+            Chat.currentmessage.text = Chat.currentmessage.text + char.toUpperCase();
+        }
+        else {
+            Chat.currentmessage.text = Chat.currentmessage.text + char;
+        }
+    }
+    Chat.addKeyToCurrentMessage = addKeyToCurrentMessage;
+    function deleteLastKeyFromCurrentMessage() {
+        Chat.currentmessage.text = Chat.currentmessage.text.slice(0, -1);
+    }
+    Chat.deleteLastKeyFromCurrentMessage = deleteLastKeyFromCurrentMessage;
+    function clear() {
+        for (let i = 0; i < Chat.messages.length; i++) {
+            Chat.messages[i].text = "";
+        }
+        Chat.messageindex = 0;
+    }
+    Chat.clear = clear;
+})(Chat || (Chat = {}));
 class ShaderBinder {
     useShader(shader) {
         this.lastShader = GFX.currentShader;
