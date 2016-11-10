@@ -45,66 +45,6 @@ class AsyncLoader {
         return false;
     }
 }
-var BattleAction;
-(function (BattleAction) {
-    BattleAction[BattleAction["ATTACK"] = 0] = "ATTACK";
-    BattleAction[BattleAction["NONE"] = 1] = "NONE";
-})(BattleAction || (BattleAction = {}));
-var Battle;
-(function (Battle) {
-    function startRandomBattle(myturn, npc, me) {
-        _myturn = myturn;
-        Battle.action = BattleAction.NONE;
-        _npc = npc;
-        _myhealth = me.health;
-        _myattack = me.attack;
-        Battle.active = true;
-    }
-    Battle.startRandomBattle = startRandomBattle;
-    function stopBattle() {
-        Battle.action = BattleAction.NONE;
-        Battle.active = false;
-    }
-    Battle.stopBattle = stopBattle;
-    function clearAttacks() {
-        Battle.action = BattleAction.NONE;
-    }
-    Battle.clearAttacks = clearAttacks;
-    function startBattle(myturn, enemy, me) {
-        _myturn = myturn;
-        _enemyPlayer = enemy;
-        _myhealth = me.health;
-        Battle.action = BattleAction.NONE;
-        _myattack = me.attack;
-        Battle.active = true;
-    }
-    Battle.startBattle = startBattle;
-    function updateBattle(myhealth, enemyhealth) {
-        _npc.health = enemyhealth;
-        _myhealth = myhealth;
-    }
-    Battle.updateBattle = updateBattle;
-    function lose() {
-        alert("You lose!");
-        stopBattle();
-    }
-    Battle.lose = lose;
-    function win() {
-        alert("You win!");
-        stopBattle();
-    }
-    Battle.win = win;
-    function attack() {
-        if (_myturn) {
-            Battle.action = BattleAction.ATTACK;
-        }
-    }
-    Battle.attack = attack;
-    function init() {
-        Battle.active = false;
-    }
-    Battle.init = init;
-})(Battle || (Battle = {}));
 var Collision;
 (function (Collision) {
     function testBoxCollision(center1, size1, center2, size2) {
@@ -141,31 +81,29 @@ var KeyState;
 var Game;
 (function (Game) {
     function testMapCollision(center, size) {
+        let cnt = Vector2Clone(center);
         let b = { offset: { x: 0, y: 0 }, found: false };
-        if (center.x - size.x / 2 < 0) {
-            b.offset.x = (center.x - size.x / 2);
+        if (cnt.x - size.x / 2 < 0) {
+            b.offset.x = (cnt.x - size.x / 2);
             b.found = true;
-            return b;
         }
-        if (center.y - size.y / 2 < 0) {
-            b.offset.y = (center.y - size.y / 2);
+        if (cnt.y - size.y / 2 < 0) {
+            b.offset.y = (cnt.y - size.y / 2);
             b.found = true;
-            return b;
         }
         if (GFX.tileMap.map) {
             let map = GFX.tileMap.map;
             let mapx = map.sizeInTiles.x * map.tileSize;
             let mapy = map.sizeInTiles.y * map.tileSize;
-            if (center.x + size.x / 2 > mapx) {
-                b.offset.x = (center.x + size.x / 2) - mapx;
+            if (cnt.x + size.x / 2 > mapx) {
+                b.offset.x = (cnt.x + size.x / 2) - mapx;
                 b.found = true;
-                return b;
             }
-            if (center.y + size.y / 2 > mapy) {
-                b.offset.y = (center.y + size.y / 2) - mapy;
+            if (cnt.y + size.y / 2 > mapy) {
+                b.offset.y = (cnt.y + size.y / 2) - mapy;
                 b.found = true;
-                return b;
             }
+            Vector2Sub(cnt, b.offset);
             let tryMatrix = [];
             tryMatrix.push(Vector2New(0, 0));
             tryMatrix.push(Vector2New(1, 0));
@@ -176,7 +114,7 @@ var Game;
             tryMatrix.push(Vector2New(-1, -1));
             tryMatrix.push(Vector2New(1, -1));
             tryMatrix.push(Vector2New(-1, 1));
-            let base = { x: Math.floor(center.x / map.tileSize), y: Math.floor(center.y / map.tileSize) };
+            let base = { x: Math.floor(cnt.x / map.tileSize), y: Math.floor(cnt.y / map.tileSize) };
             for (let i = 0; i < tryMatrix.length; i++) {
                 let vs = tryMatrix[i];
                 let cm = Vector2Clone(base);
@@ -186,11 +124,14 @@ var Game;
                     Vector2ScalarMul(cm, map.tileSize);
                     cm.x += map.tileSize / 2;
                     cm.y += map.tileSize / 2;
-                    let res = Collision.testBoxCollision(center, size, cm, { x: map.tileSize, y: map.tileSize });
+                    let res = Collision.testBoxCollision(cnt, size, cm, { x: map.tileSize, y: map.tileSize });
                     res.fjhh = vs;
                     res.ffjhh = cm;
-                    if (res.found)
-                        return res;
+                    if (res.found) {
+                        b.found = true;
+                        Vector2Add(b.offset, res.offset);
+                        Vector2Sub(cnt, res.offset);
+                    }
                 }
             }
         }
@@ -321,8 +262,6 @@ var Game;
 })(Game || (Game = {}));
 class PlayerClient {
     constructor() {
-        this.health = 100;
-        this.attack = 10;
         this.speed = 8;
         this.position = Vector2New(0, 0);
         this.sprite = new DrawableTextureBox();
@@ -387,87 +326,49 @@ class InterpolatedPlayerClient extends PlayerClient {
         super.update();
     }
 }
-class EnemyNpc {
-    constructor() {
-        this.position = Vector2New(0, 0);
-        this.sprite = new DrawableTextureBox();
-        this.sprite.texture = GFX.textures["hat1"];
-        this.sprite.size.x = 64;
-        this.sprite.size.y = 64;
-        this.sprite.depth = -0.9;
-        this.text = new DrawableText();
-        this.text.setTexture(GFX.textures["font1"]);
-        this.text.depth = -1;
-        this.health = 100;
-        this.attack = 10;
-    }
-    teleport(pos) {
-        this.position = Vector2Clone(pos);
-    }
-    init() {
-        GFX.addDrawable(this.sprite);
-        GFX.addDrawable(this.text);
-    }
-    deinit() {
-        GFX.removeDrawable(this.sprite);
-        GFX.removeDrawable(this.text);
-    }
-    showmessage(mes) {
-        this.text.text = mes;
-        setTimeout(function () { this.text.text = ""; }, 2000);
-    }
-    update() {
-    }
-}
 class LocalPlayerClient extends PlayerClient {
     constructor() {
         super();
     }
     update() {
         if (!Chat.chatactivated) {
-            if (!Battle.active) {
-                let vel = Vector2New(0, 0);
-                if (Game.keyStates["up"]) {
-                    vel.y -= 1;
-                    this.moved = true;
-                }
-                if (Game.keyStates["down"]) {
-                    vel.y += 1;
-                    this.moved = true;
-                }
-                if (Game.keyStates["left"]) {
-                    vel.x -= 1;
-                    this.moved = true;
-                }
-                if (Game.keyStates["right"]) {
-                    vel.x += 1;
-                    this.moved = true;
-                }
-                if (Vector2Length(vel) > 0) {
-                    Vector2Normalize(vel);
-                    Vector2ScalarMul(vel, this.speed);
-                    Vector2Add(this.position, vel);
-                    this.sprite.position = Vector2Clone(this.position);
-                    this.sprite.position.y -= Math.abs(Math.sin(Game.time / 4) * 10);
-                }
-                else
-                    this.sprite.position = Vector2Clone(this.position);
-                if (this.moved) {
-                    let coll = Game.testMapCollision(this.position, { x: 32, y: 32 });
-                    if (coll.found) {
-                        console.log(coll);
-                        this.position.x -= coll.offset.x;
-                        this.position.y -= coll.offset.y;
-                    }
-                }
-                if (Game.keyStates["activate"] == KeyState.Pressed) {
-                    this.activated = true;
+            let vel = Vector2New(0, 0);
+            if (Game.keyStates["up"]) {
+                vel.y -= 1;
+                this.moved = true;
+            }
+            if (Game.keyStates["down"]) {
+                vel.y += 1;
+                this.moved = true;
+            }
+            if (Game.keyStates["left"]) {
+                vel.x -= 1;
+                this.moved = true;
+            }
+            if (Game.keyStates["right"]) {
+                vel.x += 1;
+                this.moved = true;
+            }
+            if (Vector2Length(vel) > 0) {
+                Vector2Normalize(vel);
+                Vector2ScalarMul(vel, this.speed);
+                Vector2Add(this.position, vel);
+                this.sprite.position = Vector2Clone(this.position);
+                this.sprite.position.y -= Math.abs(Math.sin(Game.time / 4) * 10);
+            }
+            else
+                this.sprite.position = Vector2Clone(this.position);
+            if (this.moved) {
+                console.log(this.position);
+                let coll = Game.testMapCollision(this.position, { x: 32, y: 32 });
+                if (coll.found) {
+                    console.log(coll);
+                    this.position.x -= coll.offset.x;
+                    this.position.y -= coll.offset.y;
                 }
             }
-            else {
-                if (Game.keyStates["activate"] == KeyState.Pressed) {
-                    Battle.attack();
-                }
+            if (Game.keyStates["activate"] == KeyState.Pressed) {
+                this.activated = true;
             }
         }
         if (Game.keyStates["enter"] == KeyState.Pressed) {
@@ -494,6 +395,12 @@ TextureImports =
         "citywall": { "source": "assets/graphics/citywall.png", "isPowerOfTwo": false },
         "cottage1": { "source": "assets/graphics/cottage.png", "isPowerOfTwo": false },
         "hat1": { "source": "assets/graphics/tophat.png", "isPowerOfTwo": true },
+        "tree1": { "source": "assets/graphics/tree1.png", "isPowerOfTwo": false },
+        "tree2": { "source": "assets/graphics/tree2.png", "isPowerOfTwo": false },
+        "tree3": { "source": "assets/graphics/tree3.png", "isPowerOfTwo": false },
+        "tree4": { "source": "assets/graphics/tree4.png", "isPowerOfTwo": false },
+        "tree5": { "source": "assets/graphics/tree5.png", "isPowerOfTwo": false },
+        "cottage": { "source": "assets/graphics/cottage.png", "isPowerOfTwo": false },
         "deepwater": { "source": "assets/graphics/deepwater.png", "isPowerOfTwo": true },
         "dirtroad": { "source": "assets/graphics/dirtroad.png", "isPowerOfTwo": true },
         "grass": { "source": "assets/graphics/grass.png", "isPowerOfTwo": true },
@@ -681,8 +588,8 @@ class DrawableTextureBox {
         this.texture = null;
     }
     draw() {
-        let sb = new ShaderBinder();
-        GFX.drawCentered(this.texture, this.position, this.depth, this.size);
+        if (this.texture)
+            GFX.drawCentered(this.texture, this.position, this.depth, this.size);
     }
 }
 class DrawableTestParticle extends DrawableColorBox {
@@ -1092,13 +999,15 @@ class TileMap {
     }
     load(callback) {
         let us = this;
+        us.objects = [];
+        us.tileDefs = {};
+        us.tiles = [];
+        us.collision = [];
         let doTM = function (tm) {
             let name = tm.name;
             //only consider tilemaps with names
             //beginning with "terrain" 
             //TODO: properly handle object tilemaps
-            if (name.slice(0, 7) != "terrain")
-                return;
             let firstGid = tm.firstgid;
             for (let key in tm.tiles) {
                 if (!tm.tiles.hasOwnProperty(key))
@@ -1108,6 +1017,21 @@ class TileMap {
                 img = img.slice(0, img.indexOf('.'));
                 let tex = GFX.textures[img];
                 us.tileDefs[num] = { texture: tex };
+            }
+        };
+        let doObjects = function (tm) {
+            for (let objk in tm.objects) {
+                let obj = tm.objects[objk];
+                let md = {};
+                md.position = { x: obj.x + obj.width / 2, y: obj.y - obj.height / 2 };
+                md.size = { x: obj.width, y: obj.height };
+                let td = us.tileDefs[obj.gid];
+                if (td)
+                    md.texture = td.texture;
+                else {
+                    md.texture = null;
+                }
+                us.objects.push(md);
             }
         };
         let xht = new XMLHttpRequest();
@@ -1132,14 +1056,17 @@ class TileMap {
                     //TODO: check the corrects layers based on name
                     //instead of type
                     //TODO: properly handle object layers
-                    if (lay.type != "tilelayer")
-                        continue;
-                    if (lay.name == "terrain") {
-                        us.tiles = lay.data;
+                    if (lay.type == "tilelayer") {
+                        if (lay.name == "terrain") {
+                            us.tiles = lay.data;
+                        }
+                        else if (lay.name == "collision") {
+                            for (let i = 0; i < us.collision.length; i++)
+                                us.collision[i] = (lay.data[i] > 0);
+                        }
                     }
-                    else if (lay.name == "collision") {
-                        for (let i = 0; i < us.collision.length; i++)
-                            us.collision[i] = (lay.data[i] > 0);
+                    else if (lay.type == "objectgroup") {
+                        doObjects(lay);
                     }
                 }
                 callback(true);
@@ -1160,13 +1087,18 @@ class DrawableTileMap {
         this.visible = true;
         this.map = null;
         this.buffers = [];
+        this.drawables = [];
     }
     setMap(map) {
         this.map = map;
         //clear the previous buffers
-        for (var i = this.buffers.length - 1; i >= 0; i--) {
+        for (let i = this.buffers.length - 1; i >= 0; i--) {
             GFX.gl.deleteBuffer(this.buffers[i].buffer);
         }
+        for (let i = 0; i < this.drawables.length; i++) {
+            GFX.removeDrawable(this.drawables[i]);
+        }
+        this.drawables = [];
         this.buffers = [];
         if (!map)
             return;
@@ -1221,6 +1153,16 @@ class DrawableTileMap {
             GFX.gl.bindBuffer(GFX.gl.ARRAY_BUFFER, buf.buffer);
             GFX.gl.bufferData(GFX.gl.ARRAY_BUFFER, new Float32Array(arr), GFX.gl.STATIC_DRAW);
             this.buffers.push(buf);
+        }
+        for (let i = 0; i < map.objects.length; i++) {
+            let obj = map.objects[i];
+            let drw = new DrawableTextureBox();
+            drw.texture = obj.texture;
+            drw.position = obj.position;
+            drw.size = obj.size;
+            drw.depth = 0.780;
+            GFX.addDrawable(drw);
+            this.drawables.push(drw);
         }
     }
     draw() {
