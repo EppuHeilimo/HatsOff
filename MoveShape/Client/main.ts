@@ -25,11 +25,14 @@ function initMain(loadedCallback : () => void)
 
 
     //on window resize function
-	function windowResize()
-	{
-		canvas.width = window.innerWidth;
-		canvas.height = window.innerHeight;
-		GFX.updateViewport(canvas);		
+    function windowResize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        GFX.updateViewport(canvas);
+        if (Chat.initialized)
+        {
+            Chat.windowResize();
+        }
     }
 
 	window.addEventListener("resize", windowResize, false);

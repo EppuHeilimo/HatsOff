@@ -9,7 +9,8 @@ interface Color
 	r : number;
 	g : number;
 	b : number;
-	a? : number;
+    a?: number;
+
 }
 
 function Vector2New(x : number = 0, y : number = 0) {

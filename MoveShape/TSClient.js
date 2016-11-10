@@ -370,14 +370,13 @@ class LocalPlayerClient extends PlayerClient {
                 this.activated = true;
             }
         }
-        else {
-        }
         if (Game.keyStates["enter"] == KeyState.Pressed) {
             if (Chat.chatactivated) {
                 Chat.sendCurrentMessage();
                 Chat.chatactivated = false;
             }
             else {
+                Chat.clearCurrentMessage();
                 Chat.chatactivated = true;
             }
         }
@@ -413,7 +412,7 @@ ShaderImports =
         },
         "text": {
             "vert": "assets/shaders/font.vs",
-            "frag": "assets/shaders/basic.fs"
+            "frag": "assets/shaders/font.fs"
         },
         "map": {
             "vert": "assets/shaders/map.vs",
@@ -617,6 +616,13 @@ var Chat;
         console.log(message);
     }
     Chat.newMessage = newMessage;
+    function windowResize() {
+        Chat.currentmessage.position.y = window.innerHeight - 30;
+        for (let i = 0; i < Chat.messages.length; i++) {
+            Chat.messages[i].position.y = window.innerHeight - 50 - i * 10;
+        }
+    }
+    Chat.windowResize = windowResize;
     function init() {
         Chat.messages = new Array();
         Chat.messageindex = 0;
@@ -625,8 +631,8 @@ var Chat;
             mes.setTexture(GFX.textures["font1"]);
             mes.depth = -1;
             mes.characterScale = 1.3;
-            mes.position.y = 30 + (15 * i);
-            mes.position.x = 50;
+            mes.position.y = window.innerHeight - 50 - i * 10;
+            mes.position.x = 20;
             mes.screenSpace = true;
             mes.text = "";
             GFX.addDrawable(mes);
@@ -636,20 +642,25 @@ var Chat;
         Chat.currentmessage = new DrawableText();
         Chat.currentmessage.setTexture(GFX.textures["font1"]);
         Chat.currentmessage.depth = -1;
-        Chat.currentmessage.characterScale = 2;
-        Chat.currentmessage.position.y = 800;
-        Chat.currentmessage.position.x = 50;
+        Chat.currentmessage.characterScale = 1.3;
+        Chat.currentmessage.position.y = window.innerHeight - 30;
+        Chat.currentmessage.position.x = 20;
         Chat.currentmessage.screenSpace = true;
-        Chat.currentmessage.text = "";
+        Chat.currentmessage.text = "Press enter to chat";
         GFX.addDrawable(Chat.currentmessage);
         Chat.sentmessage = false;
+        Chat.initialized = true;
     }
     Chat.init = init;
+    function clearCurrentMessage() {
+        Chat.currentmessage.text = "";
+    }
+    Chat.clearCurrentMessage = clearCurrentMessage;
     function sendCurrentMessage() {
         if (Chat.currentmessage.text.length > 0) {
             Chat.lastmessage = Chat.currentmessage.text;
             Chat.sentmessage = true;
-            Chat.currentmessage.text = "";
+            Chat.currentmessage.text = "Press enter to chat";
         }
     }
     Chat.sendCurrentMessage = sendCurrentMessage;
@@ -853,6 +864,7 @@ class DrawableText {
         this.depth = 0;
         this.characterScale = 1;
         this.position = Vector2New(0, 0);
+        this.color = { r: 0, g: 0, b: 0, a: 1.0 };
     }
     setTexture(tex) {
         this.texture = tex;
@@ -861,6 +873,7 @@ class DrawableText {
         let sb = new ShaderBinder();
         sb.useShader(GFX.shaders["text"]);
         GFX.gl.bindTexture(GFX.gl.TEXTURE_2D, this.texture.texture);
+        GFX.gl.uniform4f(GFX.currentShader.uniforms["color"], this.color.r, this.color.g, this.color.b, this.color.a ? this.color.a : 1.0);
         this.charSize = Vector2Clone(this.texture.size);
         this.charSize.x /= 8;
         this.charSize.y /= 12;
@@ -1087,6 +1100,9 @@ function initMain(loadedCallback) {
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
         GFX.updateViewport(canvas);
+        if (Chat.initialized) {
+            Chat.windowResize();
+        }
     }
     window.addEventListener("resize", windowResize, false);
     windowResize();

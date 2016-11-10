@@ -45,7 +45,7 @@ ShaderImports =
 	"text":
 	{
         "vert":"assets/shaders/font.vs",
-        "frag":"assets/shaders/basic.fs"
+        "frag":"assets/shaders/font.fs"
 	},
 	"map":
 	{

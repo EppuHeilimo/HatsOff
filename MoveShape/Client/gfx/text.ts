@@ -9,13 +9,15 @@ class DrawableText implements Drawable
 	public characterScale : number;
 	public depth : number;
 	public position : Vector2;
-	public screenSpace : boolean = false;
+    public screenSpace: boolean = false;
+    public color: Color;
     constructor()
 	{
 		this.text = "";
 		this.depth = 0;
 		this.characterScale = 1;
-        this.position = Vector2New(0,0);
+        this.position = Vector2New(0, 0);
+        this.color = {r: 0, g: 0, b: 0, a: 1.0 };
 	}
 
 	public setTexture(tex : Texture) : void
@@ -30,7 +32,7 @@ class DrawableText implements Drawable
 
 		GFX.gl.bindTexture(GFX.gl.TEXTURE_2D, this.texture.texture);
 
-	
+        GFX.gl.uniform4f(GFX.currentShader.uniforms["color"], this.color.r, this.color.g, this.color.b, this.color.a ? this.color.a : 1.0);
         this.charSize = Vector2Clone(this.texture.size);
 		this.charSize.x /= 8;
 		this.charSize.y /= 12;
