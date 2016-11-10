@@ -45,123 +45,66 @@ class AsyncLoader {
         return false;
     }
 }
-var Chat;
-(function (Chat) {
-    function newMessage(message) {
-        let temp = Array();
-        for (let i = 0; i < Chat.messages.length; i++) {
-            temp.push(Chat.messages[i].text);
-        }
-        for (let i = 0; i < Chat.messages.length - 1; i++) {
-            Chat.messages[i + 1].text = temp[i];
-        }
-        Chat.messages[0].text = message;
-        console.log(message);
-        showchat();
-        Chat.chattimeout = setTimeout(function () { Chat.fading = true; }, 3000);
+var BattleAction;
+(function (BattleAction) {
+    BattleAction[BattleAction["ATTACK"] = 0] = "ATTACK";
+    BattleAction[BattleAction["NONE"] = 1] = "NONE";
+})(BattleAction || (BattleAction = {}));
+var Battle;
+(function (Battle) {
+    function startRandomBattle(myturn, npc, me) {
+        _myturn = myturn;
+        Battle.action = BattleAction.NONE;
+        _npc = npc;
+        _myhealth = me.health;
+        _myattack = me.attack;
+        Battle.active = true;
     }
-    Chat.newMessage = newMessage;
-    function loop() {
-        if (Chat.fading) {
-            if (Chat.fadetimer > 0) {
-                Chat.fadetimer -= 0.1;
-                fadechat(Chat.fadetimer);
-            }
-            else if (Chat.fadetimer <= 0) {
-                Chat.fadetimer = 1;
-                Chat.fading = false;
-            }
+    Battle.startRandomBattle = startRandomBattle;
+    function stopBattle() {
+        Battle.action = BattleAction.NONE;
+        Battle.active = false;
+    }
+    Battle.stopBattle = stopBattle;
+    function clearAttacks() {
+        Battle.action = BattleAction.NONE;
+    }
+    Battle.clearAttacks = clearAttacks;
+    function startBattle(myturn, enemy, me) {
+        _myturn = myturn;
+        _enemyPlayer = enemy;
+        _myhealth = me.health;
+        Battle.action = BattleAction.NONE;
+        _myattack = me.attack;
+        Battle.active = true;
+    }
+    Battle.startBattle = startBattle;
+    function updateBattle(myhealth, enemyhealth) {
+        _npc.health = enemyhealth;
+        _myhealth = myhealth;
+    }
+    Battle.updateBattle = updateBattle;
+    function lose() {
+        alert("You lose!");
+        stopBattle();
+    }
+    Battle.lose = lose;
+    function win() {
+        alert("You win!");
+        stopBattle();
+    }
+    Battle.win = win;
+    function attack() {
+        if (_myturn) {
+            Battle.action = BattleAction.ATTACK;
         }
     }
-    Chat.loop = loop;
-    function windowResize() {
-        Chat.currentmessage.position.y = window.innerHeight - 25;
-        for (let i = 0; i < Chat.messages.length; i++) {
-            Chat.messages[i].position.y = window.innerHeight - 50 - i * 20;
-        }
-    }
-    Chat.windowResize = windowResize;
-    function deactivateChat() {
-        Chat.chatactivated = false;
-        Chat.chattimeout = setTimeout(function () { Chat.fading = true; }, 3000);
-    }
-    Chat.deactivateChat = deactivateChat;
-    function fadechat(alpha) {
-        for (let i = 0; i < Chat.messages.length; i++) {
-            Chat.messages[i].color.a = alpha;
-        }
-    }
-    Chat.fadechat = fadechat;
-    function showchat() {
-        for (let i = 0; i < Chat.messages.length; i++) {
-            Chat.messages[i].color.a = 1;
-        }
-        clearTimeout(Chat.chattimeout);
-    }
-    Chat.showchat = showchat;
+    Battle.attack = attack;
     function init() {
-        Chat.fadetimer = 1;
-        Chat.messages = new Array();
-        Chat.messageindex = 0;
-        for (let i = 0; i < 10; i++) {
-            let mes = new DrawableText();
-            mes.setTexture(GFX.textures["font1"]);
-            mes.depth = -1;
-            mes.characterScale = 2;
-            mes.position.y = window.innerHeight - 50 - i * 20;
-            mes.position.x = 20;
-            mes.screenSpace = true;
-            mes.text = "";
-            GFX.addDrawable(mes, Layer.LayerAlpha);
-            this.messages.push(mes);
-        }
-        Chat.chatactivated = false;
-        Chat.currentmessage = new DrawableText();
-        Chat.currentmessage.setTexture(GFX.textures["font1"]);
-        Chat.currentmessage.depth = -1;
-        Chat.currentmessage.characterScale = 2;
-        Chat.currentmessage.position.y = window.innerHeight - 25;
-        Chat.currentmessage.position.x = 20;
-        Chat.currentmessage.screenSpace = true;
-        Chat.currentmessage.text = "Press enter to chat";
-        GFX.addDrawable(Chat.currentmessage, Layer.LayerAlpha);
-        Chat.sentmessage = false;
-        Chat.initialized = true;
+        Battle.active = false;
     }
-    Chat.init = init;
-    function clearCurrentMessage() {
-        Chat.currentmessage.text = "";
-    }
-    Chat.clearCurrentMessage = clearCurrentMessage;
-    function sendCurrentMessage() {
-        if (Chat.currentmessage.text.length > 0) {
-            Chat.lastmessage = Chat.currentmessage.text;
-            Chat.sentmessage = true;
-        }
-        Chat.currentmessage.text = "Press enter to chat";
-    }
-    Chat.sendCurrentMessage = sendCurrentMessage;
-    function addKeyToCurrentMessage(char, capitalized) {
-        if (capitalized) {
-            Chat.currentmessage.text = Chat.currentmessage.text + char.toUpperCase();
-        }
-        else {
-            Chat.currentmessage.text = Chat.currentmessage.text + char;
-        }
-    }
-    Chat.addKeyToCurrentMessage = addKeyToCurrentMessage;
-    function deleteLastKeyFromCurrentMessage() {
-        Chat.currentmessage.text = Chat.currentmessage.text.slice(0, -1);
-    }
-    Chat.deleteLastKeyFromCurrentMessage = deleteLastKeyFromCurrentMessage;
-    function clear() {
-        for (let i = 0; i < Chat.messages.length; i++) {
-            Chat.messages[i].text = "";
-        }
-        Chat.messageindex = 0;
-    }
-    Chat.clear = clear;
-})(Chat || (Chat = {}));
+    Battle.init = init;
+})(Battle || (Battle = {}));
 var Collision;
 (function (Collision) {
     function testBoxCollision(center1, size1, center2, size2) {
@@ -378,6 +321,8 @@ var Game;
 })(Game || (Game = {}));
 class PlayerClient {
     constructor() {
+        this.health = 100;
+        this.attack = 10;
         this.speed = 8;
         this.position = Vector2New(0, 0);
         this.sprite = new DrawableTextureBox();
@@ -442,49 +387,87 @@ class InterpolatedPlayerClient extends PlayerClient {
         super.update();
     }
 }
+class EnemyNpc {
+    constructor() {
+        this.position = Vector2New(0, 0);
+        this.sprite = new DrawableTextureBox();
+        this.sprite.texture = GFX.textures["hat1"];
+        this.sprite.size.x = 64;
+        this.sprite.size.y = 64;
+        this.sprite.depth = -0.9;
+        this.text = new DrawableText();
+        this.text.setTexture(GFX.textures["font1"]);
+        this.text.depth = -1;
+        this.health = 100;
+        this.attack = 10;
+    }
+    teleport(pos) {
+        this.position = Vector2Clone(pos);
+    }
+    init() {
+        GFX.addDrawable(this.sprite);
+        GFX.addDrawable(this.text);
+    }
+    deinit() {
+        GFX.removeDrawable(this.sprite);
+        GFX.removeDrawable(this.text);
+    }
+    showmessage(mes) {
+        this.text.text = mes;
+        setTimeout(function () { this.text.text = ""; }, 2000);
+    }
+    update() {
+    }
+}
 class LocalPlayerClient extends PlayerClient {
     constructor() {
         super();
     }
     update() {
         if (!Chat.chatactivated) {
-            let vel = Vector2New(0, 0);
-            if (Game.keyStates["up"]) {
-                vel.y -= 1;
-                this.moved = true;
-            }
-            if (Game.keyStates["down"]) {
-                vel.y += 1;
-                this.moved = true;
-            }
-            if (Game.keyStates["left"]) {
-                vel.x -= 1;
-                this.moved = true;
-            }
-            if (Game.keyStates["right"]) {
-                vel.x += 1;
-                this.moved = true;
-            }
-            if (Vector2Length(vel) > 0) {
-                Vector2Normalize(vel);
-                Vector2ScalarMul(vel, this.speed);
-                Vector2Add(this.position, vel);
-                this.sprite.position = Vector2Clone(this.position);
-                this.sprite.position.y -= Math.abs(Math.sin(Game.time / 4) * 10);
-            }
-            else
-                this.sprite.position = Vector2Clone(this.position);
-            if (this.moved) {
-                console.log(this.position);
-                let coll = Game.testMapCollision(this.position, { x: 32, y: 32 });
-                if (coll.found) {
-                    console.log(coll);
-                    this.position.x -= coll.offset.x;
-                    this.position.y -= coll.offset.y;
+            if (!Battle.active) {
+                let vel = Vector2New(0, 0);
+                if (Game.keyStates["up"]) {
+                    vel.y -= 1;
+                    this.moved = true;
+                }
+                if (Game.keyStates["down"]) {
+                    vel.y += 1;
+                    this.moved = true;
+                }
+                if (Game.keyStates["left"]) {
+                    vel.x -= 1;
+                    this.moved = true;
+                }
+                if (Game.keyStates["right"]) {
+                    vel.x += 1;
+                    this.moved = true;
+                }
+                if (Vector2Length(vel) > 0) {
+                    Vector2Normalize(vel);
+                    Vector2ScalarMul(vel, this.speed);
+                    Vector2Add(this.position, vel);
+                    this.sprite.position = Vector2Clone(this.position);
+                    this.sprite.position.y -= Math.abs(Math.sin(Game.time / 4) * 10);
+                }
+                else
+                    this.sprite.position = Vector2Clone(this.position);
+                if (this.moved) {
+                    let coll = Game.testMapCollision(this.position, { x: 32, y: 32 });
+                    if (coll.found) {
+                        console.log(coll);
+                        this.position.x -= coll.offset.x;
+                        this.position.y -= coll.offset.y;
+                    }
+                }
+                if (Game.keyStates["activate"] == KeyState.Pressed) {
+                    this.activated = true;
                 }
             }
-            if (Game.keyStates["activate"] == KeyState.Pressed) {
-                this.activated = true;
+            else {
+                if (Game.keyStates["activate"] == KeyState.Pressed) {
+                    Battle.attack();
+                }
             }
         }
         if (Game.keyStates["enter"] == KeyState.Pressed) {
@@ -720,6 +703,123 @@ class DrawableTestParticle extends DrawableColorBox {
         super.draw();
     }
 }
+var Chat;
+(function (Chat) {
+    function newMessage(message) {
+        let temp = Array();
+        for (let i = 0; i < Chat.messages.length; i++) {
+            temp.push(Chat.messages[i].text);
+        }
+        for (let i = 0; i < Chat.messages.length - 1; i++) {
+            Chat.messages[i + 1].text = temp[i];
+        }
+        Chat.messages[0].text = message;
+        console.log(message);
+        showchat();
+        Chat.chattimeout = setTimeout(function () { Chat.fading = true; }, 3000);
+    }
+    Chat.newMessage = newMessage;
+    function loop() {
+        if (Chat.fading) {
+            if (Chat.fadetimer > 0) {
+                Chat.fadetimer -= 0.1;
+                fadechat(Chat.fadetimer);
+            }
+            else if (Chat.fadetimer <= 0) {
+                Chat.fadetimer = 1;
+                Chat.fading = false;
+            }
+        }
+    }
+    Chat.loop = loop;
+    function windowResize() {
+        Chat.currentmessage.position.y = window.innerHeight - 25;
+        for (let i = 0; i < Chat.messages.length; i++) {
+            Chat.messages[i].position.y = window.innerHeight - 50 - i * 20;
+        }
+    }
+    Chat.windowResize = windowResize;
+    function deactivateChat() {
+        Chat.chatactivated = false;
+        Chat.chattimeout = setTimeout(function () { Chat.fading = true; }, 3000);
+    }
+    Chat.deactivateChat = deactivateChat;
+    function fadechat(alpha) {
+        for (let i = 0; i < Chat.messages.length; i++) {
+            Chat.messages[i].color.a = alpha;
+        }
+    }
+    Chat.fadechat = fadechat;
+    function showchat() {
+        for (let i = 0; i < Chat.messages.length; i++) {
+            Chat.messages[i].color.a = 1;
+        }
+        clearTimeout(Chat.chattimeout);
+    }
+    Chat.showchat = showchat;
+    function init() {
+        Chat.fadetimer = 1;
+        Chat.messages = new Array();
+        Chat.messageindex = 0;
+        for (let i = 0; i < 10; i++) {
+            let mes = new DrawableText();
+            mes.setTexture(GFX.textures["font1"]);
+            mes.depth = -1;
+            mes.characterScale = 2;
+            mes.position.y = window.innerHeight - 50 - i * 20;
+            mes.position.x = 20;
+            mes.screenSpace = true;
+            mes.text = "";
+            GFX.addDrawable(mes, Layer.LayerAlpha);
+            this.messages.push(mes);
+        }
+        Chat.chatactivated = false;
+        Chat.currentmessage = new DrawableText();
+        Chat.currentmessage.setTexture(GFX.textures["font1"]);
+        Chat.currentmessage.depth = -1;
+        Chat.currentmessage.characterScale = 2;
+        Chat.currentmessage.position.y = window.innerHeight - 25;
+        Chat.currentmessage.position.x = 20;
+        Chat.currentmessage.screenSpace = true;
+        Chat.currentmessage.text = "Press enter to chat";
+        GFX.addDrawable(Chat.currentmessage, Layer.LayerAlpha);
+        Chat.sentmessage = false;
+        Chat.initialized = true;
+    }
+    Chat.init = init;
+    function clearCurrentMessage() {
+        Chat.currentmessage.text = "";
+    }
+    Chat.clearCurrentMessage = clearCurrentMessage;
+    function sendCurrentMessage() {
+        if (Chat.currentmessage.text.length > 0) {
+            Chat.lastmessage = Chat.currentmessage.text;
+            Chat.sentmessage = true;
+        }
+        Chat.currentmessage.text = "Press enter to chat";
+    }
+    Chat.sendCurrentMessage = sendCurrentMessage;
+    function addKeyToCurrentMessage(char, capitalized) {
+        if (capitalized) {
+            Chat.currentmessage.text = Chat.currentmessage.text + char.toUpperCase();
+        }
+        else {
+            Chat.currentmessage.text = Chat.currentmessage.text + char;
+        }
+    }
+    Chat.addKeyToCurrentMessage = addKeyToCurrentMessage;
+    function deleteLastKeyFromCurrentMessage() {
+        Chat.currentmessage.text = Chat.currentmessage.text.slice(0, -1);
+    }
+    Chat.deleteLastKeyFromCurrentMessage = deleteLastKeyFromCurrentMessage;
+    function clear() {
+        for (let i = 0; i < Chat.messages.length; i++) {
+            Chat.messages[i].text = "";
+        }
+        Chat.messageindex = 0;
+    }
+    Chat.clear = clear;
+})(Chat || (Chat = {}));
 class ShaderBinder {
     useShader(shader) {
         this.lastShader = GFX.currentShader;

@@ -9,19 +9,20 @@ function collisionCircle(centera, rada, centerb, radb) {
     return false;
 }
 
+
 $(function () {
 
     var players = [];
 
     //players.find((x)=>x.ID == 3);
-
+    var connectionHub;
     var myId;
     var moved = false;
     var currentarea;
     var gamedata;
     var me = new LocalPlayerClient();
     Game.addActor(me);
-    var connectionHub = $.connection.connectionHub,
+    connectionHub = $.connection.connectionHub,
         // Send a maximum of 10 messages per second
         // (mouse movements trigger a lot of messages)
         messageFrequency = 10,
@@ -50,9 +51,7 @@ $(function () {
         //p.showmessage(messages[messages.length - 1]);
         Chat.newMessage(sender.name + messages[messages.length - 1]);
     }
-
-
-            
+     
     connectionHub.client.updateShapes = function (models) {
         for(var i = 0; i < models.length; i++) {
             var a = findPlayerByID(models[i].id);
@@ -87,6 +86,16 @@ $(function () {
         // We also clear the animation queue so that we start a new
         // animation and don't lag behind.
     };
+
+    connectionHub.client.loseBattle = function()
+    {
+        Battle.lose();
+    }
+
+    connectionHub.client.winBattle = function ()
+    {
+        Battle.win();
+    }
 
     connectionHub.client.playerDisconnected = function (disconnectedPlayers)
     {
@@ -204,6 +213,16 @@ $(function () {
         Chat.init();
     });
 
+    connectionHub.client.randomBattle = function(health, attack)
+    {
+        Battle.startRandomBattle(true, new EnemyNpc(me.x + 100, me.y, health, attack), me);
+    }
+
+    connectionHub.client.updateBattle = function(myhealth, enemyhealth)
+    {
+        Battle.updateEnemy(myhealth, enemyhealth);
+    }
+
     function updateServerModel() {
         // Only update server if we have a new movement
         if (me.moved) {
@@ -232,6 +251,11 @@ $(function () {
         {
             connectionHub.server.newMessage(me, Chat.lastmessage);
             Chat.sentmessage = false;
+        }
+        if (Battle.active)
+        {
+            if(Battle.action != BattleAction.NONE)
+                connectionHub.server.battleUpdate(me, Battle.action);
         }
         me.activated = false;
     }

@@ -30,13 +30,16 @@ namespace Hatsoff
         private ConcurrentDictionary<string, List<PlayerActor>> _updatedPlayers;
         private List<PlayerActor> _disconnctedPlayers = new List<PlayerActor>();
         private QuadTree overworldcollisions;
+        private Random _rand;
         private ConcurrentDictionary<string, ConcurrentDictionary<RemotePlayer, List<string>>> _sentMessages;
+        private List<Battle> _battles;
         public Broadcaster()
         {
             // Save our hub context so we can easily use it 
             // to send to its connected clients
+            _battles = new List<Battle>();
             _hubContext = GlobalHost.ConnectionManager.GetHubContext<ConnectionHub>();
-
+            _rand = new Random();
             _modelUpdated = false;
             _newMessage = false;
             connectedPlayers = new ConcurrentDictionary<string, RemotePlayer>();
@@ -80,6 +83,22 @@ namespace Hatsoff
                     _updatedPlayers.Clear();
                     foreach (KeyValuePair<string, List<PlayerActor>> area in updatedPlayers)
                     {
+                        foreach(PlayerActor p in area.Value)
+                        {
+                            if (!p.insafezone)
+                            {
+                                p.lastbattletimer++;
+                                if (_rand.Next(100) > 98 && p.lastbattletimer > 100)
+                                {
+                                    p.lastbattletimer = 0;
+                                    RemotePlayer rp;
+                                    connectedPlayers.TryGetValue(p.owner, out rp);
+                                    rp.currentbattle = new Battle(rp, new EnemyNpc(100, 10, "hat1.png"));
+                                    _battles.Add(rp.currentbattle);
+                                    _hubContext.Clients.Client(p.owner).randomBattle(rp.currentbattle.npc.health, rp.currentbattle.npc.attack);
+                                }
+                            }
+                        }
                         List<string> clientsinarea = new List<string>();
                         foreach (var player in mapstates[area.Key].playerlist)
                         {
@@ -197,6 +216,7 @@ namespace Hatsoff
                 }
                 else
                 {
+
                     p.SetPosition(player.x, player.y);
                     if (_updatedPlayers.ContainsKey(p.areaname))
                     {
@@ -230,6 +250,16 @@ namespace Hatsoff
 
         private void ChangePlayerArea(RemotePlayer p, string connectionId, string targetArea)
         {
+            if(targetArea == "Town")
+            {
+                p.GetPlayerShape().insafezone = true;
+                p.GetPlayerShape().lastbattletimer = 0;
+            }
+            else if(targetArea == "Overworld")
+            {
+                p.GetPlayerShape().insafezone = false;
+                p.GetPlayerShape().lastbattletimer = 0;
+            }
             Vec2 fromareapos = _gamedata.maps[targetArea].triggerareas[p.areaname].getCenter();
             p.SetPosition(fromareapos.x, fromareapos.y);
             p.GetPlayerShape().x = fromareapos.x;
@@ -336,6 +366,43 @@ namespace Hatsoff
             }
             _newMessage = true;
         }
+
+        internal void UpdateBattle(PlayerActor player, BattleAction action)
+        {
+            
+            RemotePlayer p;
+            connectedPlayers.TryGetValue(player.LastUpdatedBy, out p);
+            p.currentbattle.PlayerAction(player, action);
+            if(p.currentbattle.winner == 0)
+            {
+                if (p.currentbattle.pvp)
+                {
+                    _hubContext.Clients.Client(p.currentbattle.player1.GetPlayerShape().owner).updateBattle(p.currentbattle.player1stats.health, p.currentbattle.player2stats.health);
+                    _hubContext.Clients.Client(p.currentbattle.player2.GetPlayerShape().owner).updateBattle(p.currentbattle.player2stats.health, p.currentbattle.player1stats.health);
+                }
+                else
+                {
+                    _hubContext.Clients.Client(player.LastUpdatedBy).updateBattle(p.currentbattle.player1stats.health, p.currentbattle.npc.health);
+                }
+            }
+            else
+            {
+                switch(p.currentbattle.winner)
+                {
+                    case 1:
+                        _hubContext.Clients.Client(p.currentbattle.player2.GetPlayerShape().owner).loseBattle();
+                        _hubContext.Clients.Client(p.currentbattle.player1.GetPlayerShape().owner).winBattle();
+                        break;
+                     case 2:
+                        _hubContext.Clients.Client(p.currentbattle.player1.GetPlayerShape().owner).loseBattle();
+                        _hubContext.Clients.Client(p.currentbattle.player2.GetPlayerShape().owner).winBattle();
+                        break;
+                    case 3:
+                        _hubContext.Clients.Client(p.currentbattle.player2.GetPlayerShape().owner).loseBattle();
+                        break;
+                }
+            }
+        }
     }
 
     public class ConnectionHub : Hub
@@ -355,6 +422,12 @@ namespace Hatsoff
             player.LastUpdatedBy = Context.ConnectionId;
             // Update the shape model within our broadcaster
             _broadcaster.UpdateShape(player);
+        }
+
+        public void UpdateBattle(PlayerActor player, BattleAction action)
+        {
+            player.LastUpdatedBy = Context.ConnectionId;
+            _broadcaster.UpdateBattle(player, action);
         }
 
         public void Message(string cmd, string attribs)
@@ -384,5 +457,10 @@ namespace Hatsoff
         {
             _broadcaster.SendGameInfo(Context.ConnectionId);
         }
+    }
+
+    public enum BattleAction
+    {
+        ATTACK
     }
 }

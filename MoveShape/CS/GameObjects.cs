@@ -6,6 +6,22 @@ using System.Web;
 
 namespace Hatsoff
 {
+    public class EnemyNpc
+    {
+        [JsonProperty("health")]
+        public double health;
+        [JsonProperty("attack")]
+        public double attack;
+        [JsonProperty("texture")]
+        public string texture;
+        public EnemyNpc(double health, double attack, string texture)
+        {
+            this.health = health;
+            this.attack = attack;
+            this.texture = texture;
+        }
+
+    }
     public class PlayerActor
     {
         public struct PlayerInfo
@@ -18,12 +34,12 @@ namespace Hatsoff
                 playername = name;
             }
         }
-        struct Stats
+        public struct Stats
         {
             [JsonProperty("health")]
-            double health { get; set; }
+            public double health { get; set; }
             [JsonProperty("health")]
-            double attack { get; set; }
+            public double attack { get; set; }
             public Stats(double attack, double health)
             {
                 this.attack = attack;
@@ -75,7 +91,7 @@ namespace Hatsoff
         [JsonIgnore]
         Inventory inventory { get; set; }
         [JsonIgnore]
-        Stats stats { get; set; }
+        public Stats stats { get; set; }
         [JsonIgnore]
         public string LastUpdatedBy { get; set; }
         [JsonProperty("name")]
@@ -86,6 +102,10 @@ namespace Hatsoff
         public string owner { get; set; }
         [JsonProperty("level")]
         public int level;
+        [JsonIgnore]
+        public bool insafezone;
+        [JsonIgnore]
+        public int lastbattletimer;
         public PlayerActor(double id, double x, double y, string owner, string playername, int level)
         {
             this.owner = owner;
@@ -96,6 +116,8 @@ namespace Hatsoff
             inventory = new Inventory(9);
             this.level = level;
             name = playername;
+            insafezone = false;
+            lastbattletimer = 0;
         }
     }
     public class Item

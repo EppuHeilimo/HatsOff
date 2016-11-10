@@ -12,7 +12,11 @@ enum KeyState {
     Pressed = 2,
     Released = -1
 }
+
+
+
 namespace Game {
+
     export declare var time: number;
     export declare var actors: Set<GameActor>;
     export declare var keyMap: { [keyid: number]: string; }
@@ -217,7 +221,6 @@ namespace Game {
             }
         }
     }
-
 }
 
 
@@ -228,8 +231,12 @@ class PlayerClient implements GameActor {
     public id: number;
     public speed: number;
     public text: DrawableText;
+    public health: number;
+    public attack: number;
 
     constructor() {
+        this.health = 100;
+        this.attack = 10;
         this.speed = 8;
         this.position = Vector2New(0, 0);
         this.sprite = new DrawableTextureBox();
@@ -310,6 +317,51 @@ class InterpolatedPlayerClient extends PlayerClient {
     }
 }
 
+class EnemyNpc implements GameActor {
+    public position: Vector2;
+    public sprite: DrawableTextureBox;
+    public text: DrawableText;
+    public health: number;
+    public attack: number;
+
+    constructor() {
+        this.position = Vector2New(0, 0);
+        this.sprite = new DrawableTextureBox();
+        this.sprite.texture = GFX.textures["hat1"];
+        this.sprite.size.x = 64;
+        this.sprite.size.y = 64;
+        this.sprite.depth = -0.9;
+        this.text = new DrawableText();
+        this.text.setTexture(GFX.textures["font1"]);
+        this.text.depth = -1;
+        this.health = 100;
+        this.attack = 10;
+
+    }
+    public teleport(pos: Vector2): void {
+        this.position = Vector2Clone(pos);
+    }
+
+    public init(): void {
+        GFX.addDrawable(this.sprite);
+        GFX.addDrawable(this.text);
+    }
+
+    public deinit(): void {
+        GFX.removeDrawable(this.sprite);
+        GFX.removeDrawable(this.text);
+    }
+
+    public showmessage(mes: string): void {
+        this.text.text = mes;
+        setTimeout(function () { this.text.text = ""; }, 2000);
+    }
+
+    public update(): void {
+        
+    }
+}
+
 class LocalPlayerClient extends PlayerClient {
     public moved: boolean;
     public activated: boolean;
@@ -322,47 +374,54 @@ class LocalPlayerClient extends PlayerClient {
     public update(): void {
         if (!Chat.chatactivated)
         {
-            let vel = Vector2New(0, 0)
-            if (Game.keyStates["up"]) {
-                vel.y -= 1;
-                this.moved = true;
-            }
-            if (Game.keyStates["down"]) {
-                vel.y += 1;
-                this.moved = true;
-            }
-            if (Game.keyStates["left"]) {
-                vel.x -= 1;
-                this.moved = true;
-            }
-            if (Game.keyStates["right"]) {
-                vel.x += 1;
-                this.moved = true;
-            }
-            if (Vector2Length(vel) > 0) {
-                Vector2Normalize(vel);
-                Vector2ScalarMul(vel, this.speed);
-                Vector2Add(this.position, vel);
+            if (!Battle.active) {
+                let vel = Vector2New(0, 0)
+                if (Game.keyStates["up"]) {
+                    vel.y -= 1;
+                    this.moved = true;
+                }
+                if (Game.keyStates["down"]) {
+                    vel.y += 1;
+                    this.moved = true;
+                }
+                if (Game.keyStates["left"]) {
+                    vel.x -= 1;
+                    this.moved = true;
+                }
+                if (Game.keyStates["right"]) {
+                    vel.x += 1;
+                    this.moved = true;
+                }
+                if (Vector2Length(vel) > 0) {
+                    Vector2Normalize(vel);
+                    Vector2ScalarMul(vel, this.speed);
+                    Vector2Add(this.position, vel);
 
-                this.sprite.position = Vector2Clone(this.position);
-                this.sprite.position.y -= Math.abs(Math.sin(Game.time / 4) * 10);
-            }
-            else
-                this.sprite.position = Vector2Clone(this.position);
+                    this.sprite.position = Vector2Clone(this.position);
+                    this.sprite.position.y -= Math.abs(Math.sin(Game.time / 4) * 10);
+                }
+                else
+                    this.sprite.position = Vector2Clone(this.position);
 
-            if (this.moved) {
-                console.log(this.position);
-                let coll = Game.testMapCollision(this.position, { x: 32, y: 32 });
-                if (coll.found) {
-                    console.log(coll)
-                    this.position.x -= coll.offset.x;
-                    this.position.y -= coll.offset.y;
+                if (this.moved) {
+                    let coll = Game.testMapCollision(this.position, { x: 32, y: 32 });
+                    if (coll.found) {
+                        console.log(coll)
+                        this.position.x -= coll.offset.x;
+                        this.position.y -= coll.offset.y;
 
+                    }
+                }
+
+                if (Game.keyStates["activate"] == KeyState.Pressed) {
+                    this.activated = true;
                 }
             }
-
-            if (Game.keyStates["activate"] == KeyState.Pressed) {
-                this.activated = true;
+            else
+            {
+                if (Game.keyStates["activate"] == KeyState.Pressed) {
+                    Battle.attack();
+                }
             }
         }
        

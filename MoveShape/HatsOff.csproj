@@ -200,6 +200,7 @@
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
+    <Compile Include="CS\Battle.cs" />
     <Compile Include="CS\Collision.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="CS\Data.cs" />
@@ -355,6 +356,7 @@
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="Client\async.ts" />
+    <TypeScriptCompile Include="Client\Battle.ts" />
     <TypeScriptCompile Include="Client\collision.ts" />
     <TypeScriptCompile Include="Client\game.ts" />
     <TypeScriptCompile Include="Client\gfx\assets.ts" />
