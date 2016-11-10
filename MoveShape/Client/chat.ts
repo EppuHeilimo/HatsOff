@@ -9,6 +9,8 @@
     export declare var chatactivated: boolean;
     export declare var sentmessage: boolean;
     export declare var initialized: boolean;
+    export declare var chattimeout: number;
+    export declare var fadetimer: number;
 
     export function newMessage(message: string) {
         let temp = Array<string>();
@@ -31,8 +33,31 @@
         }
     }
 
+    export function deactivateChat()
+    {
+        chatactivated = false;
+        chattimeout = setTimeout(hidechat, 3000);
+        
+    }
+    export function hidechat()
+    {
+        for (let i = 0; i < messages.length; i++)
+        {
+            messages[i].visible = false;
+        }
+    }
+
+    export function showchat() {
+        for (let i = 0; i < messages.length; i++)
+        {
+            messages[i].visible = true;
+        }
+        clearTimeout(chattimeout);
+    }
+
     export function init()
     {
+        fadetimer = setInterval(function () { return 1; }, 1000)
         messages = new Array<DrawableText>();
         messageindex = 0;
         for (let i = 0; i < 10; i++) {
@@ -72,9 +97,9 @@
     {
         if (currentmessage.text.length > 0) {
             lastmessage = currentmessage.text;
-            sentmessage = true;
-            currentmessage.text = "Press enter to chat";
+            sentmessage = true;        
         }
+        currentmessage.text = "Press enter to chat";
     }
 
     export function addKeyToCurrentMessage(char: string, capitalized: boolean)

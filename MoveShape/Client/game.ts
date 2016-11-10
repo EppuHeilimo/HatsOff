@@ -369,9 +369,10 @@ class LocalPlayerClient extends PlayerClient {
         if (Game.keyStates["enter"] == KeyState.Pressed) {
             if (Chat.chatactivated) {        
                 Chat.sendCurrentMessage();       
-                Chat.chatactivated = false;
+                Chat.deactivateChat();
             } else {
                 Chat.clearCurrentMessage();
+                Chat.showchat();
                 Chat.chatactivated = true;
             }
             

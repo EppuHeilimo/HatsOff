@@ -66,7 +66,26 @@ var Chat;
         }
     }
     Chat.windowResize = windowResize;
+    function deactivateChat() {
+        Chat.chatactivated = false;
+        Chat.chattimeout = setTimeout(hidechat, 3000);
+    }
+    Chat.deactivateChat = deactivateChat;
+    function hidechat() {
+        for (let i = 0; i < Chat.messages.length; i++) {
+            Chat.messages[i].visible = false;
+        }
+    }
+    Chat.hidechat = hidechat;
+    function showchat() {
+        for (let i = 0; i < Chat.messages.length; i++) {
+            Chat.messages[i].visible = true;
+        }
+        clearTimeout(Chat.chattimeout);
+    }
+    Chat.showchat = showchat;
     function init() {
+        Chat.fadetimer = setInterval(function () { return 1; }, 1000);
         Chat.messages = new Array();
         Chat.messageindex = 0;
         for (let i = 0; i < 10; i++) {
@@ -103,8 +122,8 @@ var Chat;
         if (Chat.currentmessage.text.length > 0) {
             Chat.lastmessage = Chat.currentmessage.text;
             Chat.sentmessage = true;
-            Chat.currentmessage.text = "Press enter to chat";
         }
+        Chat.currentmessage.text = "Press enter to chat";
     }
     Chat.sendCurrentMessage = sendCurrentMessage;
     function addKeyToCurrentMessage(char, capitalized) {
@@ -456,10 +475,11 @@ class LocalPlayerClient extends PlayerClient {
         if (Game.keyStates["enter"] == KeyState.Pressed) {
             if (Chat.chatactivated) {
                 Chat.sendCurrentMessage();
-                Chat.chatactivated = false;
+                Chat.deactivateChat();
             }
             else {
                 Chat.clearCurrentMessage();
+                Chat.showchat();
                 Chat.chatactivated = true;
             }
         }
@@ -1107,6 +1127,7 @@ function initMain(loadedCallback) {
     window.addEventListener("resize", windowResize, false);
     windowResize();
     function loop() {
+        Chat.loop();
         Game.update();
         GFX.update();
     }
