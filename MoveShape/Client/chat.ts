@@ -1,8 +1,6 @@
 ﻿namespace Chat {
     export declare var messages: Array<DrawableText>;
     export declare var messageindex: number;
-    export declare var keyMap: {};
-    export declare var keyStates: {};
     export declare var currentmessage: DrawableText;
     export declare var lastmessage: string;
     export declare var chatactivated: boolean;
@@ -22,6 +20,8 @@
         }
         messages[0].text = message;
         console.log(message);
+        showchat();
+        chattimeout = setTimeout(function () { fading = true; }, 3000);
     }
 
     export function loop()
@@ -52,8 +52,8 @@
     {
         chatactivated = false;
         chattimeout = setTimeout(function () { fading = true; }, 3000);
-        
     }
+
     export function fadechat(alpha: number)
     {
         for (let i = 0; i < messages.length; i++)
