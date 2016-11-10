@@ -44,7 +44,7 @@
             mes.position.x = 20;
             mes.screenSpace = true;
             mes.text = "";
-            GFX.addDrawable(mes);
+            GFX.addDrawable(mes, Layer.LayerAlpha);
             this.messages.push(mes);
         }
 
@@ -58,7 +58,7 @@
         currentmessage.position.x = 20;
         currentmessage.screenSpace = true;
         currentmessage.text = "Press enter to chat";
-        GFX.addDrawable(currentmessage);
+        GFX.addDrawable(currentmessage, Layer.LayerAlpha);
         sentmessage = false;
         initialized = true;
     }
