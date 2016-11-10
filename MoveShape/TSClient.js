@@ -45,6 +45,66 @@ class AsyncLoader {
         return false;
     }
 }
+var BattleAction;
+(function (BattleAction) {
+    BattleAction[BattleAction["ATTACK"] = 0] = "ATTACK";
+    BattleAction[BattleAction["NONE"] = 1] = "NONE";
+})(BattleAction || (BattleAction = {}));
+var Battle;
+(function (Battle) {
+    function startRandomBattle(myturn, npc, me) {
+        _myturn = myturn;
+        Battle.action = BattleAction.NONE;
+        _npc = npc;
+        _myhealth = me.health;
+        _myattack = me.attack;
+        Battle.active = true;
+    }
+    Battle.startRandomBattle = startRandomBattle;
+    function stopBattle() {
+        Battle.action = BattleAction.NONE;
+        Battle.active = false;
+    }
+    Battle.stopBattle = stopBattle;
+    function clearAttacks() {
+        Battle.action = BattleAction.NONE;
+    }
+    Battle.clearAttacks = clearAttacks;
+    function startBattle(myturn, enemy, me) {
+        _myturn = myturn;
+        _enemyPlayer = enemy;
+        _myhealth = me.health;
+        Battle.action = BattleAction.NONE;
+        _myattack = me.attack;
+        Battle.active = true;
+    }
+    Battle.startBattle = startBattle;
+    function updateBattle(myhealth, enemyhealth) {
+        _npc.health = enemyhealth;
+        _myhealth = myhealth;
+    }
+    Battle.updateBattle = updateBattle;
+    function lose() {
+        alert("You lose!");
+        stopBattle();
+    }
+    Battle.lose = lose;
+    function win() {
+        alert("You win!");
+        stopBattle();
+    }
+    Battle.win = win;
+    function attack() {
+        if (_myturn) {
+            Battle.action = BattleAction.ATTACK;
+        }
+    }
+    Battle.attack = attack;
+    function init() {
+        Battle.active = false;
+    }
+    Battle.init = init;
+})(Battle || (Battle = {}));
 var Collision;
 (function (Collision) {
     function testBoxCollision(center1, size1, center2, size2) {
@@ -262,6 +322,8 @@ var Game;
 })(Game || (Game = {}));
 class PlayerClient {
     constructor() {
+        this.health = 100;
+        this.attack = 10;
         this.speed = 8;
         this.position = Vector2New(0, 0);
         this.sprite = new DrawableTextureBox();
@@ -326,49 +388,87 @@ class InterpolatedPlayerClient extends PlayerClient {
         super.update();
     }
 }
+class EnemyNpc {
+    constructor() {
+        this.position = Vector2New(0, 0);
+        this.sprite = new DrawableTextureBox();
+        this.sprite.texture = GFX.textures["hat1"];
+        this.sprite.size.x = 64;
+        this.sprite.size.y = 64;
+        this.sprite.depth = -0.9;
+        this.text = new DrawableText();
+        this.text.setTexture(GFX.textures["font1"]);
+        this.text.depth = -1;
+        this.health = 100;
+        this.attack = 10;
+    }
+    teleport(pos) {
+        this.position = Vector2Clone(pos);
+    }
+    init() {
+        GFX.addDrawable(this.sprite);
+        GFX.addDrawable(this.text);
+    }
+    deinit() {
+        GFX.removeDrawable(this.sprite);
+        GFX.removeDrawable(this.text);
+    }
+    showmessage(mes) {
+        this.text.text = mes;
+        setTimeout(function () { this.text.text = ""; }, 2000);
+    }
+    update() {
+    }
+}
 class LocalPlayerClient extends PlayerClient {
     constructor() {
         super();
     }
     update() {
         if (!Chat.chatactivated) {
-            let vel = Vector2New(0, 0);
-            if (Game.keyStates["up"]) {
-                vel.y -= 1;
-                this.moved = true;
-            }
-            if (Game.keyStates["down"]) {
-                vel.y += 1;
-                this.moved = true;
-            }
-            if (Game.keyStates["left"]) {
-                vel.x -= 1;
-                this.moved = true;
-            }
-            if (Game.keyStates["right"]) {
-                vel.x += 1;
-                this.moved = true;
-            }
-            if (Vector2Length(vel) > 0) {
-                Vector2Normalize(vel);
-                Vector2ScalarMul(vel, this.speed);
-                Vector2Add(this.position, vel);
-                this.sprite.position = Vector2Clone(this.position);
-                this.sprite.position.y -= Math.abs(Math.sin(Game.time / 4) * 10);
-            }
-            else
-                this.sprite.position = Vector2Clone(this.position);
-            if (this.moved) {
-                console.log(this.position);
-                let coll = Game.testMapCollision(this.position, { x: 32, y: 32 });
-                if (coll.found) {
-                    console.log(coll);
-                    this.position.x -= coll.offset.x;
-                    this.position.y -= coll.offset.y;
+            if (!Battle.active) {
+                let vel = Vector2New(0, 0);
+                if (Game.keyStates["up"]) {
+                    vel.y -= 1;
+                    this.moved = true;
+                }
+                if (Game.keyStates["down"]) {
+                    vel.y += 1;
+                    this.moved = true;
+                }
+                if (Game.keyStates["left"]) {
+                    vel.x -= 1;
+                    this.moved = true;
+                }
+                if (Game.keyStates["right"]) {
+                    vel.x += 1;
+                    this.moved = true;
+                }
+                if (Vector2Length(vel) > 0) {
+                    Vector2Normalize(vel);
+                    Vector2ScalarMul(vel, this.speed);
+                    Vector2Add(this.position, vel);
+                    this.sprite.position = Vector2Clone(this.position);
+                    this.sprite.position.y -= Math.abs(Math.sin(Game.time / 4) * 10);
+                }
+                else
+                    this.sprite.position = Vector2Clone(this.position);
+                if (this.moved) {
+                    let coll = Game.testMapCollision(this.position, { x: 32, y: 32 });
+                    if (coll.found) {
+                        console.log(coll);
+                        this.position.x -= coll.offset.x;
+                        this.position.y -= coll.offset.y;
+                    }
+                }
+                if (Game.keyStates["activate"] == KeyState.Pressed) {
+                    this.activated = true;
                 }
             }
-            if (Game.keyStates["activate"] == KeyState.Pressed) {
-                this.activated = true;
+            else {
+                if (Game.keyStates["activate"] == KeyState.Pressed) {
+                    Battle.attack();
+                }
             }
         }
         if (Game.keyStates["enter"] == KeyState.Pressed) {

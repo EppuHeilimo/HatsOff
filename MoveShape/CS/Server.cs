@@ -71,6 +71,13 @@ namespace Hatsoff
         }
         public void Broadcast(object state)
         {
+            if(_battles.Count > 0)
+            {
+                foreach(Battle b in _battles)
+                {
+                    b.NpcAction();
+                }
+            }
             bool somethingchanged = _modelUpdated || _playerDisconnected;
             // This is how we can access the Clients property 
             // in a static hub method or outside of the hub entirely

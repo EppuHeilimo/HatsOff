@@ -45,11 +45,12 @@ namespace Hatsoff
             {
                 player1stats.health -= npc.attack;
                 turn = !turn;
+                if (player1stats.health <= 0)
+                {
+                    winner = 3;
+                }
             }
-            if(player1stats.health <= 0)
-            {
-                winner = 3;
-            }
+
         }
         public void PlayerAction(PlayerActor player, BattleAction action)
         {

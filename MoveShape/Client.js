@@ -220,7 +220,7 @@ $(function () {
 
     connectionHub.client.updateBattle = function(myhealth, enemyhealth)
     {
-        Battle.updateEnemy(myhealth, enemyhealth);
+        Battle.updateBattle(myhealth, enemyhealth);
     }
 
     function updateServerModel() {
@@ -255,7 +255,7 @@ $(function () {
         if (Battle.active)
         {
             if(Battle.action != BattleAction.NONE)
-                connectionHub.server.battleUpdate(me, Battle.action);
+                connectionHub.server.updateBattle(me, Battle.action);
         }
         me.activated = false;
     }
