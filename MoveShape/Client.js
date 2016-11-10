@@ -247,7 +247,7 @@ $(function () {
         var y = event.clientY - rect.top + GFX.camera.y;
         console.log("Haha, you clicked! x: " + x + " y: " + y);
     }
-
+    /*
     for (var key in gamedata.maps[currentarea.mapname].triggerareas) {
         if (key in gamedata.maps[currentarea.mapname].triggerareas) {
             var area = gamedata.maps[currentarea.mapname].triggerareas[key];
@@ -257,5 +257,5 @@ $(function () {
                 hitarea = key;
             }
         }
-    }
+    }*/
 });
