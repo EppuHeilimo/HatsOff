@@ -116,8 +116,8 @@ class Texture implements AsyncLoadable
 			us.texture = GFX.gl.createTexture();
 			us.loaded = true;
 			GFX.gl.bindTexture(GFX.gl.TEXTURE_2D, us.texture);
-			GFX.gl.texImage2D(GFX.gl.TEXTURE_2D, 0, GFX.gl.RGBA, GFX.gl.RGBA, GFX.gl.UNSIGNED_BYTE, us.image);
-			GFX.gl.texParameteri(GFX.gl.TEXTURE_2D, GFX.gl.TEXTURE_MAG_FILTER, GFX.gl.NEAREST);
+            GFX.gl.texImage2D(GFX.gl.TEXTURE_2D, 0, GFX.gl.RGBA, GFX.gl.RGBA, GFX.gl.UNSIGNED_BYTE, us.image);
+            GFX.gl.texParameteri(GFX.gl.TEXTURE_2D, GFX.gl.TEXTURE_MAG_FILTER, GFX.gl.NEAREST);
 			
 			//GFX.gl.generateMipmap(GFX.gl.TEXTURE_2D);
 

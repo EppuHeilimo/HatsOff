@@ -24,10 +24,10 @@
 
     export function windowResize()
     {
-        currentmessage.position.y = window.innerHeight - 30;
+        currentmessage.position.y = window.innerHeight - 25;
         for (let i = 0; i < messages.length; i++)
         {
-            messages[i].position.y = window.innerHeight - 50 - i * 10;
+            messages[i].position.y = window.innerHeight - 50 - i * 20;
         }
     }
 
@@ -39,8 +39,8 @@
             let mes = new DrawableText();
             mes.setTexture(GFX.textures["font1"]);
             mes.depth = -1;
-            mes.characterScale = 1.3;
-            mes.position.y = window.innerHeight - 50 - i * 10;
+            mes.characterScale = 2;
+            mes.position.y = window.innerHeight - 50 - i * 20;
             mes.position.x = 20;
             mes.screenSpace = true;
             mes.text = "";
@@ -53,8 +53,8 @@
         currentmessage = new DrawableText();
         currentmessage.setTexture(GFX.textures["font1"]);
         currentmessage.depth = -1;
-        currentmessage.characterScale = 1.3;
-        currentmessage.position.y = window.innerHeight - 30;
+        currentmessage.characterScale = 2;
+        currentmessage.position.y = window.innerHeight - 25;
         currentmessage.position.x = 20;
         currentmessage.screenSpace = true;
         currentmessage.text = "Press enter to chat";

@@ -17,7 +17,7 @@ class DrawableText implements Drawable
 		this.depth = 0;
 		this.characterScale = 1;
         this.position = Vector2New(0, 0);
-        this.color = {r: 0, g: 0, b: 0, a: 1.0 };
+        this.color = {r: 1, g: 1, b: 1, a: 1.0 };
 	}
 
 	public setTexture(tex : Texture) : void
