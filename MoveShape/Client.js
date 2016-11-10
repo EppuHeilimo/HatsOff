@@ -257,6 +257,5 @@ $(function () {
                 hitarea = key;
             }
         }
-    }
-    */
+    }*/
 });
