@@ -31,7 +31,7 @@ namespace MoveShape
                 while (rdr.Read())
                 {
                     Console.WriteLine(rdr[0] + " -- " + rdr[1]);
-                    this.divi.InnerHtml += rdr[0] + " -- " + rdr[1];
+                    this.divi.InnerHtml += rdr[0] + " -- " + rdr[1] + "\n";
                 }
                 rdr.Close();
             }
