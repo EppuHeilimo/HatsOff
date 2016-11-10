@@ -97,7 +97,7 @@ var Chat;
             mes.position.x = 20;
             mes.screenSpace = true;
             mes.text = "";
-            GFX.addDrawable(mes);
+            GFX.addDrawable(mes, Layer.LayerAlpha);
             this.messages.push(mes);
         }
         Chat.chatactivated = false;
@@ -109,7 +109,7 @@ var Chat;
         Chat.currentmessage.position.x = 20;
         Chat.currentmessage.screenSpace = true;
         Chat.currentmessage.text = "Press enter to chat";
-        GFX.addDrawable(Chat.currentmessage);
+        GFX.addDrawable(Chat.currentmessage, Layer.LayerAlpha);
         Chat.sentmessage = false;
         Chat.initialized = true;
     }
@@ -715,14 +715,21 @@ class ShaderBinder {
             GFX.updateShader(this.lastShader);
     }
 }
+var Layer;
+(function (Layer) {
+    Layer[Layer["LayerDefault"] = 0] = "LayerDefault";
+    Layer[Layer["LayerAlpha"] = 1] = "LayerAlpha";
+    Layer[Layer["LayerTop"] = 2] = "LayerTop";
+    Layer[Layer["LayerLast"] = 3] = "LayerLast";
+})(Layer || (Layer = {}));
 var GFX;
 (function (GFX) {
-    function removeDrawable(drw) {
-        GFX.drawables.delete(drw);
+    function removeDrawable(drw, layer = 0) {
+        GFX.drawables[layer].delete(drw);
     }
     GFX.removeDrawable = removeDrawable;
-    function addDrawable(drw) {
-        GFX.drawables.add(drw);
+    function addDrawable(drw, layer = 0) {
+        GFX.drawables[layer].add(drw);
     }
     GFX.addDrawable = addDrawable;
     function defineDatas() {
@@ -759,7 +766,22 @@ var GFX;
     }
     GFX.updateViewport = updateViewport;
     function start(canvas) {
-        GFX.drawables = new Set();
+        GFX.drawables = [];
+        GFX.layerInitializers = [];
+        GFX.layerDeInitializers = [];
+        for (let i = 0; i < Layer.LayerLast; i++) {
+            GFX.drawables.push(new Set());
+            GFX.layerInitializers.push(function () { });
+            GFX.layerDeInitializers.push(function () { });
+        }
+        GFX.layerInitializers[Layer.LayerAlpha] = function () {
+            GFX.gl.enable(GFX.gl.BLEND);
+            GFX.gl.blendFunc(GFX.gl.SRC_ALPHA, GFX.gl.ONE_MINUS_SRC_ALPHA);
+        };
+        GFX.layerDeInitializers[Layer.LayerAlpha] = function () {
+            GFX.gl.disable(GFX.gl.BLEND);
+        };
+        new Set();
         GFX.tileMap = new DrawableTileMap();
         addDrawable(GFX.tileMap);
         //get open gl context
@@ -869,10 +891,14 @@ var GFX;
         updateShader(GFX.shaders["basic"]);
         GFX.gl.clear(GFX.gl.COLOR_BUFFER_BIT | GFX.gl.DEPTH_BUFFER_BIT);
         //and draw
-        GFX.drawables.forEach(function (i) {
-            if (i.visible)
-                i.draw();
-        });
+        for (let i = 0; i < GFX.drawables.length; i++) {
+            GFX.layerInitializers[i]();
+            GFX.drawables[i].forEach(function (i) {
+                if (i.visible)
+                    i.draw();
+            });
+            GFX.layerDeInitializers[i]();
+        }
     }
     GFX.update = update;
 })(GFX || (GFX = {}));

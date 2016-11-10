@@ -24,6 +24,13 @@ class ShaderBinder
 }
 
 
+enum Layer {
+    LayerDefault = 0,
+    LayerAlpha,
+    LayerTop,
+    LayerLast,
+}
+
 namespace GFX
 {
 	export declare var textures : { [name: string]: Texture; }; //Assoc. array of all textures
@@ -34,17 +41,17 @@ namespace GFX
 	export declare var scale : Vector2; //essentially same as render size, used to scale from screen coordinates to normalize coordinates
 	export declare var currentShader : Shader; //Currently bound shader (used to get uniforms and such)
     export declare var renderSize: Vector2; //"screen size"
-	export declare var drawables: Set<Drawable>; //list of things to draw
+    export declare var drawables: Set<Drawable>[]; //list of things to draw
+    export declare var layerInitializers: (() => void)[];
+    export declare var layerDeInitializers: (() => void)[];
     export declare var tileMap: DrawableTileMap;
      
-	export function removeDrawable(drw : Drawable)
-	{
-		drawables.delete(drw);
+    export function removeDrawable(drw: Drawable, layer: number = 0) {
+        drawables[layer].delete(drw);
 	}
 
-	export function addDrawable(drw : Drawable)
-	{
-		drawables.add(drw);
+    export function addDrawable(drw: Drawable, layer: number = 0) {
+        drawables[layer].add(drw);
 	}
 
 	export function defineDatas() : AsyncLoader
@@ -90,7 +97,24 @@ namespace GFX
 
 	export function start(canvas : any) : void
 	{
-        drawables = new Set<Drawable>();
+        drawables = [];
+        layerInitializers = [];
+        layerDeInitializers = [];
+        for (let i = 0; i < Layer.LayerLast; i++) {
+            drawables.push(new Set());
+            layerInitializers.push(function () { });
+            layerDeInitializers.push(function () { });
+        }
+        layerInitializers[Layer.LayerAlpha] = function () {
+            gl.enable(gl.BLEND);
+            gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+
+        };
+        layerDeInitializers[Layer.LayerAlpha] = function () {
+            gl.disable(gl.BLEND);
+        };
+        
+        new Set<Drawable>();
         tileMap = new DrawableTileMap();
 
         addDrawable(tileMap);
@@ -230,11 +254,14 @@ namespace GFX
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
         //and draw
-		drawables.forEach(function(i)
-		{
-			if (i.visible)
-				i.draw();
-		});
+        for (let i = 0; i < drawables.length; i++) {
+            layerInitializers[i]();
+            drawables[i].forEach(function (i) {
+                if (i.visible)
+                    i.draw();
+            });
+            layerDeInitializers[i]();
+        }
 	}
 
 }
