@@ -24,7 +24,7 @@ class TileMap implements AsyncLoadable
 	public sizeInTiles : Vector2;
 	public tileDefs : {[gid : string] : TileDef};
 	public tiles : number[];
-	public collision : boolean[];
+    public collision: boolean[];
     public objects: TileMapObject[];
     public tileSize: number= 64;
 
@@ -55,7 +55,11 @@ class TileMap implements AsyncLoadable
 
 	load(callback : (success: boolean) => void) : void
 	{
-		let us = this;
+        let us = this;
+        us.objects = [];
+        us.tileDefs = {};
+        us.tiles = [];
+        us.collision = [];
 
 		let doTM = function(tm)
 		{
@@ -64,8 +68,6 @@ class TileMap implements AsyncLoadable
             //only consider tilemaps with names
             //beginning with "terrain" 
             //TODO: properly handle object tilemaps
-			if (name.slice(0,7) != "terrain")
-                return;
 			let firstGid = tm.firstgid;
 			for (let key in tm.tiles)
 			{
@@ -79,7 +81,24 @@ class TileMap implements AsyncLoadable
 				let tex = GFX.textures[img];
 				us.tileDefs[num] = {texture: tex};
 			}
-		};
+        };
+
+        let doObjects = function (tm) {
+            for (let objk in tm.objects) {
+                
+                let obj = tm.objects[objk]
+                let md = <TileMapObject>{};
+                md.position = { x: obj.x + obj.width / 2, y: obj.y - obj.height / 2 };
+                md.size = { x: obj.width, y: obj.height };
+                let td = us.tileDefs[obj.gid];
+                if (td)
+                    md.texture = td.texture;
+                else {
+                    md.texture = null;
+                }
+                us.objects.push(md);
+            }
+        };
 
 		let xht = new XMLHttpRequest();
 		xht.open("GET",this.source,true);
@@ -107,18 +126,19 @@ class TileMap implements AsyncLoadable
                     //TODO: check the corrects layers based on name
                     //instead of type
                     //TODO: properly handle object layers
-                    if (lay.type != "tilelayer")
-                        continue;
-					if (lay.name == "terrain")
-					{
-						us.tiles = lay.data;
-					}
-					else if (lay.name == "collision")
-					{
-						for (let i = 0; i < us.collision.length; i++)
-							us.collision[i] = (lay.data[i] > 0);
-					}
-                }
+                    if (lay.type == "tilelayer") {
+                        if (lay.name == "terrain") {
+                            us.tiles = lay.data;
+                        }
+                        else if (lay.name == "collision") {
+                            for (let i = 0; i < us.collision.length; i++)
+                                us.collision[i] = (lay.data[i] > 0);
+                        }
+                    }
+                    else if (lay.type == "objectgroup") {
+                        doObjects(lay);
+                    }
+               }
                 callback(true);
             }
             catch (e) {
@@ -146,7 +166,8 @@ class DrawableTileMap implements Drawable
 {
 
 	public map : TileMap;
-	private buffers : DrawableTileMapTexBuffer[];
+    private buffers: DrawableTileMapTexBuffer[];
+    private drawables: Drawable[];
 
 
 	public visible : boolean = true;
@@ -154,16 +175,23 @@ class DrawableTileMap implements Drawable
     constructor()
 	{
 		this.map = null;
-		this.buffers = [];
+        this.buffers = [];
+        this.drawables = [];
 	}
 
 	public setMap(map : TileMap) : void
 	{
         this.map = map;
         //clear the previous buffers
-		for (var i = this.buffers.length - 1; i >= 0; i--) {
+        for (let i = this.buffers.length - 1; i >= 0; i--) {
 			GFX.gl.deleteBuffer(this.buffers[i].buffer);
-		}
+        }
+
+        for (let i = 0; i < this.drawables.length; i++)
+        {
+            GFX.removeDrawable(this.drawables[i]);
+        }
+        this.drawables = [];
         this.buffers = [];
 
         if (!map)
@@ -238,6 +266,17 @@ class DrawableTileMap implements Drawable
        		this.buffers.push(buf);
 		}
 
+        for (let i = 0; i < map.objects.length; i++) {
+            let obj = map.objects[i];
+            let drw = new DrawableTextureBox();
+            
+            drw.texture = obj.texture;
+            drw.position = obj.position;
+            drw.size = obj.size;
+            drw.depth = 0.780
+            GFX.addDrawable(drw);
+            this.drawables.push(drw);
+        }
 	}
 
 	public draw() : void

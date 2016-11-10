@@ -44,8 +44,8 @@ class DrawableTextureBox implements Drawable {
     }
 
     public draw(): void {
-        let sb = new ShaderBinder();
-        GFX.drawCentered(this.texture, this.position, this.depth, this.size);
+        if (this.texture)
+            GFX.drawCentered(this.texture, this.position, this.depth, this.size);
     }
 }
 

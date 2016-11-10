@@ -21,40 +21,39 @@ namespace Game {
     
 
 	export function testMapCollision(center : Vector2, size : Vector2) : BoxCollisionResult
-	{
+    {
+        let cnt = Vector2Clone(center);
 		let b = {offset: {x:0,y:0}, found: false};
-		if (center.x - size.x / 2 < 0)
+        if (cnt.x - size.x / 2 < 0)
 		{
-			b.offset.x = (center.x - size.x / 2);
-			b.found = true;
-			return b;
+            b.offset.x = (cnt.x - size.x / 2);
+            b.found = true;
 		}
 		
-		if (center.y - size.y / 2 < 0)
+        if (cnt.y - size.y / 2 < 0)
 		{
-            b.offset.y = (center.y - size.y / 2);
-			b.found = true;
-			return b;
-		}
+            b.offset.y = (cnt.y - size.y / 2);
+            b.found = true;
+        }
 		
 		if (GFX.tileMap.map)
 		{
 			let map = GFX.tileMap.map;
 			let mapx = map.sizeInTiles.x * map.tileSize;
 			let mapy = map.sizeInTiles.y * map.tileSize;
-			if (center.x + size.x / 2 > mapx)
+            if (cnt.x + size.x / 2 > mapx)
 			{
-                b.offset.x = (center.x + size.x / 2) - mapx;
+                b.offset.x = (cnt.x + size.x / 2) - mapx;
 				b.found = true;
-				return b;
 			}
 			
-			if (center.y + size.y / 2 > mapy)
+            if (cnt.y + size.y / 2 > mapy)
 			{
-                b.offset.y = (center.y + size.y / 2) - mapy;
+                b.offset.y = (cnt.y + size.y / 2) - mapy;
 				b.found = true;
-				return b;
-			}
+            }
+
+            Vector2Sub(cnt, b.offset);
 			let tryMatrix = <Vector2[]>[];
 			
 			tryMatrix.push(Vector2New(0,0));
@@ -68,7 +67,7 @@ namespace Game {
 			tryMatrix.push(Vector2New(-1,1));
             
 			
-			let base = {x: Math.floor(center.x / map.tileSize), y: Math.floor(center.y / map.tileSize)};
+            let base = { x: Math.floor(cnt.x / map.tileSize), y: Math.floor(cnt.y / map.tileSize)};
 			for (let i = 0; i < tryMatrix.length; i++)
 			{
 				let vs = tryMatrix[i];
@@ -80,11 +79,15 @@ namespace Game {
 					Vector2ScalarMul(cm, map.tileSize);
 					cm.x += map.tileSize / 2;
 					cm.y += map.tileSize / 2;
-                    let res = Collision.testBoxCollision(center, size, cm, { x: map.tileSize, y: map.tileSize });
+                    let res = Collision.testBoxCollision(cnt, size, cm, { x: map.tileSize, y: map.tileSize });
                     (<any>res).fjhh = vs;
                     (<any>res).ffjhh = cm;
-					if (res.found)
-						return res;
+                    
+                    if (res.found) {
+                        b.found = true;
+                        Vector2Add(b.offset, res.offset);
+                        Vector2Sub(cnt, res.offset)
+                    }
 				}
 			}
 		}
