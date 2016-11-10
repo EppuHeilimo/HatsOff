@@ -1,7 +1,6 @@
-﻿namespace Chat
-{
-    export declare var messages : Array<DrawableText>;
-    export declare var messageindex : number;
+﻿namespace Chat {
+    export declare var messages: Array<DrawableText>;
+    export declare var messageindex: number;
     export declare var keyMap: {};
     export declare var keyStates: {};
     export declare var currentmessage: DrawableText;
@@ -11,17 +10,33 @@
     export declare var initialized: boolean;
     export declare var chattimeout: number;
     export declare var fadetimer: number;
+    export declare var fading: boolean;
 
     export function newMessage(message: string) {
         let temp = Array<string>();
         for (let i = 0; i < messages.length; i++) {
             temp.push(messages[i].text);
-        }  
+        }
         for (let i = 0; i < messages.length - 1; i++) {
             messages[i + 1].text = temp[i];
         }
         messages[0].text = message;
         console.log(message);
+    }
+
+    export function loop()
+    {
+        if (fading)
+        {
+            if (fadetimer > 0) {
+                fadetimer -= 0.1;
+                fadechat(fadetimer);
+            }
+            else if (fadetimer <= 0) {
+                fadetimer = 1;
+                fading = false;
+            }
+        }
     }
 
     export function windowResize()
@@ -36,28 +51,28 @@
     export function deactivateChat()
     {
         chatactivated = false;
-        chattimeout = setTimeout(hidechat, 3000);
+        chattimeout = setTimeout(function () { fading = true; }, 3000);
         
     }
-    export function hidechat()
+    export function fadechat(alpha: number)
     {
         for (let i = 0; i < messages.length; i++)
         {
-            messages[i].visible = false;
-        }
+            messages[i].color.a = alpha;
+        }   
     }
 
     export function showchat() {
         for (let i = 0; i < messages.length; i++)
         {
-            messages[i].visible = true;
+            messages[i].color.a = 1;
         }
         clearTimeout(chattimeout);
     }
 
     export function init()
     {
-        fadetimer = setInterval(function () { return 1; }, 1000)
+        fadetimer = 1;
         messages = new Array<DrawableText>();
         messageindex = 0;
         for (let i = 0; i < 10; i++) {
