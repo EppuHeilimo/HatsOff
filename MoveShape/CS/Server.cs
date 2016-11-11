@@ -189,19 +189,7 @@ namespace Hatsoff
             {
                 bool hit = false;
 
-                List<CollisionCircle> posCollisions = new List<CollisionCircle>();
-                    
-                overworldcollisions.Retrieve(posCollisions, new CollisionCircle(p.getCollCircle()));
-                foreach (var collision in posCollisions)
-                {
-                    if (Collision.TestCircleCollision(new Vec2(player.x, player.y), 30, collision.getCenter(), 30))
-                    {
-                        if (collision.getType() == CollisionCircle.ObjectType.PLAYER && (RemotePlayer)collision.getObject() != p)
-                        {
-                                
-                        }
-                    }
-                }
+
                 
                 //Temporary simple tile check
                 var tm = p.areaname;
@@ -250,6 +238,32 @@ namespace Hatsoff
                     if (Collision.TestCircleCollision(p.GetPosition(), 50, _gamedata.maps[p.areaname].triggerareas[attribs].getCenter(), 50))
                     {
                         ChangePlayerArea(p, connectionId, attribs);
+                    }
+                }
+            }
+            else if (cmd == "playerhittrigger")
+            {
+                List<CollisionCircle> posCollisions = new List<CollisionCircle>();
+                overworldcollisions.Retrieve(posCollisions, new CollisionCircle(p.getCollCircle()));
+                foreach (var collision in posCollisions)
+                {
+                    if (Collision.TestCircleCollision(p.GetPosition(), 30, collision.getCenter(), 30))
+                    {
+                        if (collision.getType() == CollisionCircle.ObjectType.PLAYER )
+                        {
+                            RemotePlayer rp = (RemotePlayer) collision.getObject();
+                            if (rp != p && (int)rp.GetPlayerShape().id == int.Parse(attribs))
+                            {
+
+                                    rp.GetPlayerShape().lastbattletimer = 0;
+                                    rp.currentbattle = new Battle(p, rp);
+                                    p.currentbattle = rp.currentbattle;
+                                    _battles.Add(rp.currentbattle);
+                                    _hubContext.Clients.Client(rp.GetPlayerShape().owner).startPvPBattle(p.GetPlayerShape().id);
+                                    _hubContext.Clients.Client(connectionId).startPvPBattle(rp.GetPlayerShape().id);
+                                
+                            }
+                        }
                     }
                 }
             }
@@ -397,7 +411,10 @@ namespace Hatsoff
                 switch(p.currentbattle.winner)
                 {
                     case 1:
-                        _hubContext.Clients.Client(p.currentbattle.player2.GetPlayerShape().owner).loseBattle();
+                        if (p.currentbattle.pvp)
+                        {
+                            _hubContext.Clients.Client(p.currentbattle.player2.GetPlayerShape().owner).loseBattle();
+                        }
                         _hubContext.Clients.Client(p.currentbattle.player1.GetPlayerShape().owner).winBattle();
                         break;
                      case 2:
@@ -408,6 +425,7 @@ namespace Hatsoff
                         _hubContext.Clients.Client(p.currentbattle.player2.GetPlayerShape().owner).loseBattle();
                         break;
                 }
+                p.currentbattle = null;
             }
         }
     }

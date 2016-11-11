@@ -248,6 +248,7 @@ class PlayerClient implements GameActor {
         this.sprite.size.y = 64;
         this.sprite.depth = -0.9;
         this.text = new DrawableText();
+        this.text.text = "Test";
         this.text.setTexture(GFX.textures["font1"]);
         this.text.depth = -1;
 
@@ -258,7 +259,7 @@ class PlayerClient implements GameActor {
 
     public init(): void {
         GFX.addDrawable(this.sprite);
-        GFX.addDrawable(this.text);
+        GFX.addDrawable(this.text, Layer.LayerAlpha);
     }
 
     public deinit(): void {
@@ -273,16 +274,15 @@ class PlayerClient implements GameActor {
     }
 
     public update(): void {
-       
-        this.text.position.x = this.position.x;
-        this.text.position.y = this.position.y - 30;
+        this.text.position.x = this.position.x - 25;
+        this.text.position.y = this.position.y - 50;
     }
 }
 
 class InterpolatedPlayerClient extends PlayerClient {
     public lastPosition: Vector2;
     constructor() {
-        super()
+        super();
         this.lastPosition = Vector2New(0, 0);
     }
     
@@ -327,27 +327,30 @@ class EnemyNpc implements GameActor {
     public health: number;
     public attack: number;
 
-    constructor() {
-        this.position = Vector2New(0, 0);
+    constructor(x: number, y: number, attack: number, health: number) {
+        this.position = Vector2New(x,y);
         this.sprite = new DrawableTextureBox();
         this.sprite.texture = GFX.textures["hat1"];
         this.sprite.size.x = 64;
         this.sprite.size.y = 64;
+        this.sprite.position = Vector2New(x, y);
         this.sprite.depth = -0.9;
         this.text = new DrawableText();
+        this.text.text = "Health: " + this.health;
         this.text.setTexture(GFX.textures["font1"]);
         this.text.depth = -1;
-        this.health = 100;
-        this.attack = 10;
+        this.health = health;
+        this.attack = attack;
 
     }
+
     public teleport(pos: Vector2): void {
         this.position = Vector2Clone(pos);
     }
 
     public init(): void {
         GFX.addDrawable(this.sprite);
-        GFX.addDrawable(this.text);
+        GFX.addDrawable(this.text, Layer.LayerAlpha);
     }
 
     public deinit(): void {
@@ -361,7 +364,8 @@ class EnemyNpc implements GameActor {
     }
 
     public update(): void {
-        
+        this.text.position.x = this.position.x - 25;
+        this.text.position.y = this.position.y - 50;
     }
 }
 

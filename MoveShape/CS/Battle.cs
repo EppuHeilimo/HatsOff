@@ -41,7 +41,7 @@ namespace Hatsoff
         }
         public void NpcAction()
         {
-            if(!turn)
+            if(!pvp && !turn)
             {
                 player1stats.health -= npc.attack;
                 turn = !turn;
@@ -57,12 +57,12 @@ namespace Hatsoff
             if(pvp)
             {
                 int p;
-                if (player1.GetPlayerShape() == player && turn)
+                if (player1.GetPlayerShape().owner == player.LastUpdatedBy && turn)
                 {
                     p = 1;
                     turn = !turn;
                 }
-                else if (player2.GetPlayerShape() == player && !turn)
+                else if (player2.GetPlayerShape().owner == player.LastUpdatedBy && !turn)
                 {
                     p = 2;
                     turn = !turn;

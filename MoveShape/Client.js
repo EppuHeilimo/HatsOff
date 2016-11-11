@@ -211,16 +211,22 @@ $(function () {
         connectionHub.server.getGameInfo();
         connectionHub.server.getAreaInfo();
         Chat.init();
+        Battle.init();
     });
 
     connectionHub.client.randomBattle = function(health, attack)
     {
-        Battle.startRandomBattle(true, new EnemyNpc(me.x + 100, me.y, health, attack), me);
+        Battle.startRandomBattle(true, new EnemyNpc(me.position.x + 100, me.position.y, attack, health), me);
+    }
+    connectionHub.client.startPvPBattle = function (enemyid, turn) {
+        var p = findPlayerByID(enemyid);
+        Battle.startBattle(true, p, me);
     }
 
     connectionHub.client.updateBattle = function(myhealth, enemyhealth)
     {
         Battle.updateBattle(myhealth, enemyhealth);
+        console.log(myhealth + " " + enemyhealth);
     }
 
     function updateServerModel() {
@@ -231,20 +237,28 @@ $(function () {
         }
         if (me.activated)
         {
-            var hit = false;
-            var hitarea;
-            for (var key in gamedata.maps[currentarea.mapname].triggerareas) {
+            var trigger = "";
+            var attribs;
+            for (let key in gamedata.maps[currentarea.mapname].triggerareas) {
                 if (key in gamedata.maps[currentarea.mapname].triggerareas) {
                     var area = gamedata.maps[currentarea.mapname].triggerareas[key];
                     if (!gamedata.maps[currentarea.mapname].triggerareas.hasOwnProperty(key)) continue;
                     if (collisionCircle(me.position, 50, area, 50)) {
-                        hit = true;
-                        hitarea = key;
+                        trigger = "areachangetrigger";
+                        attribs = key;
                     }
                 }
             }
-            if (hit) {
-                connectionHub.server.message("areachangetrigger", hitarea);
+            for (var i = 0; i < currentarea.mapstate.playerlist.length; i++) {
+                if (currentarea.mapstate.playerlist[i].id != myId) {
+                    if (collisionCircle(me.position, 50, currentarea.mapstate.playerlist[i], 50)) {
+                        trigger = "playerhittrigger";
+                        attribs = currentarea.mapstate.playerlist[i].id;
+                    }
+                }
+            }
+            if (trigger !== "") {
+                connectionHub.server.message(trigger, attribs);
             }
         }
         if (Chat.sentmessage)
@@ -254,8 +268,11 @@ $(function () {
         }
         if (Battle.active)
         {
-            if(Battle.action != BattleAction.NONE)
+            if (Battle.action != BattleAction.NONE) {
                 connectionHub.server.updateBattle(me, Battle.action);
+                Battle.clearAction();
+            }
+                
         }
         me.activated = false;
     }

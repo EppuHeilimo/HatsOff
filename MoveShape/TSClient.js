@@ -53,44 +53,66 @@ var BattleAction;
 var Battle;
 (function (Battle) {
     function startRandomBattle(myturn, npc, me) {
+        _enemyIsPlayer = false;
         _myturn = myturn;
         Battle.action = BattleAction.NONE;
         _npc = npc;
+        _me = me;
+        _npc.text.text = "Health: " + _npc.health;
+        _me.text.text = "Health: " + _me.health;
         _myhealth = me.health;
         _myattack = me.attack;
         Battle.active = true;
+        Game.addActor(_npc);
     }
     Battle.startRandomBattle = startRandomBattle;
     function stopBattle() {
         Battle.action = BattleAction.NONE;
+        if (!_enemyIsPlayer) {
+            _npc.text.text = "";
+            Game.removeActor(_npc);
+        }
         Battle.active = false;
+        _enemyIsPlayer = false;
+        _me.health = 100;
+        _me.text.text = "";
     }
     Battle.stopBattle = stopBattle;
-    function clearAttacks() {
+    function clearAction() {
         Battle.action = BattleAction.NONE;
     }
-    Battle.clearAttacks = clearAttacks;
+    Battle.clearAction = clearAction;
     function startBattle(myturn, enemy, me) {
         _myturn = myturn;
         _enemyPlayer = enemy;
+        _me = me;
+        _enemyIsPlayer = true;
         _myhealth = me.health;
+        _enemyPlayer.text.text = "Health: " + _enemyPlayer.health;
+        _me.text.text = "Health: " + _me.health;
         Battle.action = BattleAction.NONE;
         _myattack = me.attack;
         Battle.active = true;
     }
     Battle.startBattle = startBattle;
     function updateBattle(myhealth, enemyhealth) {
-        _npc.health = enemyhealth;
-        _myhealth = myhealth;
+        if (!_enemyIsPlayer) {
+            _npc.health = enemyhealth;
+            _npc.text.text = "Health: " + _npc.health;
+        }
+        else {
+            _enemyPlayer.health = enemyhealth;
+            _enemyPlayer.text.text = "Health: " + _enemyPlayer.health;
+        }
+        _me.health = myhealth;
+        _me.text.text = "Health: " + _me.health;
     }
     Battle.updateBattle = updateBattle;
     function lose() {
-        alert("You lose!");
         stopBattle();
     }
     Battle.lose = lose;
     function win() {
-        alert("You win!");
         stopBattle();
     }
     Battle.win = win;
@@ -332,6 +354,7 @@ class PlayerClient {
         this.sprite.size.y = 64;
         this.sprite.depth = -0.9;
         this.text = new DrawableText();
+        this.text.text = "Test";
         this.text.setTexture(GFX.textures["font1"]);
         this.text.depth = -1;
     }
@@ -340,7 +363,7 @@ class PlayerClient {
     }
     init() {
         GFX.addDrawable(this.sprite);
-        GFX.addDrawable(this.text);
+        GFX.addDrawable(this.text, Layer.LayerAlpha);
     }
     deinit() {
         GFX.removeDrawable(this.sprite);
@@ -351,8 +374,8 @@ class PlayerClient {
         setTimeout(function () { this.text.text = ""; }, 2000);
     }
     update() {
-        this.text.position.x = this.position.x;
-        this.text.position.y = this.position.y - 30;
+        this.text.position.x = this.position.x - 25;
+        this.text.position.y = this.position.y - 50;
     }
 }
 class InterpolatedPlayerClient extends PlayerClient {
@@ -389,25 +412,27 @@ class InterpolatedPlayerClient extends PlayerClient {
     }
 }
 class EnemyNpc {
-    constructor() {
-        this.position = Vector2New(0, 0);
+    constructor(x, y, attack, health) {
+        this.position = Vector2New(x, y);
         this.sprite = new DrawableTextureBox();
         this.sprite.texture = GFX.textures["hat1"];
         this.sprite.size.x = 64;
         this.sprite.size.y = 64;
+        this.sprite.position = Vector2New(x, y);
         this.sprite.depth = -0.9;
         this.text = new DrawableText();
+        this.text.text = "Health: " + this.health;
         this.text.setTexture(GFX.textures["font1"]);
         this.text.depth = -1;
-        this.health = 100;
-        this.attack = 10;
+        this.health = health;
+        this.attack = attack;
     }
     teleport(pos) {
         this.position = Vector2Clone(pos);
     }
     init() {
         GFX.addDrawable(this.sprite);
-        GFX.addDrawable(this.text);
+        GFX.addDrawable(this.text, Layer.LayerAlpha);
     }
     deinit() {
         GFX.removeDrawable(this.sprite);
@@ -418,6 +443,8 @@ class EnemyNpc {
         setTimeout(function () { this.text.text = ""; }, 2000);
     }
     update() {
+        this.text.position.x = this.position.x - 25;
+        this.text.position.y = this.position.y - 50;
     }
 }
 class LocalPlayerClient extends PlayerClient {
