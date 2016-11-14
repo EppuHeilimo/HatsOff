@@ -243,6 +243,11 @@ $(function () {
             connectionHub.server.updateModel({x: me.position.x, y: me.position.y, id: me.id});
             me.moved = false;
         }
+        if (me.inventorychanged)
+        {
+            connectionHub.server.updateInventory(me.inventorykey);
+            me.inventorykey = 0;
+        }
         if (me.activated)
         {
             var trigger = "";

@@ -42,7 +42,7 @@ TextureImports =
     "earth": { "source": "assets/graphics/attributes/earth.png", "isPowerOfTwo": true },
     "air": { "source": "assets/graphics/attributes/air.png", "isPowerOfTwo": true },
     "dark": { "source": "assets/graphics/attributes/dark.png", "isPowerOfTwo": true },
-    "holy": { "source": "assets/graphics/attributes/holy.png", "isPowerOfTwo": true 
+    "holy": { "source": "assets/graphics/attributes/holy.png", "isPowerOfTwo": true }
 };
 
 declare var ShaderImports : {[key:string] : ShaderSource};

@@ -14,7 +14,6 @@ enum KeyState {
 }
 
 
-
 namespace Game {
 
     export declare var time: number;
@@ -22,6 +21,8 @@ namespace Game {
     export declare var keyMap: { [keyid: number]: string; }
     export declare var keyStates: { [keyid: number]: KeyState; }
     export declare var nextMap: string;
+    export declare var inventorykey: number;
+
     
 
 	export function testMapCollision(center : Vector2, size : Vector2) : BoxCollisionResult
@@ -133,18 +134,9 @@ namespace Game {
         keyMap[16] = "shift";
         keyMap[13] = "enter";
 
-        /*
-        keyMap[48] = "0";
-        keyMap[49] = "1";
-        keyMap[50] = "2";
-        keyMap[51] = "3";
-        keyMap[52] = "4";
-        keyMap[53] = "5";
-        keyMap[54] = "6";
-        keyMap[55] = "7";
-        keyMap[56] = "8";
-        keyMap[57] = "9";
 
+         /*
+        keyMap[48] = "0";
         keyMap[65] = "a";
         keyMap[66] = "b";
         keyMap[67] = "c";
@@ -182,6 +174,10 @@ namespace Game {
             if (ev.keyCode in keyMap) {
                 var v = keyMap[ev.keyCode];
                 keyStates[v] = KeyState.Pressed;
+            }
+            if (ev.keyCode > 48 && ev.keyCode < 58)
+            {
+                inventorykey = ev.keyCode - 48;
             }
             if (Chat.chatactivated) {
                 if (ev.key.length === 1) {
@@ -374,9 +370,11 @@ class LocalPlayerClient extends PlayerClient {
     public activated: boolean;
     public sentMessage: boolean;
     public inventory: Inventory;
+    public inventorychanged: boolean;
+    public inventorykey: number;
     constructor() {
         super();
-
+        this.inventorykey = 0;
     }
 
     public updateInventory(inv: Inventory): void {
@@ -404,6 +402,9 @@ class LocalPlayerClient extends PlayerClient {
                 if (Game.keyStates["right"]) {
                     vel.x += 1;
                     this.moved = true;
+                }
+                if (Game.inventorykey > 0) {
+                    this.inventorychanged = true;
                 }
                 if (Vector2Length(vel) > 0) {
                     Vector2Normalize(vel);

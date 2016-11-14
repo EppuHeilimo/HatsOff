@@ -127,123 +127,6 @@ var Battle;
     }
     Battle.init = init;
 })(Battle || (Battle = {}));
-var Chat;
-(function (Chat) {
-    function newMessage(message) {
-        let temp = Array();
-        for (let i = 0; i < Chat.messages.length; i++) {
-            temp.push(Chat.messages[i].text);
-        }
-        for (let i = 0; i < Chat.messages.length - 1; i++) {
-            Chat.messages[i + 1].text = temp[i];
-        }
-        Chat.messages[0].text = message;
-        console.log(message);
-        showchat();
-        Chat.chattimeout = setTimeout(function () { Chat.fading = true; }, 3000);
-    }
-    Chat.newMessage = newMessage;
-    function loop() {
-        if (Chat.fading) {
-            if (Chat.fadetimer > 0) {
-                Chat.fadetimer -= 0.1;
-                fadechat(Chat.fadetimer);
-            }
-            else if (Chat.fadetimer <= 0) {
-                Chat.fadetimer = 1;
-                Chat.fading = false;
-            }
-        }
-    }
-    Chat.loop = loop;
-    function windowResize() {
-        Chat.currentmessage.position.y = window.innerHeight - 25;
-        for (let i = 0; i < Chat.messages.length; i++) {
-            Chat.messages[i].position.y = window.innerHeight - 50 - i * 20;
-        }
-    }
-    Chat.windowResize = windowResize;
-    function deactivateChat() {
-        Chat.chatactivated = false;
-        Chat.chattimeout = setTimeout(function () { Chat.fading = true; }, 3000);
-    }
-    Chat.deactivateChat = deactivateChat;
-    function fadechat(alpha) {
-        for (let i = 0; i < Chat.messages.length; i++) {
-            Chat.messages[i].color.a = alpha;
-        }
-    }
-    Chat.fadechat = fadechat;
-    function showchat() {
-        for (let i = 0; i < Chat.messages.length; i++) {
-            Chat.messages[i].color.a = 1;
-        }
-        clearTimeout(Chat.chattimeout);
-    }
-    Chat.showchat = showchat;
-    function init() {
-        Chat.fadetimer = 1;
-        Chat.messages = new Array();
-        Chat.messageindex = 0;
-        for (let i = 0; i < 10; i++) {
-            let mes = new DrawableText();
-            mes.setTexture(GFX.textures["font1"]);
-            mes.depth = -1;
-            mes.characterScale = 2;
-            mes.position.y = window.innerHeight - 50 - i * 20;
-            mes.position.x = 20;
-            mes.screenSpace = true;
-            mes.text = "";
-            GFX.addDrawable(mes, Layer.LayerAlpha);
-            this.messages.push(mes);
-        }
-        Chat.chatactivated = false;
-        Chat.currentmessage = new DrawableText();
-        Chat.currentmessage.setTexture(GFX.textures["font1"]);
-        Chat.currentmessage.depth = -1;
-        Chat.currentmessage.characterScale = 2;
-        Chat.currentmessage.position.y = window.innerHeight - 25;
-        Chat.currentmessage.position.x = 20;
-        Chat.currentmessage.screenSpace = true;
-        Chat.currentmessage.text = "Press enter to chat";
-        GFX.addDrawable(Chat.currentmessage, Layer.LayerAlpha);
-        Chat.sentmessage = false;
-        Chat.initialized = true;
-    }
-    Chat.init = init;
-    function clearCurrentMessage() {
-        Chat.currentmessage.text = "";
-    }
-    Chat.clearCurrentMessage = clearCurrentMessage;
-    function sendCurrentMessage() {
-        if (Chat.currentmessage.text.length > 0) {
-            Chat.lastmessage = Chat.currentmessage.text;
-            Chat.sentmessage = true;
-        }
-        Chat.currentmessage.text = "Press enter to chat";
-    }
-    Chat.sendCurrentMessage = sendCurrentMessage;
-    function addKeyToCurrentMessage(char, capitalized) {
-        if (capitalized) {
-            Chat.currentmessage.text = Chat.currentmessage.text + char.toUpperCase();
-        }
-        else {
-            Chat.currentmessage.text = Chat.currentmessage.text + char;
-        }
-    }
-    Chat.addKeyToCurrentMessage = addKeyToCurrentMessage;
-    function deleteLastKeyFromCurrentMessage() {
-        Chat.currentmessage.text = Chat.currentmessage.text.slice(0, -1);
-    }
-    Chat.deleteLastKeyFromCurrentMessage = deleteLastKeyFromCurrentMessage;
-    function clear() {
-        for (let i = 0; i < Chat.messages.length; i++) {
-            Chat.messages[i].text = "";
-        }
-        Chat.messageindex = 0;
-    }
-    Chat.clear = clear;
-})(Chat || (Chat = {}));
 var Collision;
 (function (Collision) {
     function testBoxCollision(center1, size1, center2, size2) {
@@ -369,44 +252,34 @@ var Game;
         Game.keyMap[16] = "shift";
         Game.keyMap[13] = "enter";
         /*
-        keyMap[48] = "0";
-        keyMap[49] = "1";
-        keyMap[50] = "2";
-        keyMap[51] = "3";
-        keyMap[52] = "4";
-        keyMap[53] = "5";
-        keyMap[54] = "6";
-        keyMap[55] = "7";
-        keyMap[56] = "8";
-        keyMap[57] = "9";
-
-        keyMap[65] = "a";
-        keyMap[66] = "b";
-        keyMap[67] = "c";
-        keyMap[68] = "d";
-        keyMap[69] = "e";
-        keyMap[70] = "f";
-        keyMap[71] = "g";
-        keyMap[72] = "h";
-        keyMap[73] = "í";
-        keyMap[74] = "j";
-        keyMap[75] = "k";
-        keyMap[76] = "l";
-        keyMap[77] = "m";
-        keyMap[78] = "n";
-        keyMap[79] = "o";
-        keyMap[80] = "p";
-        keyMap[81] = "q";
-        keyMap[82] = "r";
-        keyMap[83] = "s";
-        keyMap[84] = "t";
-        keyMap[85] = "u";
-        keyMap[86] = "v";
-        keyMap[87] = "w";
-        keyMap[88] = "x";
-        keyMap[89] = "y";
-        keyMap[90] = "z";
-        */
+       keyMap[48] = "0";
+       keyMap[65] = "a";
+       keyMap[66] = "b";
+       keyMap[67] = "c";
+       keyMap[68] = "d";
+       keyMap[69] = "e";
+       keyMap[70] = "f";
+       keyMap[71] = "g";
+       keyMap[72] = "h";
+       keyMap[73] = "í";
+       keyMap[74] = "j";
+       keyMap[75] = "k";
+       keyMap[76] = "l";
+       keyMap[77] = "m";
+       keyMap[78] = "n";
+       keyMap[79] = "o";
+       keyMap[80] = "p";
+       keyMap[81] = "q";
+       keyMap[82] = "r";
+       keyMap[83] = "s";
+       keyMap[84] = "t";
+       keyMap[85] = "u";
+       keyMap[86] = "v";
+       keyMap[87] = "w";
+       keyMap[88] = "x";
+       keyMap[89] = "y";
+       keyMap[90] = "z";
+       */
         Game.keyStates = {};
         for (var k in Game.keyMap) {
             if (Game.keyMap.hasOwnProperty(k)) {
@@ -417,6 +290,9 @@ var Game;
             if (ev.keyCode in Game.keyMap) {
                 var v = Game.keyMap[ev.keyCode];
                 Game.keyStates[v] = KeyState.Pressed;
+            }
+            if (ev.keyCode > 48 && ev.keyCode < 58) {
+                Game.inventorykey = ev.keyCode - 48;
             }
             if (Chat.chatactivated) {
                 if (ev.key.length === 1) {
@@ -567,6 +443,7 @@ class EnemyNpc {
 class LocalPlayerClient extends PlayerClient {
     constructor() {
         super();
+        this.inventorykey = 0;
     }
     updateInventory(inv) {
         this.inventory = inv;
@@ -591,6 +468,9 @@ class LocalPlayerClient extends PlayerClient {
                 if (Game.keyStates["right"]) {
                     vel.x += 1;
                     this.moved = true;
+                }
+                if (Game.inventorykey > 0) {
+                    this.inventorychanged = true;
                 }
                 if (Vector2Length(vel) > 0) {
                     Vector2Normalize(vel);
@@ -654,7 +534,14 @@ TextureImports =
         "grass": { "source": "assets/graphics/grass.png", "isPowerOfTwo": true },
         "sand": { "source": "assets/graphics/sand.png", "isPowerOfTwo": true },
         "shallowwater": { "source": "assets/graphics/shallowwater.png", "isPowerOfTwo": true },
-        "woodenbridge": { "source": "assets/graphics/woodenbridge.png", "isPowerOfTwo": true }
+        "woodenbridge": { "source": "assets/graphics/woodenbridge.png", "isPowerOfTwo": true },
+        "physical": { "source": "assets/graphics/attributes/physical.png", "isPowerOfTwo": true },
+        "fire": { "source": "assets/graphics/attributes/fire.png", "isPowerOfTwo": true },
+        "water": { "source": "assets/graphics/attributes/water.png", "isPowerOfTwo": true },
+        "earth": { "source": "assets/graphics/attributes/earth.png", "isPowerOfTwo": true },
+        "air": { "source": "assets/graphics/attributes/air.png", "isPowerOfTwo": true },
+        "dark": { "source": "assets/graphics/attributes/dark.png", "isPowerOfTwo": true },
+        "holy": { "source": "assets/graphics/attributes/holy.png", "isPowerOfTwo": true }
     };
 ShaderImports =
     {
@@ -858,9 +745,128 @@ class DrawableTestParticle extends DrawableColorBox {
         super.draw();
     }
 }
+var Chat;
+(function (Chat) {
+    function newMessage(message) {
+        let temp = Array();
+        for (let i = 0; i < Chat.messages.length; i++) {
+            temp.push(Chat.messages[i].text);
+        }
+        for (let i = 0; i < Chat.messages.length - 1; i++) {
+            Chat.messages[i + 1].text = temp[i];
+        }
+        Chat.messages[0].text = message;
+        console.log(message);
+        showchat();
+        Chat.chattimeout = setTimeout(function () { Chat.fading = true; }, 3000);
+    }
+    Chat.newMessage = newMessage;
+    function loop() {
+        if (Chat.fading) {
+            if (Chat.fadetimer > 0) {
+                Chat.fadetimer -= 0.1;
+                fadechat(Chat.fadetimer);
+            }
+            else if (Chat.fadetimer <= 0) {
+                Chat.fadetimer = 1;
+                Chat.fading = false;
+            }
+        }
+    }
+    Chat.loop = loop;
+    function windowResize() {
+        Chat.currentmessage.position.y = window.innerHeight - 25;
+        for (let i = 0; i < Chat.messages.length; i++) {
+            Chat.messages[i].position.y = window.innerHeight - 50 - i * 20;
+        }
+    }
+    Chat.windowResize = windowResize;
+    function deactivateChat() {
+        Chat.chatactivated = false;
+        Chat.chattimeout = setTimeout(function () { Chat.fading = true; }, 3000);
+    }
+    Chat.deactivateChat = deactivateChat;
+    function fadechat(alpha) {
+        for (let i = 0; i < Chat.messages.length; i++) {
+            Chat.messages[i].color.a = alpha;
+        }
+    }
+    Chat.fadechat = fadechat;
+    function showchat() {
+        for (let i = 0; i < Chat.messages.length; i++) {
+            Chat.messages[i].color.a = 1;
+        }
+        clearTimeout(Chat.chattimeout);
+    }
+    Chat.showchat = showchat;
+    function init() {
+        Chat.fadetimer = 1;
+        Chat.messages = new Array();
+        Chat.messageindex = 0;
+        for (let i = 0; i < 10; i++) {
+            let mes = new DrawableText();
+            mes.setTexture(GFX.textures["font1"]);
+            mes.depth = -1;
+            mes.characterScale = 2;
+            mes.position.y = window.innerHeight - 50 - i * 20;
+            mes.position.x = 20;
+            mes.screenSpace = true;
+            mes.text = "";
+            GFX.addDrawable(mes, Layer.LayerAlpha);
+            this.messages.push(mes);
+        }
+        Chat.chatactivated = false;
+        Chat.currentmessage = new DrawableText();
+        Chat.currentmessage.setTexture(GFX.textures["font1"]);
+        Chat.currentmessage.depth = -1;
+        Chat.currentmessage.characterScale = 2;
+        Chat.currentmessage.position.y = window.innerHeight - 25;
+        Chat.currentmessage.position.x = 20;
+        Chat.currentmessage.screenSpace = true;
+        Chat.currentmessage.text = "Press enter to chat";
+        GFX.addDrawable(Chat.currentmessage, Layer.LayerAlpha);
+        Chat.sentmessage = false;
+        Chat.initialized = true;
+    }
+    Chat.init = init;
+    function clearCurrentMessage() {
+        Chat.currentmessage.text = "";
+    }
+    Chat.clearCurrentMessage = clearCurrentMessage;
+    function sendCurrentMessage() {
+        if (Chat.currentmessage.text.length > 0) {
+            Chat.lastmessage = Chat.currentmessage.text;
+            Chat.sentmessage = true;
+        }
+        Chat.currentmessage.text = "Press enter to chat";
+    }
+    Chat.sendCurrentMessage = sendCurrentMessage;
+    function addKeyToCurrentMessage(char, capitalized) {
+        if (capitalized) {
+            Chat.currentmessage.text = Chat.currentmessage.text + char.toUpperCase();
+        }
+        else {
+            Chat.currentmessage.text = Chat.currentmessage.text + char;
+        }
+    }
+    Chat.addKeyToCurrentMessage = addKeyToCurrentMessage;
+    function deleteLastKeyFromCurrentMessage() {
+        Chat.currentmessage.text = Chat.currentmessage.text.slice(0, -1);
+    }
+    Chat.deleteLastKeyFromCurrentMessage = deleteLastKeyFromCurrentMessage;
+    function clear() {
+        for (let i = 0; i < Chat.messages.length; i++) {
+            Chat.messages[i].text = "";
+        }
+        Chat.messageindex = 0;
+    }
+    Chat.clear = clear;
+})(Chat || (Chat = {}));
 class ShaderBinder {
     useShader(shader) {
         this.lastShader = GFX.currentShader;
+        if (!shader)
+            return;
         GFX.updateShader(shader);
     }
     restoreShader() {
@@ -959,6 +965,8 @@ var GFX;
     }
     GFX.start = start;
     function drawCentered(t, pos, depth = 0.0, size = t.size) {
+        if (!t)
+            return;
         GFX.gl.bindTexture(GFX.gl.TEXTURE_2D, t.texture);
         GFX.gl.uniform1f(GFX.currentShader.uniforms["depth"], depth);
         GFX.gl.uniform2f(GFX.currentShader.uniforms["size"], size.x / 2, size.y / 2);
