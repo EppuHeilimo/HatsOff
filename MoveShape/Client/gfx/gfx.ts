@@ -12,6 +12,8 @@ class ShaderBinder
 	public useShader(shader : Shader)
 	{
 		this.lastShader = GFX.currentShader;
+		if (!shader)
+			return;
 		GFX.updateShader(shader);
 	}
 
@@ -149,6 +151,8 @@ namespace GFX
 
 	export function drawCentered(t : Texture, pos : Vector2, depth : number = 0.0, size : Vector2 = t.size) : void
 	{
+		if (!t)
+			return;
 		gl.bindTexture(gl.TEXTURE_2D, t.texture);
 		gl.uniform1f(currentShader.uniforms["depth"],  depth);
 		gl.uniform2f(currentShader.uniforms["size"],  size.x/2, size.y/2);
