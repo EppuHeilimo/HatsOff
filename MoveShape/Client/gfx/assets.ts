@@ -33,7 +33,16 @@ TextureImports =
     "grass": { "source": "assets/graphics/grass.png", "isPowerOfTwo": true },
     "sand": { "source": "assets/graphics/sand.png", "isPowerOfTwo": true },
     "shallowwater": { "source": "assets/graphics/shallowwater.png", "isPowerOfTwo": true },
-    "woodenbridge": { "source": "assets/graphics/woodenbridge.png", "isPowerOfTwo": true }
+    "woodenbridge": { "source": "assets/graphics/woodenbridge.png", "isPowerOfTwo": true },
+	
+	
+    "physical": { "source": "assets/graphics/attributes/physical.png", "isPowerOfTwo": true },
+    "fire": { "source": "assets/graphics/attributes/fire.png", "isPowerOfTwo": true },
+    "water": { "source": "assets/graphics/attributes/water.png", "isPowerOfTwo": true },
+    "earth": { "source": "assets/graphics/attributes/earth.png", "isPowerOfTwo": true },
+    "air": { "source": "assets/graphics/attributes/air.png", "isPowerOfTwo": true },
+    "dark": { "source": "assets/graphics/attributes/dark.png", "isPowerOfTwo": true },
+    "holy": { "source": "assets/graphics/attributes/holy.png", "isPowerOfTwo": true 
 };
 
 declare var ShaderImports : {[key:string] : ShaderSource};
