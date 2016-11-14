@@ -1,8 +1,10 @@
 ﻿using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using System.Web;
+using System.Web.Configuration;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -10,18 +12,17 @@ namespace MoveShape
 {
     public partial class test : System.Web.UI.Page
     {
+        static Configuration rootWebConfig = WebConfigurationManager.OpenWebConfiguration("/HatsOff");
+        const string connectionString = "hatsoffDatabase";
+
         protected void Page_Load(object sender, EventArgs e)
         {
-            MySql.Data.MySqlClient.MySqlConnection conn;
-            string myConnectionString;
 
-            myConnectionString = "server=mysql.labranet.jamk.fi;uid=H8805;" +
-                "pwd=9sPCZ7s5HG16PvQdRARED8YakE2orlwC;database=H8805_1;";
+            ConnectionStringSettings hatsoffDatabase = rootWebConfig.ConnectionStrings.ConnectionStrings[connectionString];
 
             try
             {
-                conn = new MySql.Data.MySqlClient.MySqlConnection();
-                conn.ConnectionString = myConnectionString;
+                MySqlConnection conn = new MySqlConnection(hatsoffDatabase.ConnectionString);
                 conn.Open();
 
                 string sql = "SELECT username, hatlevel FROM hatsoff_player";
