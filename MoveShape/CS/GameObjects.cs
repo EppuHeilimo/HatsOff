@@ -37,6 +37,7 @@ namespace Hatsoff
                 this.health = health;
             }
         }
+        
         struct Inventory
         {
             [JsonProperty("inventorysize")]

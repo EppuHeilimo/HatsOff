@@ -1,0 +1,31 @@
+﻿{
+  "0": {
+    "name": "physical",
+    "effect": "none"
+  },
+  "1": {
+    "name": "fire",
+    "effect": "none"
+  },
+  "2": {
+    "name": "water",
+    "effect": "none"
+  },
+  "3": {
+    "name": "earth",
+    "effect": "none"
+  },
+  "4": {
+    "name": "wind",
+    "effect": "none"
+  },
+  "5": {
+    "name": "dark",
+    "effect": "none"
+  },
+  "6": {
+    "name": "holy",
+    "effect": "none"
+  }
+
+}

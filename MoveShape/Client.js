@@ -28,7 +28,7 @@ $(function () {
         messageFrequency = 10,
         // Determine how often to send messages in
         // time to abide by the messageFrequency
-        updateRate = 1000 / messageFrequency
+        updateRate = 1000 / messageFrequency,
     
 
     findPlayerByID = function (id)
@@ -212,6 +212,7 @@ $(function () {
         connectionHub.server.getAreaInfo();
         Chat.init();
         Battle.init();
+        connectionIsEstablished = true;
     });
 
     connectionHub.client.randomBattle = function(health, attack)
@@ -249,11 +250,14 @@ $(function () {
                     }
                 }
             }
-            for (var i = 0; i < currentarea.mapstate.playerlist.length; i++) {
-                if (currentarea.mapstate.playerlist[i].id != myId) {
-                    if (collisionCircle(me.position, 50, currentarea.mapstate.playerlist[i], 50)) {
-                        trigger = "playerhittrigger";
-                        attribs = currentarea.mapstate.playerlist[i].id;
+            if (trigger === "")
+            {
+                for (var i = 0; i < players.length; i++) {
+                    if (players[i].id != myId) {
+                        if (collisionCircle(me.position, 50, players[i], 50)) {
+                            trigger = "playerhittrigger";
+                            attribs = players[i].id;
+                        }
                     }
                 }
             }

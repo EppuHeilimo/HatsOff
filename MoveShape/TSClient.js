@@ -1309,6 +1309,7 @@ class DrawableTileMap {
         sb.restoreShader();
     }
 }
+connectionIsEstablished = false;
 function initMain(loadedCallback) {
     let canvas = document.getElementById("canvas");
     Game.start();
@@ -1343,7 +1344,7 @@ function initMain(loadedCallback) {
     }
     function isLoaded() {
         //if all the asyncdata is loaded
-        if (asyncData.isDone()) {
+        if (asyncData.isDone() && connectionIsEstablished) {
             loadedCallback();
             //call loop every 17 milliseconds
             setInterval(loop, 17);

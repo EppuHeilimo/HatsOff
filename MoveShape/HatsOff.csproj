@@ -332,6 +332,8 @@
     <Content Include="assets\shaders\map.vs" />
     <Content Include="assets\town.json" />
     <Content Include="assets\smalltown.json" />
+    <Content Include="Data\items.json" />
+    <Content Include="Data\attributes.json" />
     <None Include="Properties\PublishProfiles\godaddy.pubxml" />
     <None Include="Properties\PublishProfiles\hatsoff.pubxml" />
     <None Include="Properties\PublishProfiles\hatsoff.trinedy.eu - Web Deploy.pubxml" />

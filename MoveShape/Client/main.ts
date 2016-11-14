@@ -1,9 +1,10 @@
-﻿
+﻿declare var connectionIsEstablished: boolean;
+connectionIsEstablished = false;
 
 function initMain(loadedCallback : () => void)
 {
-	let canvas = <HTMLCanvasElement> document.getElementById("canvas");
-
+    let canvas = <HTMLCanvasElement>document.getElementById("canvas");
+    
     Game.start();
     //initialize the opengl stuff
 	GFX.start(canvas);
@@ -48,7 +49,7 @@ function initMain(loadedCallback : () => void)
 	function isLoaded()
     {
         //if all the asyncdata is loaded
-		if (asyncData.isDone())
+        if (asyncData.isDone() && connectionIsEstablished)
         {
         	loadedCallback();
             //call loop every 17 milliseconds
