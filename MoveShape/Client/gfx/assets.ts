@@ -20,6 +20,7 @@ TextureImports =
     "citywall": { "source": "assets/graphics/citywall.png", "isPowerOfTwo": false },
     "cottage1": { "source": "assets/graphics/cottage.png", "isPowerOfTwo": false },
     "hat1": { "source": "assets/graphics/tophat.png", "isPowerOfTwo": true },
+    "peasant_hat": { "source": "assets/graphics/peasant_hat.png", "isPowerOfTwo": true },
 
     "tree1": { "source": "assets/graphics/tree1.png", "isPowerOfTwo": false },
     "tree2": { "source": "assets/graphics/tree2.png", "isPowerOfTwo": false },
