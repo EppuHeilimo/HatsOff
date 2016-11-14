@@ -12,7 +12,7 @@ namespace Hatsoff
 {
     public class Broadcaster
     {
-        private GameData _gamedata;
+        private GameData _gameData;
         private readonly static Lazy<Broadcaster> _instance =
             new Lazy<Broadcaster>(() => new Broadcaster());
         // We're going to broadcast to all clients a maximum of 25 times per second.
@@ -50,10 +50,10 @@ namespace Hatsoff
                 null,
                 BroadcastInterval,
                 BroadcastInterval);
-            _gamedata = new GameData();
+            _gameData = new GameData();
             _updatedPlayers = new ConcurrentDictionary<string, List<PlayerActor>>();
             mapstates = new Dictionary<string, MapState>();
-            foreach(KeyValuePair<string, Map> m in _gamedata.maps)
+            foreach(KeyValuePair<string, Map> m in _gameData.maps)
             {
                 mapstates.Add(m.Key, new MapState());
             }
@@ -194,7 +194,7 @@ namespace Hatsoff
                 //Temporary simple tile check
                 var tm = p.areaname;
                 Map map;
-                if (_gamedata.maps.TryGetValue(tm, out map))
+                if (_gameData.maps.TryGetValue(tm, out map))
                 {
                     var tile = map.tilemap.getTileInRealCoordinates((int)player.x, (int)player.y);
                     if ((tile == null) || tile.isBlocking)
@@ -233,9 +233,9 @@ namespace Hatsoff
             connectedPlayers.TryGetValue(connectionId, out p);
             if(cmd == "areachangetrigger")
             {
-                if (_gamedata.maps.ContainsKey(attribs))
+                if (_gameData.maps.ContainsKey(attribs))
                 {
-                    if (Collision.TestCircleCollision(p.GetPosition(), 50, _gamedata.maps[p.areaname].triggerareas[attribs].getCenter(), 50))
+                    if (Collision.TestCircleCollision(p.GetPosition(), 50, _gameData.maps[p.areaname].triggerareas[attribs].getCenter(), 50))
                     {
                         ChangePlayerArea(p, connectionId, attribs);
                     }
@@ -281,7 +281,7 @@ namespace Hatsoff
                 p.GetPlayerShape().insafezone = false;
                 p.GetPlayerShape().lastbattletimer = 0;
             }
-            Vec2 fromareapos = _gamedata.maps[targetArea].triggerareas[p.areaname].getCenter();
+            Vec2 fromareapos = _gameData.maps[targetArea].triggerareas[p.areaname].getCenter();
             p.SetPosition(fromareapos.x, fromareapos.y);
             p.GetPlayerShape().x = fromareapos.x;
             p.GetPlayerShape().y = fromareapos.y;
@@ -363,7 +363,7 @@ namespace Hatsoff
         }
         public void SendGameInfo(string connectionId)
         {
-            _hubContext.Clients.Client(connectionId).getGameInfo(_gamedata);
+            _hubContext.Clients.Client(connectionId).getGameInfo(_gameData);
         }
 
         internal void NewMessage(PlayerActor player, string message)
@@ -428,6 +428,24 @@ namespace Hatsoff
                 p.currentbattle = null;
             }
         }
+
+        internal void UpdateInventory(string connectionId, int selectedhat)
+        {
+            RemotePlayer p;
+            connectedPlayers.TryGetValue(connectionId, out p);
+            p.GetPlayerShape().inventory.EquiptItem(selectedhat);
+            _hubContext.Clients.Client(connectionId).updateInventory(p.GetPlayerShape().inventory);
+            if (_updatedPlayers.ContainsKey(p.areaname))
+            {
+                _updatedPlayers[p.areaname].Add(p.GetPlayerShape());
+            }
+            else
+            {
+                _updatedPlayers.TryAdd(p.areaname, new List<PlayerActor>());
+                _updatedPlayers[p.areaname].Add(p.GetPlayerShape());
+            }
+            _modelUpdated = true;
+        }
     }
 
     public class ConnectionHub : Hub
@@ -447,6 +465,10 @@ namespace Hatsoff
             player.LastUpdatedBy = Context.ConnectionId;
             // Update the shape model within our broadcaster
             _broadcaster.UpdateShape(player);
+        }
+        public void UpdateInventory(int selectedhat)
+        {
+            _broadcaster.UpdateInventory(Context.ConnectionId, selectedhat);
         }
 
         public void UpdateBattle(PlayerActor player, BattleAction action)
@@ -478,6 +500,7 @@ namespace Hatsoff
             _broadcaster.PlayerDisconnect(Context.ConnectionId);
             return base.OnDisconnected(stopCalled);
         }
+
         public void GetGameInfo()
         {
             _broadcaster.SendGameInfo(Context.ConnectionId);

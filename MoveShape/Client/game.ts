@@ -373,9 +373,15 @@ class LocalPlayerClient extends PlayerClient {
     public moved: boolean;
     public activated: boolean;
     public sentMessage: boolean;
+    public inventory: Inventory;
     constructor() {
         super();
 
+    }
+
+    public updateInventory(inv: Inventory): void {
+        this.inventory = inv;
+        super.sprite.texture = GFX.textures[this.inventory.equippeditem.baseitem.appearance];
     }
 
     public update(): void {
@@ -447,4 +453,43 @@ class LocalPlayerClient extends PlayerClient {
         super.update();
         GFX.centerCameraOn(this.position);
     }
+}
+
+interface BaseItem
+{
+    name: string;
+
+    description: string;
+
+    basepower: number;
+
+    attributeid: number;
+
+    stamina: number;
+
+    attributedefense: { [key:number]: number };
+
+    rarity: number;
+
+    type: string;
+
+    wearable: string;
+
+    appearance: string;
+
+    effect: string;
+
+}
+
+interface Item
+{
+    baseitem: BaseItem;
+    modifier: number;
+}
+
+interface Inventory
+{
+    inventorysize: number;
+    items: Item[];
+    equippeditem: Item;
 }

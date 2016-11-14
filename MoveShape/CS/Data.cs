@@ -7,16 +7,35 @@ using System.IO;
 
 namespace Hatsoff
 {
+    public class ItemAttribute
+    {
+        [JsonProperty("name")]
+        public string name;
+        [JsonProperty("effect")]
+        public string effect;
+        public ItemAttribute()
+        {
+
+        }
+        public ItemAttribute(string name)
+        {
+            this.name = name;
+        }
+    }
+
     public class GameData
     {
+        public Dictionary<int, BaseItem> items;
+        public Dictionary<int, ItemAttribute> attributes;
         public Dictionary<string, Map> maps;
+        static public GameData data;
 
         public GameData()
         {
             JsonSerializer js = new JsonSerializer();
             maps = js.Deserialize<Dictionary<string, Map>>(new JsonTextReader(new StreamReader(Path.Combine(System.Web.Hosting.HostingEnvironment.MapPath("~"), @"Data\maps.json"))));
-
-
+            items = js.Deserialize<Dictionary<int, BaseItem>>(new JsonTextReader(new StreamReader(Path.Combine(System.Web.Hosting.HostingEnvironment.MapPath("~"), @"Data\items.json"))));
+            attributes = js.Deserialize<Dictionary<int, ItemAttribute>>(new JsonTextReader(new StreamReader(Path.Combine(System.Web.Hosting.HostingEnvironment.MapPath("~"), @"Data\attributes.json"))));
             foreach (var map in maps)
             {
                 //construct tilemaps for our maps
@@ -30,7 +49,9 @@ namespace Hatsoff
                 {
                     System.Diagnostics.Debug.WriteLine(e.Message);
                 }
+                
             }
+            data = this;
             /*
             Dictionary<string, TriggerArea> triggers = new Dictionary<string, TriggerArea>();
 

@@ -6,6 +6,52 @@ using System.Web;
 
 namespace Hatsoff
 {
+    public class BaseItem
+    {
+
+        [JsonProperty("name")]
+        public string name;
+        [JsonProperty("description")]
+        public string description;
+        [JsonProperty("basepower")]
+        public double basepower;
+        [JsonProperty("attributeid")]
+        public int attributeid;
+        [JsonProperty("stamina")]
+        public double stamina;
+        [JsonProperty("attributedefense")]
+        public Dictionary<int, double> attributedefense;
+        [JsonProperty("rarity")]
+        public int rarity;
+        [JsonProperty("type")]
+        public string type;
+        [JsonProperty("wearable")]
+        public string wearable;
+        [JsonProperty("appearance")]
+        public string appearance;
+        [JsonProperty("effect")]
+        public string effect;
+
+    }
+
+    public class Item
+    {
+        public BaseItem baseitem;
+        public int modifier;
+        public Item(BaseItem i, int modifier)
+        {
+            baseitem = i;
+            this.modifier = modifier;
+        }
+        public Item( int id, int modifier)
+        {
+
+             GameData.data.items.TryGetValue(id, out baseitem);
+             this.modifier = modifier;
+
+        }
+    }
+
     public class EnemyNpc
     {
         [JsonProperty("health")]
@@ -38,22 +84,26 @@ namespace Hatsoff
             }
         }
         
-        struct Inventory
+        public struct Inventory
         {
             [JsonProperty("inventorysize")]
-            int inventorysize;
+            public int inventorysize;
             [JsonProperty("items")]
-            List<Item> items;
+            public List<Item> items;
+            [JsonProperty("equippeditem")]
+            public Item equippeditem;
             public Inventory(int invsize)
             {
                 inventorysize = invsize;
                 items = new List<Item>();
+                items.Add(new Item(0, 1));
+                equippeditem = items[0];
             }
-            bool addItem(string itemname)
+            bool addItem(int id)
             {
                 if(items.Count < inventorysize)
                 {
-                    items.Add(new Item(itemname));
+                    items.Add(new Item(id, 1));
                     return true;
                 }
                 return false;
@@ -62,7 +112,7 @@ namespace Hatsoff
             {
                 foreach(Item i in items)
                 {
-                    if(i.itemname == itemname)
+                    if(i.baseitem.name == itemname)
                     {
                         items.Remove(i);
                         return true;
@@ -70,15 +120,22 @@ namespace Hatsoff
                 }
                 return false;
             }
+            public void EquiptItem(int selectedhat)
+            {
+                if (items.Count > selectedhat)
+                    equippeditem = items[selectedhat];
+            }
+
         }
         // We declare Left and Top as lowercase with 
         // JsonProperty to sync the client and server models
+
         [JsonProperty("x")]
         public double x { get; set; }
         [JsonProperty("y")]
         public double y { get; set; }
         [JsonIgnore]
-        Inventory inventory { get; set; }
+        public Inventory inventory { get; set; }
         [JsonIgnore]
         public Stats stats { get; set; }
         [JsonIgnore]
@@ -91,6 +148,8 @@ namespace Hatsoff
         public string owner { get; set; }
         [JsonProperty("level")]
         public int level;
+        [JsonProperty("appearance")]
+        public string appearance;
         [JsonIgnore]
         public bool insafezone;
         [JsonIgnore]
@@ -108,16 +167,11 @@ namespace Hatsoff
             insafezone = false;
             lastbattletimer = 0;
         }
-    }
-    public class Item
-    {
-        [JsonProperty("description")]
-        public string description;
-        [JsonProperty("itemname")]
-        public string itemname { get; set; }
-        public Item(string itemname)
+        public void EquiptItem(int selectedhat)
         {
-            this.itemname = itemname;
+            inventory.EquiptItem(selectedhat);
+            appearance = inventory.equippeditem.baseitem.appearance;
         }
     }
+
 }

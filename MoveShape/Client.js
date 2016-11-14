@@ -76,6 +76,7 @@ $(function () {
                 GFX.addDrawable(dtp);
 
                 a.position = Vector2Clone(models[i]);
+                a.sprite.texture = GFX.textures[models[i].appearance];
             }
             
             //players[models[index].id].$shape.animate(models[index], { duration: updateRate, queue: false });
@@ -213,7 +214,13 @@ $(function () {
         Chat.init();
         Battle.init();
         connectionIsEstablished = true;
+        connectionHub.server.updateInventory(0);
     });
+
+    connectionHub.client.updateInventory = function(inventory)
+    {
+        me.updateInventory(inventory);
+    }
 
     connectionHub.client.randomBattle = function(health, attack)
     {

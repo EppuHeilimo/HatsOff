@@ -4,7 +4,7 @@
     "name": "testitem",
     "description": "This is a test item, It's sparkles inits glory!",
     "basepower": 5,
-    "attribute": 0,
+    "attributeid": 0,
     "stamina": 10,
     "attributedefense": {
       "1": 0,
@@ -23,7 +23,7 @@
     "name": "testitem2",
     "description": "This is the upgraded test item, It's sparkles inits glory!",
     "basepower": 10,
-    "attribute": 2,
+    "attributeid": 2,
     "stamina": 100,
     "attributedefense": {
       "1": 20,

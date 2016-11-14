@@ -26,8 +26,7 @@ namespace Hatsoff
             for (int i = 0; i < 10; i++)
             {
                 RecordPosition(GetPosition());
-            }
-            
+            }           
         }
 
         public RemotePlayer(string connectionID, int ID, PlayerActor player)

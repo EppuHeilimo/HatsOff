@@ -5,7 +5,7 @@
   },
   "1": {
     "name": "fire",
-    "effect": "none"
+    "effect": "fire"
   },
   "2": {
     "name": "water",
