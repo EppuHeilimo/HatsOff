@@ -17,9 +17,6 @@ namespace Hatsoff
         }  
     }
 
-
-
-
     public class CollisionCircle
     {
         public enum ObjectType

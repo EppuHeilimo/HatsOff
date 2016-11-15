@@ -23,10 +23,27 @@ namespace Hatsoff
         }
     }
 
+    public class ItemModifier
+    {
+        [JsonProperty("name")]
+        public string name;
+        [JsonProperty("modifier")]
+        public double modifier;
+        public ItemModifier()
+        {
+
+        }
+        public ItemModifier(string name)
+        {
+            this.name = name;
+        }
+    }
+
     public class GameData
     {
         public Dictionary<int, BaseItem> items;
         public Dictionary<int, ItemAttribute> attributes;
+        public Dictionary<int, ItemModifier> modifiers;
         public Dictionary<string, Map> maps;
         static public GameData data;
 
@@ -35,6 +52,7 @@ namespace Hatsoff
             JsonSerializer js = new JsonSerializer();
             maps = js.Deserialize<Dictionary<string, Map>>(new JsonTextReader(new StreamReader(Path.Combine(System.Web.Hosting.HostingEnvironment.MapPath("~"), @"Data\maps.json"))));
             items = js.Deserialize<Dictionary<int, BaseItem>>(new JsonTextReader(new StreamReader(Path.Combine(System.Web.Hosting.HostingEnvironment.MapPath("~"), @"Data\items.json"))));
+            modifiers = js.Deserialize<Dictionary<int, ItemModifier>>(new JsonTextReader(new StreamReader(Path.Combine(System.Web.Hosting.HostingEnvironment.MapPath("~"), @"Data\modifiers.json"))));
             attributes = js.Deserialize<Dictionary<int, ItemAttribute>>(new JsonTextReader(new StreamReader(Path.Combine(System.Web.Hosting.HostingEnvironment.MapPath("~"), @"Data\attributes.json"))));
             foreach (var map in maps)
             {

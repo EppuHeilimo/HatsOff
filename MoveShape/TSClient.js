@@ -48,7 +48,8 @@ class AsyncLoader {
 var BattleAction;
 (function (BattleAction) {
     BattleAction[BattleAction["ATTACK"] = 0] = "ATTACK";
-    BattleAction[BattleAction["NONE"] = 1] = "NONE";
+    BattleAction[BattleAction["EQUIPCHANGE"] = 1] = "EQUIPCHANGE";
+    BattleAction[BattleAction["NONE"] = 2] = "NONE";
 })(BattleAction || (BattleAction = {}));
 var Battle;
 (function (Battle) {
@@ -64,6 +65,7 @@ var Battle;
         _myattack = me.attack;
         Battle.active = true;
         Game.addActor(_npc);
+        Battle.wait = false;
     }
     Battle.startRandomBattle = startRandomBattle;
     function stopBattle() {
@@ -93,9 +95,11 @@ var Battle;
         Battle.action = BattleAction.NONE;
         _myattack = me.attack;
         Battle.active = true;
+        Battle.wait = false;
     }
     Battle.startBattle = startBattle;
     function updateBattle(myhealth, enemyhealth) {
+        Battle.wait = false;
         if (!_enemyIsPlayer) {
             _npc.health = enemyhealth;
             _npc.text.text = "Health: " + _npc.health;
@@ -117,11 +121,18 @@ var Battle;
     }
     Battle.win = win;
     function attack() {
-        if (_myturn) {
+        if (_myturn && !Battle.wait) {
             Battle.action = BattleAction.ATTACK;
         }
     }
     Battle.attack = attack;
+    function changeEquip(slot) {
+        if (_myturn && _me.inventory.items.length >= slot && !Battle.wait) {
+            Battle.action = BattleAction.EQUIPCHANGE;
+            _me.inventory.inventoryindex = slot;
+        }
+    }
+    Battle.changeEquip = changeEquip;
     function init() {
         Battle.active = false;
     }
@@ -405,20 +416,20 @@ class InterpolatedPlayerClient extends PlayerClient {
     }
 }
 class EnemyNpc {
-    constructor(x, y, attack, health) {
+    constructor(x, y, health, appearance, level) {
         this.position = Vector2New(x, y);
         this.sprite = new DrawableTextureBox();
-        this.sprite.texture = GFX.textures["hat1"];
+        this.sprite.texture = GFX.textures[appearance];
         this.sprite.size.x = 64;
         this.sprite.size.y = 64;
         this.sprite.position = Vector2New(x, y);
         this.sprite.depth = -0.9;
         this.text = new DrawableText();
-        this.text.text = "Health: " + this.health;
+        this.text.text = "Level: " + level;
         this.text.setTexture(GFX.textures["font1"]);
         this.text.depth = -1;
         this.health = health;
-        this.attack = attack;
+        this.level = level;
     }
     teleport(pos) {
         this.position = Vector2Clone(pos);
@@ -443,11 +454,11 @@ class EnemyNpc {
 class LocalPlayerClient extends PlayerClient {
     constructor() {
         super();
-        this.inventorykey = 0;
+        this.inventoryindex = 1;
     }
     updateInventory(inv) {
         this.inventory = inv;
-        super.sprite.texture = GFX.textures[this.inventory.equippeditem.baseitem.appearance];
+        this.sprite.texture = GFX.textures[this.inventory.equippeditem.baseitem.appearance];
     }
     update() {
         if (!Chat.chatactivated) {
@@ -469,8 +480,10 @@ class LocalPlayerClient extends PlayerClient {
                     vel.x += 1;
                     this.moved = true;
                 }
-                if (Game.inventorykey > 0) {
+                if (Game.inventorykey > 0 && this.inventory.items.length >= Game.inventorykey) {
                     this.inventorychanged = true;
+                    this.inventoryindex = Game.inventorykey.valueOf();
+                    Game.inventorykey = 0;
                 }
                 if (Vector2Length(vel) > 0) {
                     Vector2Normalize(vel);
@@ -496,6 +509,9 @@ class LocalPlayerClient extends PlayerClient {
             else {
                 if (Game.keyStates["activate"] == KeyState.Pressed) {
                     Battle.attack();
+                }
+                else if (Game.inventorykey > 0) {
+                    Battle.changeEquip(Game.inventorykey);
                 }
             }
         }
@@ -523,6 +539,7 @@ TextureImports =
         "citywall": { "source": "assets/graphics/citywall.png", "isPowerOfTwo": false },
         "cottage1": { "source": "assets/graphics/cottage.png", "isPowerOfTwo": false },
         "hat1": { "source": "assets/graphics/tophat.png", "isPowerOfTwo": true },
+        "peasant_hat": { "source": "assets/graphics/peasant_hat.png", "isPowerOfTwo": true },
         "tree1": { "source": "assets/graphics/tree1.png", "isPowerOfTwo": false },
         "tree2": { "source": "assets/graphics/tree2.png", "isPowerOfTwo": false },
         "tree3": { "source": "assets/graphics/tree3.png", "isPowerOfTwo": false },

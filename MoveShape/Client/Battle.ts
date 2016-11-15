@@ -1,7 +1,7 @@
 ﻿
-enum BattleAction
-{
+enum BattleAction {
     ATTACK,
+    EQUIPCHANGE,
     NONE
 }
 
@@ -17,6 +17,7 @@ namespace Battle
     declare var _myhealth: number;
     declare var _myattack: number;
     declare var _me: LocalPlayerClient;
+    export declare var wait: boolean;
 
     export function startRandomBattle(myturn: boolean, npc: EnemyNpc, me: LocalPlayerClient) {
         _enemyIsPlayer = false;
@@ -30,6 +31,7 @@ namespace Battle
         _myattack = me.attack;
         active = true;
         Game.addActor(_npc);
+        wait = false;
     }
 
     export function stopBattle()
@@ -38,8 +40,7 @@ namespace Battle
         if (!_enemyIsPlayer) {
             _npc.text.text = "";
             Game.removeActor(_npc);
-        }
-            
+        }    
         active = false;
         _enemyIsPlayer = false;
         _me.health = 100;
@@ -63,9 +64,10 @@ namespace Battle
         action = BattleAction.NONE;
         _myattack = me.attack;
         active = true;
+        wait = false;
     }
-    export function updateBattle(myhealth: number, enemyhealth: number)
-    {
+    export function updateBattle(myhealth: number, enemyhealth: number) {
+        wait = false;
         if (!_enemyIsPlayer) {
             _npc.health = enemyhealth;
             _npc.text.text = "Health: " + _npc.health;
@@ -89,9 +91,16 @@ namespace Battle
 
     export function attack()
     {
-        if (_myturn)
+        if (_myturn && !wait)
         {
             action = BattleAction.ATTACK;
+        }
+    }
+
+    export function changeEquip(slot: number) {
+        if (_myturn && _me.inventory.items.length >= slot && !wait) {
+            action = BattleAction.EQUIPCHANGE;
+            _me.inventory.inventoryindex = slot;
         }
     }
 

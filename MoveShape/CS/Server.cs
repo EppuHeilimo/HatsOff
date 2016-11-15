@@ -12,128 +12,159 @@ namespace Hatsoff
 {
     public class Broadcaster
     {
-        private GameData _gameData;
         private readonly static Lazy<Broadcaster> _instance =
             new Lazy<Broadcaster>(() => new Broadcaster());
-        // We're going to broadcast to all clients a maximum of 25 times per second.
-        private readonly TimeSpan BroadcastInterval =
-            TimeSpan.FromMilliseconds(50);
+
+        // Broadcast to clients every 50 millseconds
+        private readonly TimeSpan BroadcastInterval = TimeSpan.FromMilliseconds(50);
         private readonly IHubContext _hubContext;
         private Timer _broadcastLoop;
-        private bool _modelUpdated;
-        private bool _newMessage;
-        private bool _playerDisconnected = false;
-        public int _newID = 0;
-        private Dictionary<string, MapState> mapstates;
-        private ConcurrentDictionary<string, RemotePlayer> connectedPlayers;
-        //zone, player
-        private ConcurrentDictionary<string, List<PlayerActor>> _updatedPlayers;
-        private List<PlayerActor> _disconnctedPlayers = new List<PlayerActor>();
-        private QuadTree overworldcollisions;
-        private Random _rand;
-        private ConcurrentDictionary<string, ConcurrentDictionary<RemotePlayer, List<string>>> _sentMessages;
-        private List<Battle> _battles;
+
+        public Game game;
+
+        //Flags
+        public bool battlesChanged;
+        public bool updateNpcs;
+        public bool playerShapeChanged;
+        public bool newMessage;
+        public bool playerDisconnected;
+        public bool playerJoinedArea;
+        public bool playerLeftArea;
+
+        //Updated objects
+        public ConcurrentDictionary<string, List<PlayerActor>> updatedPlayers;
+        public List<PlayerActor> disconnctedPlayers = new List<PlayerActor>();
+        public ConcurrentDictionary<string, ConcurrentDictionary<RemotePlayer, List<string>>> sentMessages;
+        public ConcurrentDictionary<string, List<PlayerActor>> joinedPlayers;
+        public ConcurrentDictionary<string, List<PlayerActor>> leftPlayers;
+        public ConcurrentDictionary<string, List<Battle>> updatedBattles;
+
         public Broadcaster()
         {
-            // Save our hub context so we can easily use it 
-            // to send to its connected clients
-            _battles = new List<Battle>();
-            _hubContext = GlobalHost.ConnectionManager.GetHubContext<ConnectionHub>();
-            _rand = new Random();
-            _modelUpdated = false;
-            _newMessage = false;
-            connectedPlayers = new ConcurrentDictionary<string, RemotePlayer>();
-            _sentMessages = new ConcurrentDictionary<string, ConcurrentDictionary<RemotePlayer, List<string>>>();
-            // Start the broadcast loop
-            _broadcastLoop = new Timer(
-                Broadcast,
-                null,
-                BroadcastInterval,
-                BroadcastInterval);
-            _gameData = new GameData();
-            _updatedPlayers = new ConcurrentDictionary<string, List<PlayerActor>>();
-            mapstates = new Dictionary<string, MapState>();
-            foreach(KeyValuePair<string, Map> m in _gameData.maps)
+            battlesChanged       = false;
+            updateNpcs           = false;
+            playerShapeChanged   = false;
+            newMessage           = false;
+            playerDisconnected   = false;
+            playerJoinedArea     = false;
+            playerLeftArea       = false;
+
+            _hubContext          = GlobalHost.ConnectionManager.GetHubContext<ConnectionHub>();
+            _broadcastLoop       = new Timer(Broadcast, null, BroadcastInterval, BroadcastInterval);
+            updatedBattles       = new ConcurrentDictionary<string, List<Battle>>();
+            sentMessages         = new ConcurrentDictionary<string, ConcurrentDictionary<RemotePlayer, List<string>>>();
+            updatedPlayers       = new ConcurrentDictionary<string, List<PlayerActor>>();
+            joinedPlayers        = new ConcurrentDictionary<string, List<PlayerActor>>();
+            leftPlayers          = new ConcurrentDictionary<string, List<PlayerActor>>();
+
+            game = new Game();
+            game.Init(this);
+
+            foreach (KeyValuePair<string, MapState> m in game.mapstates)
             {
-                mapstates.Add(m.Key, new MapState());
+                sentMessages.TryAdd(m.Key, new ConcurrentDictionary<RemotePlayer, List<string>>());
             }
-            overworldcollisions = new QuadTree(0, new Rectangle(new Vec2(1600, 1600), 3200, 3200));
-            /*
-            foreach (var area in _gamedata.maps["Overworld"].triggerareas)
+
+            foreach (KeyValuePair<string, MapState> area in game.mapstates)
             {
-                overworldcollisions.Insert(new CollisionCircle(area.Value.getCenter(), 50));
-            }
-            */
-            foreach(KeyValuePair<string, MapState> m in mapstates)
-            {
-                _sentMessages.TryAdd(m.Key, new ConcurrentDictionary<RemotePlayer, List<string>>());
+                updatedBattles.TryAdd(area.Key, new List<Battle>());
+                updatedPlayers.TryAdd(area.Key, new List<PlayerActor>());
+                joinedPlayers.TryAdd(area.Key, new List<PlayerActor>());
+                leftPlayers.TryAdd(area.Key, new List<PlayerActor>());
             }
         }
+
+        public static Broadcaster Instance
+        {
+            get { return _instance.Value; }
+        }
+
         public void Broadcast(object state)
         {
-            if(_battles.Count > 0)
-            {
-                foreach(Battle b in _battles)
-                {
-                    b.NpcAction();
-                }
-            }
-            bool somethingchanged = _modelUpdated || _playerDisconnected;
+            bool collisionupdate = playerShapeChanged || playerDisconnected;
             // This is how we can access the Clients property 
             // in a static hub method or outside of the hub entirely
-            if(_modelUpdated)
+            if(playerShapeChanged)
             {
-                if (_updatedPlayers.Count > 0)
+                playerShapeChanged = false;
+                if (updatedPlayers.Count > 0)
                 {
-                    //clone dictionary so we can process in peace
-                    var updatedPlayers = new ConcurrentDictionary<string, List<PlayerActor>>(_updatedPlayers);
-                    _updatedPlayers.Clear();
                     foreach (KeyValuePair<string, List<PlayerActor>> area in updatedPlayers)
                     {
-                        foreach(PlayerActor p in area.Value)
-                        {
-                            if (!p.insafezone)
-                            {
-                                p.lastbattletimer++;
-                                if (_rand.Next(100) > 98 && p.lastbattletimer > 100)
-                                {
-                                    p.lastbattletimer = 0;
-                                    RemotePlayer rp;
-                                    connectedPlayers.TryGetValue(p.owner, out rp);
-                                    rp.currentbattle = new Battle(rp, new EnemyNpc(100, 10, "hat1.png"));
-                                    _battles.Add(rp.currentbattle);
-                                    _hubContext.Clients.Client(p.owner).randomBattle(rp.currentbattle.npc.health, rp.currentbattle.npc.attack);
-                                }
-                            }
-                        }
                         List<string> clientsinarea = new List<string>();
-                        foreach (var player in mapstates[area.Key].playerlist)
+                        foreach (var player in game.mapstates[area.Key].playerlist)
                         {
                             clientsinarea.Add(player.owner);
                         }
                         _hubContext.Clients.Clients(clientsinarea).updateShapes(area.Value);
-                    }
-                    _modelUpdated = false;
+                        area.Value.Clear();
+                    }          
                 }
-                
-
-            }
-            if (_playerDisconnected)
-            {
-                _hubContext.Clients.All.playerDisconnected(_disconnctedPlayers);
-                _playerDisconnected = false;
             }
 
-            if(_newMessage)
+            if (playerJoinedArea)
             {
-                foreach(KeyValuePair<string, ConcurrentDictionary<RemotePlayer, List<string>>> area in _sentMessages )
+                playerJoinedArea = false;
+                foreach (KeyValuePair<string, List<PlayerActor>> area in joinedPlayers)
+                {
+                    if (area.Value.Count == 0) continue;
+                    List<string> clientsInArea = new List<string>();
+                    foreach (PlayerActor player in game.mapstates[area.Key].playerlist)
+                    {
+                        bool send = true;
+                        foreach (PlayerActor p in area.Value)
+                        {
+                            if (p.owner == player.owner)
+                                send = false;
+                        }
+                        if (!send) continue;
+                        clientsInArea.Add(player.owner);
+                    }
+                    _hubContext.Clients.Clients(clientsInArea).addPlayers(area.Value);
+                    area.Value.Clear();
+                }
+            }
+
+            if (playerLeftArea)
+            {
+                playerLeftArea = false;
+                foreach (KeyValuePair<string, List<PlayerActor>> area in leftPlayers)
+                {
+                    if (area.Value.Count == 0) continue;
+                    List<string> clientsInArea = new List<string>();
+                    foreach (PlayerActor player in game.mapstates[area.Key].playerlist)
+                    {
+                        bool send = true;
+                        foreach (PlayerActor p in area.Value)
+                        {
+                            if (p.owner == player.owner)
+                                send = false;
+                        }
+                        if (!send) continue;
+                        clientsInArea.Add(player.owner);
+                    }
+                    _hubContext.Clients.Clients(clientsInArea).playersLeftArea(area.Value);
+                    area.Value.Clear();
+                }
+            }
+
+            if (playerDisconnected)
+            {
+                _hubContext.Clients.All.playerDisconnected(disconnctedPlayers);
+                playerDisconnected = false;
+            }
+
+            if(newMessage)
+            {
+                newMessage = false;
+                foreach (KeyValuePair<string, ConcurrentDictionary<RemotePlayer, List<string>>> area in sentMessages)
                 {
                     if(area.Value.Count > 0)
                     {
                         foreach(KeyValuePair<RemotePlayer, List<string>> p in area.Value)
                         {
                             List<string> clientsinarea = new List<string>();
-                            foreach (var player in mapstates[p.Key.areaname].playerlist)
+                            foreach (var player in game.mapstates[p.Key.areaname].playerlist)
                             {
                                 clientsinarea.Add(player.owner);
                             }
@@ -141,310 +172,51 @@ namespace Hatsoff
                         }
                         area.Value.Clear();
                     }
-                }
-                _newMessage = false;
-
-
+                }   
             }
-            if(somethingchanged)
+
+            if (collisionupdate)
             {
-                overworldcollisions.Clear();
-                foreach (KeyValuePair<string, RemotePlayer> p in connectedPlayers)
+                game.overworldcollisions.Clear();
+                foreach (KeyValuePair<string, RemotePlayer> p in game.connectedPlayers)
                 {
-                    overworldcollisions.Insert(p.Value.getCollCircle());
+                    game.overworldcollisions.Insert(p.Value.getCollCircle());
                 }
             }
-        }
-
-        public void PlayerDisconnect(string connectionId)
-        {
-            try
-            {
-                RemotePlayer dPlayer;
-                connectedPlayers.TryRemove(connectionId, out dPlayer);
-                mapstates[dPlayer.areaname].playerlist.Remove(dPlayer.GetPlayerShape());
-                _disconnctedPlayers.Add(dPlayer.GetPlayerShape());
-                _playerDisconnected = true;
-            }
-
-            catch (ArgumentNullException ex)
-            {
-                
-            }
-
-        }
-
-        public int NewId()
-        {
-            _newID++;
-            return _newID;
-        }
-        public void UpdateShape(PlayerActor player)
-        {
-            //TODO: Make player gradually move ovetime 
-            RemotePlayer p;
-            connectedPlayers.TryGetValue(player.LastUpdatedBy, out p);
-            //Check that the owner was the one who moved the actor
-            if (p.GetPlayerShape().LastUpdatedBy == p.GetPlayerShape().owner)
-            {
-                bool hit = false;
-
-
-                
-                //Temporary simple tile check
-                var tm = p.areaname;
-                Map map;
-                if (_gameData.maps.TryGetValue(tm, out map))
-                {
-                    var tile = map.tilemap.getTileInRealCoordinates((int)player.x, (int)player.y);
-                    if ((tile == null) || tile.isBlocking)
-                        hit = true;
-                }
-
-
-                if (hit)
-                {
-                    Vec2 temp = p.GetRecordedPos(1);
-                    p.SetPosition(temp.x, temp.y);
-                    _modelUpdated = true;
-                    _hubContext.Clients.Client(p.GetPlayerShape().LastUpdatedBy).teleport(temp.x, temp.y);
-                }
-                else
-                {
-
-                    p.SetPosition(player.x, player.y);
-                    if (_updatedPlayers.ContainsKey(p.areaname))
-                    {
-                        _updatedPlayers[p.areaname].Add(p.GetPlayerShape());
-                    }
-                    else
-                    {
-                        _updatedPlayers.TryAdd(p.areaname, new List<PlayerActor>());
-                        _updatedPlayers[p.areaname].Add(p.GetPlayerShape());
-                    }
-                    _modelUpdated = true;
-                }
-            }
-        }
-
-        public void Message(string cmd, string attribs, string connectionId)
-        {
-            RemotePlayer p;
-            connectedPlayers.TryGetValue(connectionId, out p);
-            if(cmd == "areachangetrigger")
-            {
-                if (_gameData.maps.ContainsKey(attribs))
-                {
-                    if (Collision.TestCircleCollision(p.GetPosition(), 50, _gameData.maps[p.areaname].triggerareas[attribs].getCenter(), 50))
-                    {
-                        ChangePlayerArea(p, connectionId, attribs);
-                    }
-                }
-            }
-            else if (cmd == "playerhittrigger")
-            {
-                List<CollisionCircle> posCollisions = new List<CollisionCircle>();
-                overworldcollisions.Retrieve(posCollisions, new CollisionCircle(p.getCollCircle()));
-                foreach (var collision in posCollisions)
-                {
-                    if (Collision.TestCircleCollision(p.GetPosition(), 30, collision.getCenter(), 30))
-                    {
-                        if (collision.getType() == CollisionCircle.ObjectType.PLAYER )
-                        {
-                            RemotePlayer rp = (RemotePlayer) collision.getObject();
-                            if (rp != p && (int)rp.GetPlayerShape().id == int.Parse(attribs))
-                            {
-
-                                    rp.GetPlayerShape().lastbattletimer = 0;
-                                    rp.currentbattle = new Battle(p, rp);
-                                    p.currentbattle = rp.currentbattle;
-                                    _battles.Add(rp.currentbattle);
-                                    _hubContext.Clients.Client(rp.GetPlayerShape().owner).startPvPBattle(p.GetPlayerShape().id);
-                                    _hubContext.Clients.Client(connectionId).startPvPBattle(rp.GetPlayerShape().id);
-                                
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        private void ChangePlayerArea(RemotePlayer p, string connectionId, string targetArea)
-        {
-            if(targetArea == "Town")
-            {
-                p.GetPlayerShape().insafezone = true;
-                p.GetPlayerShape().lastbattletimer = 0;
-            }
-            else if(targetArea == "Overworld")
-            {
-                p.GetPlayerShape().insafezone = false;
-                p.GetPlayerShape().lastbattletimer = 0;
-            }
-            Vec2 fromareapos = _gameData.maps[targetArea].triggerareas[p.areaname].getCenter();
-            p.SetPosition(fromareapos.x, fromareapos.y);
-            p.GetPlayerShape().x = fromareapos.x;
-            p.GetPlayerShape().y = fromareapos.y;
-            PlayerLeftArea(connectionId, p);
-            //delete player from areas playerlist
-            mapstates[p.areaname].playerlist.Remove(p.GetPlayerShape());
-            //add the player to the new area
-            mapstates[targetArea].playerlist.Add(p.GetPlayerShape());
-            p.areaname = targetArea;
-            PlayerJoinedArea(connectionId, p);
-            ChangeMap(connectionId, fromareapos);
-        }
-
-        public void PlayerJoinedArea(string connectionId, RemotePlayer p)
-        {
-            List<string> clientsInArea = new List<string>();
-            foreach (PlayerActor player in mapstates[p.areaname].playerlist)
-            {
-                if (connectionId == player.owner) continue;
-                clientsInArea.Add(player.owner);
-            }
-            _hubContext.Clients.Clients(clientsInArea).playerJoinedArea(p.GetPlayerShape());
-            try
-            {
-                _updatedPlayers[p.areaname].Remove(p.GetPlayerShape());
-            }
-            catch (Exception)
-            {
-
-            }
-
-        }
-
-        public void PlayerLeftArea(string connectionId, RemotePlayer p)
-        {
-            List<string> clientsInArea = new List<string>();
-            foreach (PlayerActor player in mapstates[p.areaname].playerlist)
-            {
-                if(connectionId == player.owner) continue;
-                clientsInArea.Add(player.owner);
-                
-            }
-            _hubContext.Clients.Clients(clientsInArea).playerLeftArea(p.GetPlayerShape().id);
-           
-        }
-
-        private void ChangeMap(string connectionId, Vec2 newpos)
-        {
-            
-            _hubContext.Clients.Client(connectionId).changeMap();
-            _hubContext.Clients.Client(connectionId).teleport(newpos.x, newpos.y);
-        }
-
-        public void AddPlayer(string connectionid)
-        {
-            int id = NewId();
-            RemotePlayer newplayer = new RemotePlayer(connectionid, id, "Overworld");
-            connectedPlayers.TryAdd(connectionid, newplayer);
-            mapstates["Overworld"].playerlist.Add(newplayer.GetPlayerShape());
-            PlayerJoinedArea(connectionid, newplayer);
-            _hubContext.Clients.Client(connectionid).getMyID(id);
-            overworldcollisions.Insert(new CollisionCircle(newplayer.getCollCircle()));
-        }
-
-        public static Broadcaster Instance
-        {
-            get
-            {
-                return _instance.Value;
-            }
-        }
+        }   
 
         internal void SendAreaInfo(string connectionId)
         {
             RemotePlayer p;
-            connectedPlayers.TryGetValue(connectionId, out p);
-            WorldInfo world = new WorldInfo(mapstates[p.areaname], p.areaname);
+            game.connectedPlayers.TryGetValue(connectionId, out p);
+            WorldInfo world = new WorldInfo(game.mapstates[p.areaname], p.areaname);
             _hubContext.Clients.Client(connectionId).getAreaInfo(world);
         }
+
         public void SendGameInfo(string connectionId)
         {
-            _hubContext.Clients.Client(connectionId).getGameInfo(_gameData);
+            _hubContext.Clients.Client(connectionId).getGameInfo(game.gameData);
         }
 
-        internal void NewMessage(PlayerActor player, string message)
+        public void SendPlayerId(string connectionId, int id)
         {
-            //TODO: Make player gradually move ovetime 
-            RemotePlayer p;
-            connectedPlayers.TryGetValue(player.LastUpdatedBy, out p);
-            ConcurrentDictionary<RemotePlayer, List<string>> areamessages;
-            _sentMessages.TryGetValue(p.areaname, out areamessages);
-            if (areamessages.ContainsKey(p))
-            {
-                List<string> messages;
-                areamessages.TryGetValue(p, out messages);
-                messages.Add(player.name + ": " + message);
-            }
-            else
-            {
-                List<string> messages = new List<string>();
-                messages.Add(player.name + ": " + message);
-                areamessages.TryAdd(p, messages);
-            }
-            _newMessage = true;
+            _hubContext.Clients.Client(connectionId).getMyID(id);
         }
 
-        internal void UpdateBattle(PlayerActor player, BattleAction action)
+        public void SendUpdatedStatus(string connectionId, PlayerActor player)
         {
-            
-            RemotePlayer p;
-            connectedPlayers.TryGetValue(player.LastUpdatedBy, out p);
-            p.currentbattle.PlayerAction(player, action);
-            if(p.currentbattle.winner == 0)
-            {
-                if (p.currentbattle.pvp)
-                {
-                    _hubContext.Clients.Client(p.currentbattle.player1.GetPlayerShape().owner).updateBattle(p.currentbattle.player1stats.health, p.currentbattle.player2stats.health);
-                    _hubContext.Clients.Client(p.currentbattle.player2.GetPlayerShape().owner).updateBattle(p.currentbattle.player2stats.health, p.currentbattle.player1stats.health);
-                }
-                else
-                {
-                    _hubContext.Clients.Client(player.LastUpdatedBy).updateBattle(p.currentbattle.player1stats.health, p.currentbattle.npc.health);
-                }
-            }
-            else
-            {
-                switch(p.currentbattle.winner)
-                {
-                    case 1:
-                        if (p.currentbattle.pvp)
-                        {
-                            _hubContext.Clients.Client(p.currentbattle.player2.GetPlayerShape().owner).loseBattle();
-                        }
-                        _hubContext.Clients.Client(p.currentbattle.player1.GetPlayerShape().owner).winBattle();
-                        break;
-                     case 2:
-                        _hubContext.Clients.Client(p.currentbattle.player1.GetPlayerShape().owner).loseBattle();
-                        _hubContext.Clients.Client(p.currentbattle.player2.GetPlayerShape().owner).winBattle();
-                        break;
-                    case 3:
-                        _hubContext.Clients.Client(p.currentbattle.player2.GetPlayerShape().owner).loseBattle();
-                        break;
-                }
-                p.currentbattle = null;
-            }
+            _hubContext.Clients.Client(connectionId).updateMyStatus(player.inventory, player.stats);
         }
 
-        internal void UpdateInventory(string connectionId, int selectedhat)
+        public void MovePlayerInNewZone(string connectionId, Vec2 newpos)
         {
-            RemotePlayer p;
-            connectedPlayers.TryGetValue(connectionId, out p);
-            p.GetPlayerShape().inventory.EquiptItem(selectedhat);
-            _hubContext.Clients.Client(connectionId).updateInventory(p.GetPlayerShape().inventory);
-            if (_updatedPlayers.ContainsKey(p.areaname))
-            {
-                _updatedPlayers[p.areaname].Add(p.GetPlayerShape());
-            }
-            else
-            {
-                _updatedPlayers.TryAdd(p.areaname, new List<PlayerActor>());
-                _updatedPlayers[p.areaname].Add(p.GetPlayerShape());
-            }
-            _modelUpdated = true;
+            _hubContext.Clients.Client(connectionId).changeMap();
+            _hubContext.Clients.Client(connectionId).teleport(newpos.x, newpos.y);
+        }
+
+        public void TeleportPlayer(string connectionId, Vec2 pos)
+        {
+            _hubContext.Clients.Client(connectionId).teleport(pos.x, pos.y);
         }
     }
 
@@ -464,26 +236,26 @@ namespace Hatsoff
         {
             player.LastUpdatedBy = Context.ConnectionId;
             // Update the shape model within our broadcaster
-            _broadcaster.UpdateShape(player);
+            _broadcaster.game.UpdateShape(player);
         }
-        public void UpdateInventory(int selectedhat)
+        public void UpdateStatus(int selectedhat)
         {
-            _broadcaster.UpdateInventory(Context.ConnectionId, selectedhat);
+            _broadcaster.game.UpdateStatus(Context.ConnectionId, selectedhat);
         }
 
         public void UpdateBattle(PlayerActor player, BattleAction action)
         {
             player.LastUpdatedBy = Context.ConnectionId;
-            _broadcaster.UpdateBattle(player, action);
+            _broadcaster.game.UpdateBattle(player, action);
         }
 
         public void Message(string cmd, string attribs)
         {
-            _broadcaster.Message(cmd, attribs, Context.ConnectionId);
+            _broadcaster.game.Message(cmd, attribs, Context.ConnectionId);
         }
         public void AddPlayer()
         {
-            _broadcaster.AddPlayer(Context.ConnectionId);
+            _broadcaster.game.AddPlayer(Context.ConnectionId);
         }
         public void GetAreaInfo()
         {
@@ -492,12 +264,12 @@ namespace Hatsoff
         public void NewMessage(PlayerActor p, string message)
         {
             p.LastUpdatedBy = Context.ConnectionId;
-            _broadcaster.NewMessage(p, message);
+            _broadcaster.game.NewMessage(p, message);
         }
 
         public override Task OnDisconnected(bool stopCalled)
         {
-            _broadcaster.PlayerDisconnect(Context.ConnectionId);
+            _broadcaster.game.PlayerDisconnect(Context.ConnectionId);
             return base.OnDisconnected(stopCalled);
         }
 
@@ -507,8 +279,5 @@ namespace Hatsoff
         }
     }
 
-    public enum BattleAction
-    {
-        ATTACK
-    }
+
 }

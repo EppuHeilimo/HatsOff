@@ -24,7 +24,7 @@ $(function () {
     Game.addActor(me);
     connectionHub = $.connection.connectionHub,
         // Send a maximum of 10 messages per second
-        // (mouse movements trigger a lot of messages)
+        // (actions trigger too many sends)
         messageFrequency = 10,
         // Determine how often to send messages in
         // time to abide by the messageFrequency
@@ -78,14 +78,7 @@ $(function () {
                 a.position = Vector2Clone(models[i]);
                 a.sprite.texture = GFX.textures[models[i].appearance];
             }
-            
-            //players[models[index].id].$shape.animate(models[index], { duration: updateRate, queue: false });
         }
-        // Gradually move the shape towards the new location (interpolate)
-        // The updateRate is used as the duration because by the time
-        // we get to the next location we want to be at the "last" location
-        // We also clear the animation queue so that we start a new
-        // animation and don't lag behind.
     };
 
     connectionHub.client.loseBattle = function()
@@ -123,6 +116,7 @@ $(function () {
         var player = new InterpolatedPlayerClient();
         player.id = model.id;
         player.teleport(Vector2Clone(model));
+        player.sprite.texture = GFX.textures[model.appearance];
         Game.addActor(player);
         players.push(player);
     }
@@ -168,18 +162,16 @@ $(function () {
         gamedata = data;
     }
 
-    connectionHub.client.playerLeftArea = function(id)
+    connectionHub.client.playersLeftArea = function (dplayers)
     {
-        var a = findPlayerByID(id);
-        Game.removeActor(a);
-        var index = players.indexOf(a);
-        if (index > -1) {
-            players.splice(index, 1);
+        for (var i = 0; i < dplayers.length; i++) {
+            var a = findPlayerByID(dplayers[i].id);
+            Game.removeActor(a);
+            var index = players.indexOf(a);
+            if (index > -1) {
+                players.splice(index, 1);
+            }
         }
-    }
-
-    connectionHub.client.playerJoinedArea = function (joinedplayer) {
-        addPlayer(joinedplayer);
     }
 
     connectionHub.client.addPlayers = function (playerlist)
@@ -214,25 +206,29 @@ $(function () {
         Chat.init();
         Battle.init();
         connectionIsEstablished = true;
-        connectionHub.server.updateInventory(0);
+        connectionHub.server.updateStatus(1);
     });
 
-    connectionHub.client.updateInventory = function(inventory)
+    connectionHub.client.updateMyStatus = function (inventory, stats)
     {
         me.updateInventory(inventory);
+        me.stats = stats;
     }
 
-    connectionHub.client.randomBattle = function(health, attack)
+    connectionHub.client.randomBattle = function (turn, health, level)
     {
-        Battle.startRandomBattle(true, new EnemyNpc(me.position.x + 100, me.position.y, attack, health), me);
+        Battle.startRandomBattle(turn, new EnemyNpc(me.position.x + 100, me.position.y, health, "hat1", level), me);
     }
+
     connectionHub.client.startPvPBattle = function (enemyid, turn) {
         var p = findPlayerByID(enemyid);
-        Battle.startBattle(true, p, me);
+        Battle.startBattle(turn, p, me);
     }
-
-    connectionHub.client.updateBattle = function(myhealth, enemyhealth)
+    
+    connectionHub.client.updateBattle = function(animate, myhealth, enemyhealth)
     {
+       //if(animate)
+            //me.animate("attack");
         Battle.updateBattle(myhealth, enemyhealth);
         console.log(myhealth + " " + enemyhealth);
     }
@@ -243,11 +239,13 @@ $(function () {
             connectionHub.server.updateModel({x: me.position.x, y: me.position.y, id: me.id});
             me.moved = false;
         }
+
         if (me.inventorychanged)
         {
-            connectionHub.server.updateInventory(me.inventorykey);
-            me.inventorykey = 0;
+            connectionHub.server.updateStatus(me.inventoryindex);
+            me.inventorychanged = false;
         }
+
         if (me.activated)
         {
             var trigger = "";
@@ -262,6 +260,7 @@ $(function () {
                     }
                 }
             }
+            
             if (trigger === "")
             {
                 for (var i = 0; i < players.length; i++) {
@@ -277,14 +276,14 @@ $(function () {
                 connectionHub.server.message(trigger, attribs);
             }
         }
-        if (Chat.sentmessage)
-        {
+        if (Chat.sentmessage) {
             connectionHub.server.newMessage(me, Chat.lastmessage);
             Chat.sentmessage = false;
+
         }
         if (Battle.active)
         {
-            if (Battle.action != BattleAction.NONE) {
+            if (Battle.action !== BattleAction.NONE) {
                 connectionHub.server.updateBattle(me, Battle.action);
                 Battle.clearAction();
             }
@@ -293,8 +292,10 @@ $(function () {
         me.activated = false;
     }
 
+
+
     // Some crazy shite
-    let canvas = document.getElementById("canvas");
+    var canvas = document.getElementById("canvas");
 
     canvas.onclick = function (event) { getCursorPosition(canvas, event) }
 

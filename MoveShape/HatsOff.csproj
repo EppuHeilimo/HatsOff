@@ -224,6 +224,7 @@
     <Compile Include="CS\Collision.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="CS\Data.cs" />
+    <Compile Include="CS\Game.cs" />
     <Compile Include="CS\TileMap.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
@@ -342,6 +343,7 @@
     <Content Include="assets\smalltown.json" />
     <Content Include="Data\items.json" />
     <Content Include="Data\attributes.json" />
+    <Content Include="Data\modifiers.json" />
     <None Include="Properties\PublishProfiles\godaddy.pubxml" />
     <None Include="Properties\PublishProfiles\hatsoff.pubxml" />
     <None Include="Properties\PublishProfiles\hatsoff.trinedy.eu - Web Deploy.pubxml" />

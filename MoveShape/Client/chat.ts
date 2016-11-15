@@ -89,7 +89,6 @@
         }
 
         chatactivated = false;
-
         currentmessage = new DrawableText();
         currentmessage.setTexture(GFX.textures["font1"]);
         currentmessage.depth = -1;

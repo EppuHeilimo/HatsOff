@@ -14,7 +14,7 @@ namespace Hatsoff
         public string areaname;
         private Vec2[] _recordedpositions;
         private int posRecordIndex = 0;
-        public Battle currentbattle;
+        public BattleStatus battlestatus;
         public RemotePlayer(string connectionID, int ID, string areaname)
         {
             _connectionId = connectionID;

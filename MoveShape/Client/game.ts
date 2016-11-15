@@ -232,6 +232,7 @@ class PlayerClient implements GameActor {
     public text: DrawableText;
     public health: number;
     public attack: number;
+   
 
     constructor() {
         this.health = 100;
@@ -247,8 +248,8 @@ class PlayerClient implements GameActor {
         this.text.text = "Test";
         this.text.setTexture(GFX.textures["font1"]);
         this.text.depth = -1;
-
     }
+
     public teleport(pos: Vector2): void {
         this.position = Vector2Clone(pos);
     }
@@ -321,22 +322,22 @@ class EnemyNpc implements GameActor {
     public sprite: DrawableTextureBox;
     public text: DrawableText;
     public health: number;
-    public attack: number;
+    public level: number;
 
-    constructor(x: number, y: number, attack: number, health: number) {
+    constructor(x: number, y: number, health: number, appearance: string, level: number) {
         this.position = Vector2New(x,y);
         this.sprite = new DrawableTextureBox();
-        this.sprite.texture = GFX.textures["hat1"];
+        this.sprite.texture = GFX.textures[appearance];
         this.sprite.size.x = 64;
         this.sprite.size.y = 64;
         this.sprite.position = Vector2New(x, y);
         this.sprite.depth = -0.9;
         this.text = new DrawableText();
-        this.text.text = "Health: " + this.health;
+        this.text.text = "Level: " + level;
         this.text.setTexture(GFX.textures["font1"]);
         this.text.depth = -1;
         this.health = health;
-        this.attack = attack;
+        this.level = level;
 
     }
 
@@ -369,17 +370,19 @@ class LocalPlayerClient extends PlayerClient {
     public moved: boolean;
     public activated: boolean;
     public sentMessage: boolean;
+    public stats: PlayerStats;
     public inventory: Inventory;
     public inventorychanged: boolean;
-    public inventorykey: number;
+    public inventoryindex: number;
+
     constructor() {
         super();
-        this.inventorykey = 0;
+        this.inventoryindex = 1;
     }
 
     public updateInventory(inv: Inventory): void {
         this.inventory = inv;
-        super.sprite.texture = GFX.textures[this.inventory.equippeditem.baseitem.appearance];
+        this.sprite.texture = GFX.textures[this.inventory.equippeditem.baseitem.appearance];
     }
 
     public update(): void {
@@ -403,14 +406,15 @@ class LocalPlayerClient extends PlayerClient {
                     vel.x += 1;
                     this.moved = true;
                 }
-                if (Game.inventorykey > 0) {
+                if (Game.inventorykey > 0 && this.inventory.items.length >= Game.inventorykey) {
                     this.inventorychanged = true;
+                    this.inventoryindex = Game.inventorykey.valueOf();
+                    Game.inventorykey = 0;
                 }
                 if (Vector2Length(vel) > 0) {
                     Vector2Normalize(vel);
                     Vector2ScalarMul(vel, this.speed);
                     Vector2Add(this.position, vel);
-
                     this.sprite.position = Vector2Clone(this.position);
                     this.sprite.position.y -= Math.abs(Math.sin(Game.time / 4) * 10);
                 }
@@ -423,7 +427,6 @@ class LocalPlayerClient extends PlayerClient {
                         console.log(coll)
                         this.position.x -= coll.offset.x;
                         this.position.y -= coll.offset.y;
-
                     }
                 }
 
@@ -435,6 +438,9 @@ class LocalPlayerClient extends PlayerClient {
             {
                 if (Game.keyStates["activate"] == KeyState.Pressed) {
                     Battle.attack();
+                }
+                else if (Game.inventorykey > 0) {
+                    Battle.changeEquip(Game.inventorykey);
                 }
             }
         }
@@ -464,8 +470,6 @@ interface BaseItem
 
     basepower: number;
 
-    attributeid: number;
-
     stamina: number;
 
     attributedefense: { [key:number]: number };
@@ -482,10 +486,24 @@ interface BaseItem
 
 }
 
+interface PlayerStats
+{
+    health: number;
+    maxhealth: number;
+    attack: number;
+    attribute: number;
+    attributename: string;
+    attributepower: number;
+    attributedefenses: { [key: number]: number };
+}
+
 interface Item
 {
     baseitem: BaseItem;
+    attributepower: number;
+    attributename: string;
     modifier: number;
+    name: string;
 }
 
 interface Inventory
@@ -493,4 +511,5 @@ interface Inventory
     inventorysize: number;
     items: Item[];
     equippeditem: Item;
+    inventoryindex: number;
 }

@@ -20,7 +20,7 @@
   },
   "1":
   {
-    "name": "testitem2",
+    "name": "peasant_hat",
     "description": "This is the upgraded test item, It's sparkles inits glory!",
     "basepower": 10,
     "attributeid": 2,
@@ -37,7 +37,7 @@
     "rarity": 30,
     "type": "hat",
     "wearable": "hat",
-    "appearance": "hat1",
+    "appearance": "peasant_hat",
     "effect": "fire"
   }
 }
