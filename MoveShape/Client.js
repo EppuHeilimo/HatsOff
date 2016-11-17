@@ -75,7 +75,7 @@ $(function () {
 
                 GFX.addDrawable(dtp);
 
-                a.position = Vector2Clone(models[i]);
+                a.position = Vector2Clone(models[i].pos);
                 a.sprite.texture = GFX.textures[models[i].appearance];
             }
         }
@@ -115,7 +115,7 @@ $(function () {
     {
         var player = new InterpolatedPlayerClient();
         player.id = model.id;
-        player.teleport(Vector2Clone(model));
+        player.teleport(Vector2Clone(model.pos));
         player.sprite.texture = GFX.textures[model.appearance];
         Game.addActor(player);
         players.push(player);
@@ -246,7 +246,7 @@ $(function () {
     function updateServerModel() {
         // Only update server if we have a new movement
         if (me.moved) {
-            connectionHub.server.updateModel({x: me.position.x, y: me.position.y, id: me.id});
+            connectionHub.server.updateModel({pos: me.position, id: me.id});
             me.moved = false;
         }
 

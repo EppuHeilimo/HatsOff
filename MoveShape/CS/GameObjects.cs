@@ -277,8 +277,7 @@ namespace Hatsoff
         }
 
         //Send these to client
-        [JsonProperty("x")] public double x { get; set; }
-        [JsonProperty("y")] public double y { get; set; }
+        [JsonProperty("pos")] public Vec2 pos { get; set; }
         [JsonProperty("name")] public string name { get; set; }
         [JsonProperty("id")] public double id { get; set; }
         [JsonProperty("level")] public int level;
@@ -293,12 +292,11 @@ namespace Hatsoff
         [JsonIgnore] public string LastUpdatedBy;
         [JsonIgnore] public string owner;
 
-        public PlayerActor(double id, double x, double y, string owner, string playername, int level)
+        public PlayerActor(double id, Vec2 pos, string owner, string playername, int level)
         {
             this.owner = owner;
             this.id = id;
-            this.x = x;
-            this.y = y;
+            this.pos = pos;
             inventory = new Inventory(9);
             this.level = level;
             name = playername;
@@ -321,6 +319,18 @@ namespace Hatsoff
             bool ret = inventory.EquipItem(selectedhat);
             appearance = inventory.equippeditem.baseitem.appearance;
             stats.ChangedHatInBattle(inventory.equippeditem, level);
+            return ret;
+        }
+
+        public bool MoveTo(Vec2 newpos)
+        {
+            bool ret = true;
+            if (Vec2.Distance(pos, newpos) > 50)
+            {
+                newpos = Vec2.GetDistanceAlongLine(pos, newpos, 10);
+                ret = false;
+            }
+            pos = newpos;
             return ret;
         }
     }

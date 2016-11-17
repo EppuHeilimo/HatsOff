@@ -31,6 +31,7 @@ namespace Hatsoff
         public bool playerDisconnected;
         public bool playerJoinedArea;
         public bool playerLeftArea;
+        public Stopwatch asd = new Stopwatch();
 
         //Updated objects
         public ConcurrentDictionary<string, List<PlayerActor>> updatedPlayers;
@@ -49,9 +50,8 @@ namespace Hatsoff
             playerDisconnected   = false;
             playerJoinedArea     = false;
             playerLeftArea       = false;
-
             _hubContext          = GlobalHost.ConnectionManager.GetHubContext<ConnectionHub>();
-            _broadcastLoop       = new Timer(Broadcast, null, BroadcastInterval, BroadcastInterval);
+            
             updatedBattles       = new ConcurrentDictionary<string, List<Battle>>();
             sentMessages         = new ConcurrentDictionary<string, ConcurrentDictionary<RemotePlayer, List<string>>>();
             updatedPlayers       = new ConcurrentDictionary<string, List<PlayerActor>>();
@@ -73,6 +73,8 @@ namespace Hatsoff
                 joinedPlayers.TryAdd(area.Key, new List<PlayerActor>());
                 leftPlayers.TryAdd(area.Key, new List<PlayerActor>());
             }
+            _broadcastLoop = new Timer(Broadcast, null, BroadcastInterval, BroadcastInterval);
+            asd.Start();
         }
 
         public static Broadcaster Instance
@@ -82,6 +84,9 @@ namespace Hatsoff
 
         public void Broadcast(object state)
         {
+            asd.Stop();
+            Debug.WriteLine(asd.ElapsedMilliseconds);
+            asd.Start();
             bool collisionupdate = playerShapeChanged || playerDisconnected;
             // This is how we can access the Clients property 
             // in a static hub method or outside of the hub entirely
@@ -184,6 +189,7 @@ namespace Hatsoff
                     game.overworldcollisions.Insert(p.Value.getCollCircle());
                 }
             }
+            game.Tick();
         }   
 
         internal void SendAreaInfo(string connectionId)
