@@ -134,13 +134,14 @@ namespace Hatsoff
         internal void UpdateStatus(string connectionId, int selectedhat)
         {
             RemotePlayer p;
+            //TODO: add safety checks
             connectedPlayers.TryGetValue(connectionId, out p);
             if (p.GetPlayerShape().EquipItemInBattle(selectedhat))
             {
                 _broadcaster.SendUpdatedStatus(connectionId, p.GetPlayerShape());
                 _broadcaster.updatedPlayers[p.areaname].Add(p.GetPlayerShape());
                 _broadcaster.playerShapeChanged = true;
-            }   
+            }
         }
 
         public void Message(string cmd, string attribs, string connectionId)

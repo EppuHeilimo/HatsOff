@@ -198,15 +198,25 @@ $(function () {
     }
 
     $.connection.hub.start().done(function () {
-        // Start the client side server update interval
-        setInterval(updateServerModel, updateRate);
-        connectionHub.server.addPlayer();
         connectionHub.server.getGameInfo();
-        connectionHub.server.getAreaInfo();
-        Chat.init();
-        Battle.init();
-        connectionIsEstablished = true;
-        connectionHub.server.updateStatus(1);
+
+        //The player must be added ...
+        connectionHub.server.addPlayer().done(function () {
+
+            //... before we can get the area information
+            connectionHub.server.getAreaInfo();
+            //and update player status
+            connectionHub.server.updateStatus(1);
+
+            Chat.init();
+            Battle.init();
+
+
+            // Start the client side server update interval
+            setInterval(updateServerModel, updateRate);
+            connectionIsEstablished = true;
+        });
+        
     });
 
     connectionHub.client.updateMyStatus = function (inventory, stats)

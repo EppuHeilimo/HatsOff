@@ -187,6 +187,7 @@ namespace Hatsoff
 
         internal void SendAreaInfo(string connectionId)
         {
+            //TODO: add safety checks
             RemotePlayer p;
             game.connectedPlayers.TryGetValue(connectionId, out p);
             WorldInfo world = new WorldInfo(game.mapstates[p.areaname], p.areaname);
