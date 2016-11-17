@@ -22,5 +22,23 @@ namespace Hatsoff
         {
             return new Vec2(v1.x - v2.x, v1.y - v2.y);
         }
+        public double Length()
+        {
+            return (Math.Sqrt(x * x + y * y));
+        }
+        public static double Distance(Vec2 v1, Vec2 v2)
+        {
+            return (v2 - v1).Length();
+        }
+
+        public static Vec2 GetDistanceAlongLine(Vec2 startpos, Vec2 endpos, double length)
+        {
+            Vec2 realpos = endpos - startpos;
+            double d = realpos.Length() / length;
+            if (d == 0) return startpos;
+            realpos.x /= d;
+            realpos.y /= d;
+            return startpos + realpos;
+        }
     }
 }

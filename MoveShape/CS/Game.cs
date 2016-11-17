@@ -7,14 +7,16 @@ using System.Web;
 
 namespace Hatsoff
 {
+
     public class Game
     {
         private Broadcaster _broadcaster;
         public QuadTree overworldcollisions;
         private Random _rand;
-        public Dictionary<string, MapState> mapstates;
-        public  GameData gameData;
+        public ConcurrentDictionary<string, MapState> mapstates;
+        public GameData gameData;
         public ConcurrentDictionary<int, Battle> battles;
+       
         public ConcurrentDictionary<string, RemotePlayer> connectedPlayers;
         public int newID = 0;
 
@@ -23,19 +25,24 @@ namespace Hatsoff
             connectedPlayers    = new ConcurrentDictionary<string, RemotePlayer>();
             gameData            = new GameData();
             _rand               = new Random();
-            mapstates           = new Dictionary<string, MapState>();
+            mapstates           = new ConcurrentDictionary<string, MapState>();
             overworldcollisions = new QuadTree(0, new Rectangle(new Vec2(1600, 1600), 3200, 3200));
-            battles             = new ConcurrentDictionary<int, Battle>();
+            battles = new ConcurrentDictionary<int, Battle>();
 
             foreach (KeyValuePair<string, Map> m in gameData.maps)
             {
-                mapstates.Add(m.Key, new MapState());
+                mapstates.TryAdd(m.Key, new MapState());
             }
         }
 
         public void Init(Broadcaster broadcaster)
         {
             _broadcaster = broadcaster;
+        }
+
+        public void Tick()
+        {
+
         }
 
         private void addNpc(string area, Vec2 pos)
@@ -66,6 +73,7 @@ namespace Hatsoff
 
             }
         }
+
 
         internal void UpdateBattle(PlayerActor player, BattleAction action)
         {
@@ -99,6 +107,7 @@ namespace Hatsoff
             {
                 messages = new List<string>();
                 messages.Add(player.name + ": " + message);
+               
                 areamessages.TryAdd(p, messages);
             }
             _broadcaster.newMessage = true;
@@ -212,9 +221,7 @@ namespace Hatsoff
                 p.GetPlayerShape().lastbattletimer = 0;
             }
             Vec2 fromareapos = gameData.maps[targetArea].triggerareas[p.areaname].getCenter();
-            p.SetPosition(fromareapos.x, fromareapos.y);
-            p.GetPlayerShape().x = fromareapos.x;
-            p.GetPlayerShape().y = fromareapos.y;
+            p.Teleport(fromareapos);
             PlayerLeftArea(connectionId, p);
             //delete player from areas playerlist
             mapstates[p.areaname].playerlist.Remove(p.GetPlayerShape());
@@ -241,20 +248,23 @@ namespace Hatsoff
                 Map map;
                 if (gameData.maps.TryGetValue(tm, out map))
                 {
-                    var tile = map.tilemap.getTileInRealCoordinates((int)player.x, (int)player.y);
+                    var tile = map.tilemap.getTileInRealCoordinates((int)player.pos.x, (int)player.pos.y);
                     if ((tile == null) || tile.isBlocking)
                         hit = true;
                 }
                 if (hit)
                 {
                     Vec2 temp = p.GetRecordedPos(1);
-                    p.SetPosition(temp.x, temp.y);
+                    p.Teleport(temp);
                     _broadcaster.playerShapeChanged = true;
                     _broadcaster.TeleportPlayer(p.GetPlayerShape().owner, temp);
                 }
                 else
                 {
-                    p.SetPosition(player.x, player.y);
+                    if(!p.SetPosition(player.pos))
+                    {
+                        _broadcaster.TeleportPlayer(p.GetPlayerShape().LastUpdatedBy, p.GetPosition());
+                    }
                     _broadcaster.updatedPlayers[p.areaname].Add(p.GetPlayerShape());
                     _broadcaster.playerShapeChanged = true;
                 }
