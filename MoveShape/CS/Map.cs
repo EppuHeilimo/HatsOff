@@ -16,9 +16,15 @@ namespace Hatsoff
 
         [JsonProperty("triggerareas")]
         public Dictionary<string, TriggerArea> triggerareas;
+
+
+        [JsonProperty("spawnareas")]
+        public List<SpawnArea> spawnareas;
         public Map(Dictionary<string, TriggerArea> triggers)
         {
             triggerareas = new Dictionary<string, TriggerArea>();
+            spawnareas = new List<SpawnArea>();
+            
             triggerareas = triggers;
         }
         public Map()
@@ -63,6 +69,21 @@ namespace Hatsoff
         public Vec2 getCenter()
         {
             return new Vec2(_x, _y);
+        }
+    }
+
+
+    public class SpawnArea
+    {
+        public Rectangle area;
+        public int minLevel;
+        public int maxLevel;
+        public SpawnArea(Rectangle rect, int minl, int maxl)
+        {
+            area = rect;
+
+            minLevel = minl;
+            maxLevel = maxl;
         }
     }
 }
