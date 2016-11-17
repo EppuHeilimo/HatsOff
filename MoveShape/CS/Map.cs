@@ -52,12 +52,13 @@ namespace Hatsoff
         private double _sizey;
         [JsonProperty("appearance")]
         private string appearance;
-        public TriggerArea(double x, double y, double sizex, double sizey)
+        public TriggerArea(double x, double y, double sizex, double sizey, string appearance)
         {
             _x = x;
             _y = y;
             _sizex = sizex;
             _sizey = sizey;
+            this.appearance = appearance;
         }
         public Vec2 getCenter()
         {

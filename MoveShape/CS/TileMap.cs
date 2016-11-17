@@ -10,10 +10,27 @@ namespace Hatsoff
     //Tiled map format internal stuff
     namespace Tiled
     {
+        public class MapObject
+        {
+            [JsonProperty("properties")]
+            public Dictionary<string, string> properties;
+            [JsonProperty("height")]
+            public double height = 0;
+            [JsonProperty("width")]
+            public double width = 0;
+            [JsonProperty("x")]
+            public double x = 0;
+            [JsonProperty("y")]
+            public double y = 0;
+            [JsonProperty("gid")]
+            public int gid = 0;
+        }
         public class Layer
         {
             [JsonProperty("data")]
             public List<int> data;
+            [JsonProperty("objects")]
+            public List<MapObject> objects;
             [JsonProperty("name")]
             public string name;
             [JsonProperty("type")]
@@ -42,6 +59,13 @@ namespace Hatsoff
             [JsonProperty("tilesets")]
             public List<TileSet> tilesets;
         }
+    }
+
+    public class LandMark
+    {
+        public Dictionary<string, string> properties;
+        public Rectangle area;
+        public string image;
     }
 
     //A single tile
@@ -84,8 +108,12 @@ namespace Hatsoff
             }
         }
         private List<Tile> tiles;
-        private Dictionary<int, TileDefinition> tileDefinitions;
         
+        private Dictionary<int, TileDefinition> tileDefinitions;
+
+
+        public List<LandMark> landMarks = new List<LandMark>();
+
         //Might return null
         public Tile getTile(int x, int y)
         {
@@ -108,6 +136,7 @@ namespace Hatsoff
         //return false on failure, or just throws an exception
         public bool load(StreamReader stream)
         {
+            landMarks.Clear();
             JsonSerializer js = new JsonSerializer();
             Tiled.TileMap map = js.Deserialize<Tiled.TileMap>(new JsonTextReader(stream));
             if (map.height == 0 || map.width == 0)
@@ -128,12 +157,35 @@ namespace Hatsoff
             Tiled.Layer colllayer = null;
             foreach (var lay in map.layers)
             {
-                if (lay.type != "tilelayer")
-                    continue;
-                if (lay.name == "terrain")
-					tilelayer = lay;
-				if (lay.name == "collision")
-					colllayer = lay;
+                if (lay.type == "tilelayer")
+                {
+                    if (lay.name == "terrain")
+                        tilelayer = lay;
+                    if (lay.name == "collision")
+                        colllayer = lay;                    
+                }
+                if (lay.type == "objectgroup" && lay.objects != null)
+                {
+                    foreach (var obj in lay.objects)
+                    {
+                        LandMark l = new LandMark();
+                        //Tiled object position refers to the lower left point of the object
+                        //(lowest x value, highest y value)
+                        l.area = new Rectangle(new Vec2(obj.x + obj.width / 2, obj.y - obj.height / 2), obj.width, obj.height);
+                        if (obj.properties != null)
+                            l.properties = new Dictionary<string, string>(obj.properties);
+                        else
+                            l.properties = new Dictionary<string, string>();
+                        l.image = "";
+                        TileDefinition td;
+                        tileDefinitions.TryGetValue(obj.gid, out td);
+                        if (td != null)
+                        {
+                            l.image = td.image;
+                        }
+                        landMarks.Add(l);
+                    }
+                }
             }
             if (tilelayer == null)
                 return false;

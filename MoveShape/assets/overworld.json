@@ -34,12 +34,12 @@
                  "name":"",
                  "properties":
                     {
-                     "name":"Log Cabin",
+                     "portalTo":"Town",
                      "owner":"Witcher"
                     },
                  "propertytypes":
                     {
-                     "name":"string",
+                     "portalTo":"string",
                      "owner":"string"
                     },
                  "rotation":0,

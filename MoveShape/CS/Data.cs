@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.IO;
+using System.Diagnostics;
 
 namespace Hatsoff
 {
@@ -54,18 +55,37 @@ namespace Hatsoff
             items = js.Deserialize<Dictionary<int, BaseItem>>(new JsonTextReader(new StreamReader(Path.Combine(System.Web.Hosting.HostingEnvironment.MapPath("~"), @"Data\items.json"))));
             modifiers = js.Deserialize<Dictionary<int, ItemModifier>>(new JsonTextReader(new StreamReader(Path.Combine(System.Web.Hosting.HostingEnvironment.MapPath("~"), @"Data\modifiers.json"))));
             attributes = js.Deserialize<Dictionary<int, ItemAttribute>>(new JsonTextReader(new StreamReader(Path.Combine(System.Web.Hosting.HostingEnvironment.MapPath("~"), @"Data\attributes.json"))));
-            foreach (var map in maps)
+            foreach (var kv in maps)
             {
+                var map = kv.Value;
                 //construct tilemaps for our maps
-                map.Value.tilemap = new TileMap();
+                map.tilemap = new TileMap();
                 try
                 {
                     //and try to load them from Map.tilemapsource
-                    map.Value.tilemap.load(new StreamReader(Path.Combine(System.Web.Hosting.HostingEnvironment.MapPath("~"), map.Value.tilemapsource)));
+                    map.tilemap.load(new StreamReader(Path.Combine(System.Web.Hosting.HostingEnvironment.MapPath("~"), map.tilemapsource)));
+
+                    foreach (var lm in map.tilemap.landMarks)
+                    {
+                        string portalTo;
+                        if (lm.properties.TryGetValue("portalTo", out portalTo))
+                        {
+                            if (map.triggerareas.ContainsKey(portalTo))
+                            {
+                                Debug.WriteLine("Duplicate landmark key {0} in area {1}", portalTo, map.tilemapsource);
+                                continue;
+                            }
+                            //Send the trigger area with an empty texture
+                            //Because it is already visible on client map
+                            TriggerArea ta = new TriggerArea(lm.area.getCenter().x, lm.area.getCenter().y, lm.area.getWidth(), lm.area.getHeight(), "");
+
+                            map.triggerareas.Add(portalTo, ta);
+                        }
+                    }
                 }
                 catch (Exception e)
                 {
-                    System.Diagnostics.Debug.WriteLine(e.Message);
+                    System.Diagnostics.Debug.WriteLine(e);
                 }
                 
             }
