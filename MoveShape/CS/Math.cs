@@ -22,6 +22,10 @@ namespace Hatsoff
         {
             return new Vec2(v1.x - v2.x, v1.y - v2.y);
         }
+        public static Vec2 operator *(Vec2 v1, double d)
+        {
+            return new Vec2(v1.x * d, v1.y * d);
+        }
         public double Length()
         {
             return (Math.Sqrt(x * x + y * y));
@@ -39,6 +43,19 @@ namespace Hatsoff
             realpos.x /= d;
             realpos.y /= d;
             return startpos + realpos;
+        }
+
+        public static bool Approximately(Vec2 v1, Vec2 v2)
+        {
+            if(Distance(v1, v2) < 5)
+            {
+                return true;
+            }
+            return false;
+        }
+        public static Vec2 Normalize(Vec2 v)
+        {
+            return new Vec2(v.x / v.Length(), v.y / v.Length());
         }
     }
 }

@@ -199,28 +199,58 @@ namespace Hatsoff
         [JsonProperty("effect")] public string effect;
         [JsonProperty("level")] public int level;
         [JsonProperty("position")] public Vec2 position;
+        [JsonProperty("id")]
+        public double id;
 
+
+        [JsonIgnore] private double speed;
         [JsonIgnore] public BattleStatus battlestatus;
         [JsonIgnore] public List<Item> droplist;
         [JsonIgnore] public bool hostile;
         [JsonIgnore] public CollisionCircle collision;
+        [JsonIgnore] private Vec2 targetposition;
+        [JsonIgnore] private Random rand;
 
-        public Npc(Item hat, int level, Vec2 position, bool hostile)
+        public Npc(Item hat, int level, Vec2 position, bool hostile, double id)
         {
+            this.id = id;
+            rand = new Random();
             this.position = position;
+            this.targetposition = position;
             droplist = new List<Item>();
             this.stats = new Stats(hat, level);
             this.appearance = hat.baseitem.appearance;
             droplist.Add(hat);
             this.level = level;
             this.hostile = hostile;
+            this.speed = 10;
             this.collision = new CollisionCircle(position, 50, this, CollisionCircle.ObjectType.NPC);
         }
 
         public void DropItems()
         {
-          
+            
         }
+
+
+        public void Update()
+        {
+            if(Vec2.Approximately(position, targetposition))
+            {
+                targetposition = GetRandPosFromCurPos(50);
+            }
+            else
+            {
+                position += Vec2.Normalize(targetposition) * speed;
+            }
+        }
+        private Vec2 GetRandPosFromCurPos(double distance)
+        {
+            Vec2 ret;
+            ret = new Vec2(position.x + (double)rand.Next(-1, 1) * distance, position.y + (double)rand.Next(-1, 1) * distance);
+            return ret;
+        }
+
     }
 
     public class PlayerActor

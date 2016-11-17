@@ -35,6 +35,7 @@ namespace Hatsoff
 
         //Updated objects
         public ConcurrentDictionary<string, List<PlayerActor>> updatedPlayers;
+        public ConcurrentDictionary<string, List<Npc>> updatedNpcs;
         public List<PlayerActor> disconnctedPlayers = new List<PlayerActor>();
         public ConcurrentDictionary<string, ConcurrentDictionary<RemotePlayer, List<string>>> sentMessages;
         public ConcurrentDictionary<string, List<PlayerActor>> joinedPlayers;
@@ -57,6 +58,7 @@ namespace Hatsoff
             updatedPlayers       = new ConcurrentDictionary<string, List<PlayerActor>>();
             joinedPlayers        = new ConcurrentDictionary<string, List<PlayerActor>>();
             leftPlayers          = new ConcurrentDictionary<string, List<PlayerActor>>();
+            updatedNpcs = new ConcurrentDictionary<string, List<Npc>>();
 
             game = new Game();
             game.Init(this);
@@ -72,7 +74,9 @@ namespace Hatsoff
                 updatedPlayers.TryAdd(area.Key, new List<PlayerActor>());
                 joinedPlayers.TryAdd(area.Key, new List<PlayerActor>());
                 leftPlayers.TryAdd(area.Key, new List<PlayerActor>());
+                updatedNpcs.TryAdd(area.Key, new List<Npc>());
             }
+
             _broadcastLoop = new Timer(Broadcast, null, BroadcastInterval, BroadcastInterval);
             asd.Start();
         }
@@ -90,6 +94,23 @@ namespace Hatsoff
             bool collisionupdate = playerShapeChanged || playerDisconnected;
             // This is how we can access the Clients property 
             // in a static hub method or outside of the hub entirely
+            if(updateNpcs)
+            {
+                updateNpcs = false;
+                if(updatedNpcs.Count > 0)
+                {
+                    foreach(var area in updatedNpcs)
+                    {
+                        List<string> clientsinarea = new List<string>();
+                        foreach (var player in game.mapstates[area.Key].playerlist)
+                        {
+                            clientsinarea.Add(player.owner);
+                        }
+                        _hubContext.Clients.Clients(clientsinarea).updateNpcs(area.Value);
+                        area.Value.Clear();
+                    }
+                }
+            }
             if(playerShapeChanged)
             {
                 playerShapeChanged = false;

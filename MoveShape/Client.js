@@ -13,6 +13,7 @@ function collisionCircle(centera, rada, centerb, radb) {
 $(function () {
 
     var players = [];
+    var npcs = [];
 
     //players.find((x)=>x.ID == 3);
     var connectionHub;
@@ -34,6 +35,10 @@ $(function () {
     findPlayerByID = function (id)
     {
         return players.find((x) =>x.id == id);
+    }
+
+    findNpcByID = function (id) {
+        return npcs.find((x) =>x.id == id);
     }
 
     connectionHub.client.say = function(sender, messages)
@@ -81,6 +86,15 @@ $(function () {
         }
     };
 
+    connectionHub.client.updateNpcs = function (npcs) {
+        for (var i = 0; i < npcs.length; i++) {
+            var a = findNpcByID(npcs[i].id);
+            if (a) {
+                a.position = Vector2Clone(npcs[i].pos);
+            }
+        }
+    };
+
     connectionHub.client.loseBattle = function()
     {
         Battle.lose();
@@ -119,6 +133,15 @@ $(function () {
         player.sprite.texture = GFX.textures[model.appearance];
         Game.addActor(player);
         players.push(player);
+    }
+
+    spawnNpc = function (npc) {
+        var n = new EnemyNpc();
+        n.id = npc.id;
+        n.teleport(Vector2Clone(npc.pos));
+        n.sprite.texture = GFX.textures[npc.appearance];
+        Game.addActor(n);
+        npcs.push(n);
     }
 
     connectionHub.client.addPlayer = function (model) {

@@ -10,6 +10,7 @@ namespace Hatsoff
 
     public class Game
     {
+        private double npcid = 0;
         private Broadcaster _broadcaster;
         public QuadTree overworldcollisions;
         private Random _rand;
@@ -33,6 +34,10 @@ namespace Hatsoff
             {
                 mapstates.TryAdd(m.Key, new MapState());
             }
+            for (int i = 0; i < 10; i++)
+            {
+                addNpc("Overworld", new Vec2(_rand.NextDouble() * 100, _rand.NextDouble() * 100));
+            }
         }
 
         public void Init(Broadcaster broadcaster)
@@ -42,12 +47,20 @@ namespace Hatsoff
 
         public void Tick()
         {
-
+            foreach(var area in mapstates)
+            {
+                foreach(var npc in area.Value.npclist)
+                {
+                    npc.Update();
+                    _broadcaster.updatedNpcs["Overworld"].Add(npc);
+                    _broadcaster.updateNpcs = true;
+                }
+            }
         }
 
         private void addNpc(string area, Vec2 pos)
         {
-            Npc npc = new Npc(new Item(0, 1), 1, pos, true);
+            Npc npc = new Npc(new Item(0, 1), 1, pos, true, npcid++);
             mapstates[area].npclist.Add(npc);
         }
 

@@ -323,6 +323,7 @@ class EnemyNpc implements GameActor {
     public text: DrawableText;
     public health: number;
     public level: number;
+    public id: number;
 
     constructor(x: number, y: number, health: number, appearance: string, level: number) {
         this.position = Vector2New(x,y);
