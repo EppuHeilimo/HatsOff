@@ -3,7 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
-using System.Security.Policy;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.Configuration;
@@ -13,7 +14,7 @@ using System.Web.UI.WebControls;
 
 namespace MoveShape
 {
-    public partial class Login : System.Web.UI.Page
+    public partial class Registration: System.Web.UI.Page
     {
         static Configuration rootWebConfig = WebConfigurationManager.OpenWebConfiguration("/HatsOff");
         const string connectionString = "hatsoffDatabase";
@@ -23,19 +24,30 @@ namespace MoveShape
 
         }
 
-        protected void LoginControl_Authenticate(object sender, AuthenticateEventArgs ea)
+        protected void LoginControl_Register(object sender, EventArgs ea)
         {
             bool authenticated = this.ValidateCredentials(LoginControl.UserName, LoginControl.Password);
 
             if (authenticated)
             {
-                FormsAuthentication.RedirectFromLoginPage(LoginControl.UserName, LoginControl.RememberMeSet);
+                FormsAuthentication.RedirectFromLoginPage(LoginControl.UserName, false);
             }
         }
 
         public bool isAlphaNumeric(string text)
         {
             return Regex.IsMatch(text, "[a-zA-Z0-9]");
+        }
+
+        private static string CreateSalt() //funcsaltion
+        {
+            //Generate a cryptographic random number.
+            RNGCryptoServiceProvider rng = new RNGCryptoServiceProvider();
+            byte[] buff = new byte[6];
+            rng.GetBytes(buff);
+
+            // Return a Base64 string representation of the random number.
+            return Convert.ToBase64String(buff).Substring(0,6);
         }
 
         private bool ValidateCredentials(string userName, string passWord)
@@ -49,7 +61,6 @@ namespace MoveShape
                 MySqlConnection conn = new MySqlConnection(hatsoffDatabase.ConnectionString);
                 try
                 {
-
                     string sql = "select * from hatsoff_account where username = @username";
 
                     MySqlCommand cmd = new MySqlCommand(sql, conn);
@@ -59,17 +70,35 @@ namespace MoveShape
                     user.Value = userName.Trim();
                     cmd.Parameters.Add(user);
 
-                    MySqlParameter password = new MySqlParameter();
-                    password.ParameterName = "@passwrd";
-                    password.Value = passWord.Trim();
-                    cmd.Parameters.Add(password);
-
                     conn.Open();
-                
-                    int count = (int)cmd.ExecuteScalar();
 
-                    if (count > 0)
+                    if (cmd.ExecuteScalar() == null)
+                    {
+                        SHA512 shaZam = new SHA512Managed();
+                        var result = Convert.ToBase64String(shaZam.ComputeHash(Encoding.UTF8.GetBytes(CreateSalt() + passWord)));
+
+                        sql = "insert into hatsoff_account (username, passwrd, salt, player_id) values (@username, @passwrd, @salt, 1)";
+
+                        cmd = new MySqlCommand(sql, conn);
+
+                        user = new MySqlParameter();
+                        user.ParameterName = "@username";
+                        user.Value = userName.Trim();
+                        cmd.Parameters.Add(user);
+
+                        MySqlParameter password = new MySqlParameter();
+                        password.ParameterName = "@passwrd";
+                        password.Value = result;
+                        cmd.Parameters.Add(password);
+
+                        MySqlParameter salt = new MySqlParameter();
+                        salt.ParameterName = "@salt";
+                        salt.Value = CreateSalt();
+                        cmd.Parameters.Add(salt);
+
+                        cmd.ExecuteScalar();
                         returnValue = true;
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -81,7 +110,12 @@ namespace MoveShape
                         conn.Close();
                 }
             }
+            else
+            {
+
+                // Errors with login, false information and other stuff
+            }
             return returnValue;
-        }  
+        }
     }
 }
