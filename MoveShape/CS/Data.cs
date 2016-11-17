@@ -75,7 +75,7 @@ namespace Hatsoff
                                 Debug.WriteLine("Duplicate landmark key {0} in area {1}", portalTo, map.tilemapsource);
                                 continue;
                             }
-                            //Send the trigger area with an empty texture
+                            //Send the trigger area with an empty appearance
                             //Because it is already visible on client map
                             TriggerArea ta = new TriggerArea(lm.area.getCenter().x, lm.area.getCenter().y, lm.area.getWidth(), lm.area.getHeight(), "");
 

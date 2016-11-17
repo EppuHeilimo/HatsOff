@@ -14,7 +14,25 @@ namespace Hatsoff
             if (delta.x * delta.x + delta.y * delta.y < (r1 + r2) * (r1 + r2))
                 return true;
             return false;
-        }  
+        }
+
+        static public bool TestRectangleCollision(Rectangle a, Rectangle b)
+        {
+
+            Vec2 delta = a.getCenter() - b.getCenter();
+
+            double sx = a.getWidth() + b.getWidth();
+            double sy = a.getHeight() + b.getHeight();
+
+            sx /= 2;
+            sy /= 2;
+
+            delta.x = Math.Abs(delta.x);
+            delta.y = Math.Abs(delta.y);
+            if (delta.x < sx && delta.y < sy)
+                return true;
+            return false;
+        }
     }
 
     public class CollisionCircle
