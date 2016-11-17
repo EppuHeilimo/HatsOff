@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Web;
 
@@ -73,20 +74,30 @@ namespace Hatsoff
 
         internal void NewMessage(PlayerActor player, string message)
         {
-            //TODO: Make player gradually move ovetime 
             RemotePlayer p;
             connectedPlayers.TryGetValue(player.LastUpdatedBy, out p);
+            if (p == null)
+                return; //Just In Case
+
             ConcurrentDictionary<RemotePlayer, List<string>> areamessages;
             _broadcaster.sentMessages.TryGetValue(p.areaname, out areamessages);
-            if (areamessages.ContainsKey(p))
+            if (areamessages == null)
             {
-                List<string> messages;
-                areamessages.TryGetValue(p, out messages);
+                Debug.WriteLine("Invalid areaname '{0}' on player", p.areaname);
+                return;
+            }
+
+            //TODO: Possible race condition on messages list?
+            //if NewMessage is called with the same PlayerActor
+            //multiple times concurrently ... somehow
+            List<string> messages;
+            if (areamessages.TryGetValue(p, out messages))
+            {
                 messages.Add(player.name + ": " + message);
             }
             else
             {
-                List<string> messages = new List<string>();
+                messages = new List<string>();
                 messages.Add(player.name + ": " + message);
                 areamessages.TryAdd(p, messages);
             }
@@ -134,8 +145,12 @@ namespace Hatsoff
         internal void UpdateStatus(string connectionId, int selectedhat)
         {
             RemotePlayer p;
-            //TODO: add safety checks
-            connectedPlayers.TryGetValue(connectionId, out p);
+            
+            if (!connectedPlayers.TryGetValue(connectionId, out p))
+            {
+                Debug.WriteLine("UpdateStatus called with playerless connectionId");
+                return;
+            }
             if (p.GetPlayerShape().EquipItemInBattle(selectedhat))
             {
                 _broadcaster.SendUpdatedStatus(connectionId, p.GetPlayerShape());
@@ -147,7 +162,12 @@ namespace Hatsoff
         public void Message(string cmd, string attribs, string connectionId)
         {
             RemotePlayer p;
-            connectedPlayers.TryGetValue(connectionId, out p);
+            if (!connectedPlayers.TryGetValue(connectionId, out p))
+            {
+                Debug.WriteLine("Message called with playerless connectionId");
+                return;
+            }
+
             if (cmd == "areachangetrigger")
             {
                 if (gameData.maps.ContainsKey(attribs))
@@ -209,7 +229,9 @@ namespace Hatsoff
         {
             //TODO: Make player gradually move ovetime 
             RemotePlayer p;
-            connectedPlayers.TryGetValue(player.LastUpdatedBy, out p);
+            if (!connectedPlayers.TryGetValue(player.LastUpdatedBy, out p))
+                return; //Just In Case
+
             //Check that the owner was the one who moved the actor
             if (p.GetPlayerShape().LastUpdatedBy == p.GetPlayerShape().owner)
             {

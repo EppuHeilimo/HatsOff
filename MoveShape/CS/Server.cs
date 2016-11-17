@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.UI.WebControls;
+using System.Diagnostics;
 
 namespace Hatsoff
 {
@@ -187,9 +188,13 @@ namespace Hatsoff
 
         internal void SendAreaInfo(string connectionId)
         {
-            //TODO: add safety checks
+            
             RemotePlayer p;
-            game.connectedPlayers.TryGetValue(connectionId, out p);
+            if (!game.connectedPlayers.TryGetValue(connectionId, out p))
+            {
+                Debug.WriteLine("SendAreaInfo called with playerless connectionId");
+                return;
+            }
             WorldInfo world = new WorldInfo(game.mapstates[p.areaname], p.areaname);
             _hubContext.Clients.Client(connectionId).getAreaInfo(world);
         }
