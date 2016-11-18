@@ -8,16 +8,17 @@ namespace Hatsoff
 {
     public class BaseItem
     {
-        [JsonProperty("name")] public string name;
-        [JsonProperty("description")] public string description;
-        [JsonProperty("basepower")] public double basepower;
-        [JsonProperty("stamina")] public double stamina;
-        [JsonProperty("attributedefense")] public Dictionary<int, double> attributedefense;
-        [JsonProperty("rarity")] public int rarity;
-        [JsonProperty("type")] public string type;
-        [JsonProperty("wearable")] public string wearable;
-        [JsonProperty("appearance")] public string appearance;
-        [JsonProperty("effect")] public string effect;
+        [JsonProperty("name")] public string name { get; set; }
+        [JsonProperty("description")] public string description { get; set; }
+        [JsonProperty("basepower")] public double basepower { get; set; }
+        [JsonProperty("stamina")] public double stamina { get; set; }
+        [JsonProperty("attributedefense")] public Dictionary<int, double> attributedefense { get; set; }
+        [JsonProperty("rarity")] public int rarity { get; set; }
+        [JsonProperty("type")] public string type { get; set; }
+        [JsonProperty("wearable")] public string wearable { get; set; }
+        [JsonProperty("appearance")] public string appearance { get; set; }
+        [JsonProperty("effect")] public string effect { get; set; }
+        
     }
 
     public class Item
