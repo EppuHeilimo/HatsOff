@@ -86,11 +86,11 @@ $(function () {
         }
     };
 
-    connectionHub.client.updateNpcs = function (npcs) {
-        for (var i = 0; i < npcs.length; i++) {
-            var a = findNpcByID(npcs[i].id);
+    connectionHub.client.updateNpcs = function (npclist) {
+        for (var i = 0; i < npclist.length; i++) {
+            var a = findNpcByID(npclist[i].id);
             if (a) {
-                a.position = Vector2Clone(npcs[i].pos);
+                a.position = Vector2Clone(npclist[i].position);
             }
         }
     };
@@ -136,10 +136,8 @@ $(function () {
     }
 
     spawnNpc = function (npc) {
-        var n = new EnemyNpc();
+        var n = new EnemyNpc(npc.position.x, npc.position.y, npc.stats.health, npc.appearance, npc.level);
         n.id = npc.id;
-        n.teleport(Vector2Clone(npc.pos));
-        n.sprite.texture = GFX.textures[npc.appearance];
         Game.addActor(n);
         npcs.push(n);
     }
@@ -153,6 +151,11 @@ $(function () {
         for (var i = 0; i < newarea.mapstate.playerlist.length; i++) {
             if (newarea.mapstate.playerlist[i].id != myId)
                 addPlayer(newarea.mapstate.playerlist[i]);
+        }
+
+        for (var i = 0; i < newarea.mapstate.npclist.length; i++) {
+            if (newarea.mapstate.npclist[i].id != myId)
+                spawnNpc(newarea.mapstate.npclist[i]);
         }
 
         if (currentarea) {
@@ -233,7 +236,6 @@ $(function () {
 
             Chat.init();
             Battle.init();
-
 
             // Start the client side server update interval
             setInterval(updateServerModel, updateRate);

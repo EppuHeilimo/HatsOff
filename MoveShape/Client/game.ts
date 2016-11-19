@@ -339,7 +339,6 @@ class EnemyNpc implements GameActor {
         this.text.depth = -1;
         this.health = health;
         this.level = level;
-
     }
 
     public teleport(pos: Vector2): void {
@@ -364,6 +363,7 @@ class EnemyNpc implements GameActor {
     public update(): void {
         this.text.position.x = this.position.x - 25;
         this.text.position.y = this.position.y - 50;
+        this.sprite.position = this.position;
     }
 }
 

@@ -37,7 +37,7 @@ namespace Hatsoff
     {
         [JsonProperty("playerlist")]
         public List<PlayerActor> playerlist { get; set; }
-        [JsonProperty("enemylist")]
+        [JsonProperty("npclist")]
         public List<Npc> npclist { get; set; }
         public MapState()
         {

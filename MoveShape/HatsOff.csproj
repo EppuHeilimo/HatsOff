@@ -267,6 +267,14 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="assets\font1.png" />
+    <Content Include="assets\graphics\attributes\air.png" />
+    <Content Include="assets\graphics\attributes\dark.png" />
+    <Content Include="assets\graphics\attributes\earth.png" />
+    <Content Include="assets\graphics\attributes\fire.png" />
+    <Content Include="assets\graphics\attributes\holy.png" />
+    <Content Include="assets\graphics\attributes\physical.png" />
+    <Content Include="assets\graphics\attributes\water.png" />
+    <Content Include="assets\graphics\attributes\water2.png" />
     <Content Include="assets\graphics\castle.png" />
     <Content Include="assets\graphics\castle1.png" />
     <Content Include="assets\graphics\citywall.png" />
@@ -274,6 +282,7 @@
     <Content Include="assets\graphics\deepwater.png" />
     <Content Include="assets\graphics\dirtroad.png" />
     <Content Include="assets\graphics\grass.png" />
+    <Content Include="assets\graphics\peasant_hat.png" />
     <Content Include="assets\graphics\sand.png" />
     <Content Include="assets\graphics\shallowwater.png" />
     <Content Include="assets\graphics\sign.png" />

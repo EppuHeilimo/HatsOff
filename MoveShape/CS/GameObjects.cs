@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Web;
 
@@ -195,14 +196,21 @@ namespace Hatsoff
 
     public class Npc
     {
+
+        public enum NPC_STATE
+        {
+            MOVE,
+            STOP,
+            BATTLE,
+            CHASE,
+            INVALID
+        }
         [JsonProperty("stats")] public Stats stats;
         [JsonProperty("appearance")] public string appearance;
         [JsonProperty("effect")] public string effect;
         [JsonProperty("level")] public int level;
         [JsonProperty("position")] public Vec2 position;
-        [JsonProperty("id")]
-        public double id;
-
+        [JsonProperty("id")] public double id;
 
         [JsonIgnore] private double speed;
         [JsonIgnore] public BattleStatus battlestatus;
@@ -211,6 +219,9 @@ namespace Hatsoff
         [JsonIgnore] public CollisionCircle collision;
         [JsonIgnore] private Vec2 targetposition;
         [JsonIgnore] private Random rand;
+        [JsonIgnore] private double timer;
+        [JsonIgnore] private double stopfor;
+        [JsonIgnore] private NPC_STATE state;
 
         public Npc(Item hat, int level, Vec2 position, bool hostile, double id)
         {
@@ -224,8 +235,11 @@ namespace Hatsoff
             droplist.Add(hat);
             this.level = level;
             this.hostile = hostile;
-            this.speed = 10;
+            this.speed = 4;
             this.collision = new CollisionCircle(position, 50, this, CollisionCircle.ObjectType.NPC);
+            state = NPC_STATE.STOP;
+            timer = 0;
+            stopfor = 40;
         }
 
         public void DropItems()
@@ -238,17 +252,49 @@ namespace Hatsoff
         {
             if(Vec2.Approximately(position, targetposition))
             {
-                targetposition = GetRandPosFromCurPos(50);
+                rand = new Random();
+                if (rand.NextDouble() <= 0.5)
+                    targetposition = GetRandPosFromArea(new Vec2(0, 0), new Vec2(800, 800));
+                else
+                {
+                    state = NPC_STATE.STOP;
+                    stopfor = (rand.NextDouble() + 1.0) * 30;
+                }
             }
             else
             {
-                position += Vec2.Normalize(targetposition) * speed;
+                switch (state)
+                {
+                    case NPC_STATE.STOP:
+                        timer++;
+                        if (timer >= stopfor)
+                        {
+                            state = NPC_STATE.MOVE;
+                            timer = 0;
+                            stopfor = 0;
+                        }
+                        break;
+                    case NPC_STATE.MOVE:
+                        Vec2 diff = targetposition - position;
+                        diff = Vec2.Normalize(diff);
+                        diff *= speed;
+                        position += diff;
+                        break;
+
+                }
             }
         }
         private Vec2 GetRandPosFromCurPos(double distance)
         {
             Vec2 ret;
             ret = new Vec2(position.x + (double)rand.Next(-1, 1) * distance, position.y + (double)rand.Next(-1, 1) * distance);
+            return ret;
+        }
+
+        private Vec2 GetRandPosFromArea(Vec2 min, Vec2 max)
+        {
+            Vec2 ret;
+            ret = new Vec2(rand.Next((int)min.x, (int)max.x), rand.Next((int)min.y, (int)max.y));
             return ret;
         }
 

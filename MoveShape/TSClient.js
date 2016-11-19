@@ -449,6 +449,7 @@ class EnemyNpc {
     update() {
         this.text.position.x = this.position.x - 25;
         this.text.position.y = this.position.y - 50;
+        this.sprite.position = this.position;
     }
 }
 class LocalPlayerClient extends PlayerClient {
