@@ -18,6 +18,7 @@
         <asp:Login ID="LoginControl" runat="server" 
             onauthenticate="LoginControl_Authenticate">
         </asp:Login>
+        <a href="/Registration.aspx">registrat!!</a>
     </div>
     </form>
 </body>

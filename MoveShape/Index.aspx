@@ -1,7 +1,9 @@
-﻿
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Index.aspx.cs" Inherits="MoveShape.Index" %>
+
 <!DOCTYPE html>
-<html>
-<head>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head runat="server">
     <title>Hats Off</title>
     <style>
         #myShape {
@@ -47,4 +49,4 @@
        initMain(after_load);
    </script> 
 </body>
-</html> 
+</html>

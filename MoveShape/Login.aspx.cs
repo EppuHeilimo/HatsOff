@@ -2,7 +2,9 @@
 using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Diagnostics;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Security.Policy;
 using System.Text.RegularExpressions;
 using System.Web;
@@ -29,6 +31,7 @@ namespace MoveShape
 
             if (authenticated)
             {
+                Server.Transfer("/Index.aspx");
                 FormsAuthentication.RedirectFromLoginPage(LoginControl.UserName, LoginControl.RememberMeSet);
             }
         }
@@ -41,7 +44,7 @@ namespace MoveShape
         private bool ValidateCredentials(string userName, string passWord)
         {
             bool returnValue = false;
-
+            int loginId = -1;
             if (this.isAlphaNumeric(userName) && userName.Length <= 16 && passWord.Length <= 16)
             {
 
@@ -59,17 +62,26 @@ namespace MoveShape
                     user.Value = userName.Trim();
                     cmd.Parameters.Add(user);
 
-                    MySqlParameter password = new MySqlParameter();
-                    password.ParameterName = "@passwrd";
-                    password.Value = passWord.Trim();
-                    cmd.Parameters.Add(password);
-
                     conn.Open();
-                
-                    int count = (int)cmd.ExecuteScalar();
 
-                    if (count > 0)
-                        returnValue = true;
+                    var rdr = cmd.ExecuteReader();
+                    returnValue = false;
+                    while (rdr.Read())
+                    {
+                        string pass = (string)rdr["passwrd"];
+                        string salt = (string)rdr["salt"];
+
+                        SHA512 shaM = new SHA512Managed();
+                        var p = shaM.ComputeHash(System.Text.Encoding.UTF8.GetBytes(salt + passWord));
+                        string saltpass = Convert.ToBase64String(p);
+                        if (saltpass == pass)
+                        {
+                            Session["loginId"] = loginId;
+                            loginId = (int)rdr["id"];
+                            returnValue = true;
+                            break;
+                        }
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -82,6 +94,6 @@ namespace MoveShape
                 }
             }
             return returnValue;
-        }  
+        }
     }
 }

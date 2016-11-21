@@ -30,7 +30,9 @@ namespace MoveShape
 
             if (authenticated)
             {
+                Server.Transfer("/Login.aspx");
                 FormsAuthentication.RedirectFromLoginPage(LoginControl.UserName, false);
+                
             }
         }
 
@@ -75,7 +77,8 @@ namespace MoveShape
                     if (cmd.ExecuteScalar() == null)
                     {
                         SHA512 shaZam = new SHA512Managed();
-                        var result = Convert.ToBase64String(shaZam.ComputeHash(Encoding.UTF8.GetBytes(CreateSalt() + passWord)));
+                        var saltstr = CreateSalt();
+                        var result = Convert.ToBase64String(shaZam.ComputeHash(Encoding.UTF8.GetBytes(saltstr + passWord)));
 
                         sql = "insert into hatsoff_account (username, passwrd, salt, player_id) values (@username, @passwrd, @salt, 1)";
 
@@ -93,7 +96,7 @@ namespace MoveShape
 
                         MySqlParameter salt = new MySqlParameter();
                         salt.ParameterName = "@salt";
-                        salt.Value = CreateSalt();
+                        salt.Value = saltstr;
                         cmd.Parameters.Add(salt);
 
                         cmd.ExecuteScalar();
