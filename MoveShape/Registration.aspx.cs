@@ -30,8 +30,8 @@ namespace MoveShape
 
             if (authenticated)
             {
-                Server.Transfer("/Login.aspx");
-                FormsAuthentication.RedirectFromLoginPage(LoginControl.UserName, false);
+                Response.Redirect("/Login.aspx");
+               // FormsAuthentication.RedirectFromLoginPage(LoginControl.UserName, false);
                 
             }
         }

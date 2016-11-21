@@ -86,131 +86,146 @@ namespace Hatsoff
             get { return _instance.Value; }
         }
 
+        private Object _broadcast_lock = new Object();
         public void Broadcast(object state)
         {
-            asd.Stop();
-            Debug.WriteLine(asd.ElapsedMilliseconds);
-            asd.Start();
-            bool collisionupdate = playerShapeChanged || playerDisconnected;
-            // This is how we can access the Clients property 
-            // in a static hub method or outside of the hub entirely
-            if(updateNpcs)
+            if (Monitor.TryEnter(_broadcast_lock))
             {
-                updateNpcs = false;
-                if(updatedNpcs.Count > 0)
+                try
                 {
-                    foreach(var area in updatedNpcs)
-                    {
-                        List<string> clientsinarea = new List<string>();
-                        foreach (var player in game.mapstates[area.Key].playerlist)
-                        {
-                            clientsinarea.Add(player.owner);
-                        }
-                        _hubContext.Clients.Clients(clientsinarea).updateNpcs(area.Value);
-                        area.Value.Clear();
-                    }
-                }
-            }
-            if(playerShapeChanged)
-            {
-                playerShapeChanged = false;
-                if (updatedPlayers.Count > 0)
+                asd.Stop();
+                Debug.WriteLine(asd.ElapsedMilliseconds);
+                asd.Start();
+                bool collisionupdate = playerShapeChanged || playerDisconnected;
+                // This is how we can access the Clients property 
+                // in a static hub method or outside of the hub entirely
+                if (updateNpcs)
                 {
-                    foreach (KeyValuePair<string, List<PlayerActor>> area in updatedPlayers)
+                    updateNpcs = false;
+                    if (updatedNpcs.Count > 0)
                     {
-                        List<string> clientsinarea = new List<string>();
-                        foreach (var player in game.mapstates[area.Key].playerlist)
-                        {
-                            clientsinarea.Add(player.owner);
-                        }
-                        _hubContext.Clients.Clients(clientsinarea).updateShapes(area.Value);
-                        area.Value.Clear();
-                    }          
-                }
-            }
-
-            if (playerJoinedArea)
-            {
-                playerJoinedArea = false;
-                foreach (KeyValuePair<string, List<PlayerActor>> area in joinedPlayers)
-                {
-                    if (area.Value.Count == 0) continue;
-                    List<string> clientsInArea = new List<string>();
-                    foreach (PlayerActor player in game.mapstates[area.Key].playerlist)
-                    {
-                        bool send = true;
-                        foreach (PlayerActor p in area.Value)
-                        {
-                            if (p.owner == player.owner)
-                                send = false;
-                        }
-                        if (!send) continue;
-                        clientsInArea.Add(player.owner);
-                    }
-                    _hubContext.Clients.Clients(clientsInArea).addPlayers(area.Value);
-                    area.Value.Clear();
-                }
-            }
-
-            if (playerLeftArea)
-            {
-                playerLeftArea = false;
-                foreach (KeyValuePair<string, List<PlayerActor>> area in leftPlayers)
-                {
-                    if (area.Value.Count == 0) continue;
-                    List<string> clientsInArea = new List<string>();
-                    foreach (PlayerActor player in game.mapstates[area.Key].playerlist)
-                    {
-                        bool send = true;
-                        foreach (PlayerActor p in area.Value)
-                        {
-                            if (p.owner == player.owner)
-                                send = false;
-                        }
-                        if (!send) continue;
-                        clientsInArea.Add(player.owner);
-                    }
-                    _hubContext.Clients.Clients(clientsInArea).playersLeftArea(area.Value);
-                    area.Value.Clear();
-                }
-            }
-
-            if (playerDisconnected)
-            {
-                _hubContext.Clients.All.playerDisconnected(disconnctedPlayers);
-                playerDisconnected = false;
-            }
-
-            if(newMessage)
-            {
-                newMessage = false;
-                foreach (KeyValuePair<string, ConcurrentDictionary<RemotePlayer, List<string>>> area in sentMessages)
-                {
-                    if(area.Value.Count > 0)
-                    {
-                        foreach(KeyValuePair<RemotePlayer, List<string>> p in area.Value)
+                        foreach (var area in updatedNpcs)
                         {
                             List<string> clientsinarea = new List<string>();
-                            foreach (var player in game.mapstates[p.Key.areaname].playerlist)
+                            foreach (var player in game.mapstates[area.Key].playerlist)
                             {
                                 clientsinarea.Add(player.owner);
                             }
-                            _hubContext.Clients.Clients(clientsinarea).say(p.Key.GetPlayerShape(), p.Value);
+                            _hubContext.Clients.Clients(clientsinarea).updateNpcs(area.Value);
+                            area.Value.Clear();
                         }
+                    }
+                }
+                if (playerShapeChanged)
+                {
+                    playerShapeChanged = false;
+                    if (updatedPlayers.Count > 0)
+                    {
+                        foreach (KeyValuePair<string, List<PlayerActor>> area in updatedPlayers)
+                        {
+                            List<string> clientsinarea = new List<string>();
+                            foreach (var player in game.mapstates[area.Key].playerlist)
+                            {
+                                clientsinarea.Add(player.owner);
+                            }
+                            _hubContext.Clients.Clients(clientsinarea).updateShapes(area.Value);
+                            area.Value.Clear();
+                        }
+                    }
+                }
+
+                if (playerJoinedArea)
+                {
+                    playerJoinedArea = false;
+                    foreach (KeyValuePair<string, List<PlayerActor>> area in joinedPlayers)
+                    {
+                        if (area.Value.Count == 0) continue;
+                        List<string> clientsInArea = new List<string>();
+                        foreach (PlayerActor player in game.mapstates[area.Key].playerlist)
+                        {
+                            bool send = true;
+                            foreach (PlayerActor p in area.Value)
+                            {
+                                if (p.owner == player.owner)
+                                    send = false;
+                            }
+                            if (!send) continue;
+                            clientsInArea.Add(player.owner);
+                        }
+                        _hubContext.Clients.Clients(clientsInArea).addPlayers(area.Value);
                         area.Value.Clear();
                     }
-                }   
-            }
+                }
 
-            if (collisionupdate)
-            {
-                game.overworldcollisions.Clear();
-                foreach (KeyValuePair<string, RemotePlayer> p in game.connectedPlayers)
+                if (playerLeftArea)
                 {
-                    game.overworldcollisions.Insert(p.Value.getCollCircle());
+                    playerLeftArea = false;
+                    foreach (KeyValuePair<string, List<PlayerActor>> area in leftPlayers)
+                    {
+                        if (area.Value.Count == 0) continue;
+                        List<string> clientsInArea = new List<string>();
+                        foreach (PlayerActor player in game.mapstates[area.Key].playerlist)
+                        {
+                            bool send = true;
+                            foreach (PlayerActor p in area.Value)
+                            {
+                                if (p.owner == player.owner)
+                                    send = false;
+                            }
+                            if (!send) continue;
+                            clientsInArea.Add(player.owner);
+                        }
+                        _hubContext.Clients.Clients(clientsInArea).playersLeftArea(area.Value);
+                        area.Value.Clear();
+                    }
+                }
+
+                if (playerDisconnected)
+                {
+                    _hubContext.Clients.All.playerDisconnected(disconnctedPlayers);
+                    playerDisconnected = false;
+                }
+
+                if (newMessage)
+                {
+                    newMessage = false;
+                    foreach (KeyValuePair<string, ConcurrentDictionary<RemotePlayer, List<string>>> area in sentMessages)
+                    {
+                        if (area.Value.Count > 0)
+                        {
+                            foreach (KeyValuePair<RemotePlayer, List<string>> p in area.Value)
+                            {
+                                List<string> clientsinarea = new List<string>();
+                                foreach (var player in game.mapstates[p.Key.areaname].playerlist)
+                                {
+                                    clientsinarea.Add(player.owner);
+                                }
+                                _hubContext.Clients.Clients(clientsinarea).say(p.Key.GetPlayerShape(), p.Value);
+                            }
+                            area.Value.Clear();
+                        }
+                    }
+                }
+
+                if (collisionupdate)
+                {
+                    game.overworldcollisions.Clear();
+                    foreach (KeyValuePair<string, RemotePlayer> p in game.connectedPlayers)
+                    {
+                        game.overworldcollisions.Insert(p.Value.getCollCircle());
+                    }
+                }
+                game.Tick();
+                }
+                finally
+                {
+                    Monitor.Exit(_broadcast_lock);
                 }
             }
-            game.Tick();
+            else
+            {
+                Debug.WriteLine("Broadcaster skip tick");
+            }
         }   
 
         internal void SendAreaInfo(string connectionId)

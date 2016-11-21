@@ -31,8 +31,8 @@ namespace MoveShape
 
             if (authenticated)
             {
-                Server.Transfer("/Index.aspx");
-                FormsAuthentication.RedirectFromLoginPage(LoginControl.UserName, LoginControl.RememberMeSet);
+                Response.Redirect("/Index.aspx");
+                //FormsAuthentication.RedirectFromLoginPage(LoginControl.UserName, LoginControl.RememberMeSet);
             }
         }
 

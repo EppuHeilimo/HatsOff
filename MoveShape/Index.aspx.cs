@@ -15,7 +15,7 @@ namespace MoveShape
 
             if (logd == null)
             {
-                Server.Transfer("/Login.aspx?ReturnUrl=Index.aspx");
+                Response.Redirect("/Login.aspx");
             }
 
         }
