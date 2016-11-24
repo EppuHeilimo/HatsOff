@@ -293,7 +293,7 @@ class InterpolatedPlayerClient extends PlayerClient {
     }
 
     public deinit(): void {
-        GFX.removeDrawable(this.sprite);
+        super.deinit();
     }
 
     public teleport(pos: Vector2): void {
@@ -364,7 +364,7 @@ class EnemyNpc implements GameActor {
 
     public deinit(): void {
         GFX.removeDrawable(this.sprite);
-        GFX.removeDrawable(this.text);
+        GFX.removeDrawable(this.text, Layer.LayerAlpha);
     }
 
     public showmessage(mes: string): void {

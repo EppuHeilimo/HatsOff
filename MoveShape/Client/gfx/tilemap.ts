@@ -7,7 +7,8 @@ interface TileMapObject
 	texture : Texture;
 	position : Vector2;
     size: Vector2;
-    depth: Number;
+    depth: number;
+    flip: boolean;
 }
 
 declare var TileMapImports: { [key: string]: string };
@@ -92,12 +93,14 @@ class TileMap implements AsyncLoadable
             for (let objk in tm.objects) {
 
                 let gidmask = 0x1FFFFFFF
+                let fliphoriz = 0x80000000
                 
                 let obj = tm.objects[objk]
                 let md = <TileMapObject>{};
                 md.position = { x: obj.x + obj.width / 2, y: obj.y - obj.height / 2 };
                 md.size = { x: obj.width, y: obj.height };
                 md.depth = depth
+                md.flip = ((obj.gid & fliphoriz) > 0)
                 let td = us.tileDefs[obj.gid & gidmask];
                 if (td)
                     md.texture = td.texture;

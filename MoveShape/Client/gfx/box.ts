@@ -35,6 +35,7 @@ class DrawableTextureBox implements Drawable {
     public position: Vector2;
     public size: Vector2;
     public texture: Texture;
+    public horizontalFlip: boolean;
 
     constructor() {
         this.depth = 0;
@@ -44,8 +45,12 @@ class DrawableTextureBox implements Drawable {
     }
 
     public draw(): void {
-        if (this.texture)
-            GFX.drawCentered(this.texture, this.position, this.depth, this.size);
+        if (this.texture) {
+            if (this.horizontalFlip)
+                GFX.drawCentered(this.texture, this.position, this.depth, { x: this.size.x * -1, y: this.size.y });
+            else
+                GFX.drawCentered(this.texture, this.position, this.depth, this.size);
+        }
     }
 }
 
