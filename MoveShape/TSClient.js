@@ -1132,6 +1132,7 @@ TileMaps = {};
 TileMapImports = {};
 TileMapImports["Overworld"] = "assets/overworld.json";
 TileMapImports["Town"] = "assets/smalltown.json";
+TileMapImports["Shantown"] = "assets/shantown.json";
 class TileMap {
     constructor(name, src) {
         this.tileSize = 64;
