@@ -90,7 +90,7 @@ namespace Hatsoff
 
         private void addNpc(string area, Vec2 pos)
         {
-            Npc npc = new Npc(new Item(0, 1), 1, pos, true, npcid++, area);
+            Npc npc = new Npc(new Item(MyRandom.rand.Next(2), 1), 1, pos, true, npcid++, area);
             overworldcollisions.Insert(new CollisionCircle(npc.collision));
             mapstates[area].npclist.Add(npc);
         }
