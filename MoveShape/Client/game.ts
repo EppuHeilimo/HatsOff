@@ -243,7 +243,7 @@ class PlayerClient implements GameActor {
         this.sprite.texture = GFX.textures["hat1"];
         this.sprite.size.x = 64;
         this.sprite.size.y = 64;
-        this.sprite.depth = -0.9;
+        this.sprite.depth = -0.4;
         this.text = new DrawableText();
         this.text.text = "Test";
         this.text.setTexture(GFX.textures["font1"]);
@@ -340,7 +340,7 @@ class EnemyNpc implements GameActor {
         this.sprite.size.x = 64;
         this.sprite.size.y = 64;
         this.sprite.position = Vector2New(x, y);
-        this.sprite.depth = -0.9;
+        this.sprite.depth = -0.4;
         this.text = new DrawableText();
         this.text.text = "Level: " + level;
         this.text.setTexture(GFX.textures["font1"]);

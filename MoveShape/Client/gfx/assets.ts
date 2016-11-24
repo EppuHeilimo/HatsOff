@@ -16,6 +16,8 @@ TextureImports =
     "font1": { "source": "assets/font1.png", "isPowerOfTwo": false },
     "castle1": { "source": "assets/graphics/castle1.png", "isPowerOfTwo": false },
     "castle": { "source": "assets/graphics/castle.png", "isPowerOfTwo": false },
+    "docks": { "source": "assets/graphics/docks.png", "isPowerOfTwo": false },
+
     "townexit": { "source": "assets/graphics/townexit.png", "isPowerOfTwo": false },
     "citywall": { "source": "assets/graphics/citywall.png", "isPowerOfTwo": false },
     "cottage1": { "source": "assets/graphics/cottage.png", "isPowerOfTwo": false },
@@ -28,6 +30,8 @@ TextureImports =
     "tree4": { "source": "assets/graphics/tree4.png", "isPowerOfTwo": false },
     "tree5": { "source": "assets/graphics/tree5.png", "isPowerOfTwo": false },
     "cottage": { "source": "assets/graphics/cottage.png", "isPowerOfTwo": false },
+
+    "bigforest": { "source": "assets/graphics/bigforest.png", "isPowerOfTwo": true },
 
     "deepwater": { "source": "assets/graphics/deepwater.png", "isPowerOfTwo": true },
     "dirtroad": { "source": "assets/graphics/dirtroad.png", "isPowerOfTwo": true },

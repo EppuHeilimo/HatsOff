@@ -81,12 +81,25 @@ namespace Hatsoff
 
                             map.triggerareas.Add(portalTo, ta);
                         }
+                        string str = "";
                         string minLvl = "" ;
                         string maxLvl = "";
 
-                        if (lm.properties.TryGetValue("minLvl", out minLvl) && lm.properties.TryGetValue("maxLvl", out maxLvl))
+                        if (lm.properties.TryGetValue("type", out str))
                         {
-                            map.spawnareas.Add(new SpawnArea(lm.area, Int32.Parse(minLvl), Int32.Parse(maxLvl)));
+                            if (str == "spawnPoint")
+                            {
+                                map.spawnpoint = lm.area;
+                            }
+                            else
+                            if (str == "npcSpawn")
+                            {
+                                if (lm.properties.TryGetValue("minLvl", out minLvl) && lm.properties.TryGetValue("maxLvl", out maxLvl))
+                                {
+                                    map.spawnareas.Add(new SpawnArea(lm.area, Int32.Parse(minLvl), Int32.Parse(maxLvl)));
+                                }
+                            }
+
                         }
                     }
                 }

@@ -276,12 +276,14 @@
     <Content Include="assets\graphics\attributes\physical.png" />
     <Content Include="assets\graphics\attributes\water.png" />
     <Content Include="assets\graphics\attributes\water2.png" />
+    <Content Include="assets\graphics\bigforest.png" />
     <Content Include="assets\graphics\castle.png" />
     <Content Include="assets\graphics\castle1.png" />
     <Content Include="assets\graphics\citywall.png" />
     <Content Include="assets\graphics\cottage.png" />
     <Content Include="assets\graphics\deepwater.png" />
     <Content Include="assets\graphics\dirtroad.png" />
+    <Content Include="assets\graphics\docks.png" />
     <Content Include="assets\graphics\grass.png" />
     <Content Include="assets\graphics\peasant_hat.png" />
     <Content Include="assets\graphics\sand.png" />

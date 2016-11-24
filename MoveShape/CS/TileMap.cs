@@ -4,6 +4,7 @@ using System.Linq;
 using System.Web;
 using Newtonsoft.Json;
 using System.IO;
+using System.Diagnostics;
 
 namespace Hatsoff
 {
@@ -23,12 +24,12 @@ namespace Hatsoff
             [JsonProperty("y")]
             public double y = 0;
             [JsonProperty("gid")]
-            public int gid = 0;
+            public long gid = 0;
         }
         public class Layer
         {
             [JsonProperty("data")]
-            public List<int> data;
+            public List<long> data;
             [JsonProperty("objects")]
             public List<MapObject> objects;
             [JsonProperty("name")]
@@ -44,9 +45,9 @@ namespace Hatsoff
         public class TileSet
         {
             [JsonProperty("tiles")]
-            public Dictionary<int, Tile> tiles;
+            public Dictionary<long, Tile> tiles;
             [JsonProperty("firstgid")]
-            public int firstgid;
+            public long firstgid;
         }
         public class TileMap
         {
@@ -89,6 +90,9 @@ namespace Hatsoff
 
     public class TileMap
     {
+        public const long gidmask = 0x1FFFFFFF;
+      
+
         public const int tileWidth = 64;
         public const int tileHeight = 64;
         private int _width;
@@ -109,7 +113,7 @@ namespace Hatsoff
         }
         private List<Tile> tiles;
         
-        private Dictionary<int, TileDefinition> tileDefinitions;
+        private Dictionary<long, TileDefinition> tileDefinitions;
 
 
         public List<LandMark> landMarks = new List<LandMark>();
@@ -141,7 +145,7 @@ namespace Hatsoff
             Tiled.TileMap map = js.Deserialize<Tiled.TileMap>(new JsonTextReader(stream));
             if (map.height == 0 || map.width == 0)
                 return false;
-            tileDefinitions = new Dictionary<int, TileDefinition>();
+            tileDefinitions = new Dictionary<long, TileDefinition>();
 
             foreach (var k in map.tilesets)
             {
@@ -166,8 +170,10 @@ namespace Hatsoff
                 }
                 if (lay.type == "objectgroup" && lay.objects != null)
                 {
+                    if (lay.name == "landmarks")
                     foreach (var obj in lay.objects)
                     {
+                        Debug.WriteLine("GOTS SOME LANDMARSK!!!");
                         LandMark l = new LandMark();
                         //Tiled object position refers to the lower left point of the object
                         //(lowest x value, highest y value)
@@ -178,7 +184,7 @@ namespace Hatsoff
                             l.properties = new Dictionary<string, string>();
                         l.image = "";
                         TileDefinition td;
-                        tileDefinitions.TryGetValue(obj.gid, out td);
+                        tileDefinitions.TryGetValue(obj.gid & gidmask, out td);
                         if (td != null)
                         {
                             l.image = td.image;

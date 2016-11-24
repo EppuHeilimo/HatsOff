@@ -10,7 +10,10 @@ namespace Hatsoff
     {
         [JsonIgnore]
         public TileMap tilemap;
-         
+
+        [JsonProperty("spawnpoint")]
+        public Rectangle spawnpoint;
+
         [JsonProperty("tilemap")]
         public string tilemapsource;
 

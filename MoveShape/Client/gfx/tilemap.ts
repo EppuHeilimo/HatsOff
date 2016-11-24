@@ -6,7 +6,8 @@ interface TileMapObject
 {
 	texture : Texture;
 	position : Vector2;
-	size : Vector2;
+    size: Vector2;
+    depth: Number;
 }
 
 declare var TileMapImports: { [key: string]: string };
@@ -84,13 +85,20 @@ class TileMap implements AsyncLoadable
         };
 
         let doObjects = function (tm) {
+            let depth = 0
+            if (tm.name == "canopy") {
+                depth = 1
+            }
             for (let objk in tm.objects) {
+
+                let gidmask = 0x1FFFFFFF
                 
                 let obj = tm.objects[objk]
                 let md = <TileMapObject>{};
                 md.position = { x: obj.x + obj.width / 2, y: obj.y - obj.height / 2 };
                 md.size = { x: obj.width, y: obj.height };
-                let td = us.tileDefs[obj.gid];
+                md.depth = depth
+                let td = us.tileDefs[obj.gid & gidmask];
                 if (td)
                     md.texture = td.texture;
                 else {
@@ -273,7 +281,11 @@ class DrawableTileMap implements Drawable
             drw.texture = obj.texture;
             drw.position = obj.position;
             drw.size = obj.size;
-            drw.depth = 0.780
+            if (obj.depth == 0)
+                drw.depth = 0.780
+            else
+                drw.depth = -0.480
+            
             GFX.addDrawable(drw);
             this.drawables.push(drw);
         }
