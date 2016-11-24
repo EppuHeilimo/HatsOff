@@ -90,13 +90,15 @@ class TileMap implements AsyncLoadable
                 depth = 1
             }
             for (let objk in tm.objects) {
+
+                let gidmask = 0x1FFFFFFF
                 
                 let obj = tm.objects[objk]
                 let md = <TileMapObject>{};
                 md.position = { x: obj.x + obj.width / 2, y: obj.y - obj.height / 2 };
                 md.size = { x: obj.width, y: obj.height };
                 md.depth = depth
-                let td = us.tileDefs[obj.gid];
+                let td = us.tileDefs[obj.gid & gidmask];
                 if (td)
                     md.texture = td.texture;
                 else {

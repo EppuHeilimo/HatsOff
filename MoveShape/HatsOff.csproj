@@ -283,6 +283,7 @@
     <Content Include="assets\graphics\cottage.png" />
     <Content Include="assets\graphics\deepwater.png" />
     <Content Include="assets\graphics\dirtroad.png" />
+    <Content Include="assets\graphics\docks.png" />
     <Content Include="assets\graphics\grass.png" />
     <Content Include="assets\graphics\peasant_hat.png" />
     <Content Include="assets\graphics\sand.png" />

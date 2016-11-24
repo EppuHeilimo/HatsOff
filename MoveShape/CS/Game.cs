@@ -162,6 +162,7 @@ namespace Hatsoff
             newplayer.Teleport(GameData.data.maps["Overworld"].spawnpoint.getCenter());
             PlayerJoinedArea(connectionid, newplayer);
             _broadcaster.SendPlayerId(connectionid, id);
+            _broadcaster.TeleportPlayer(connectionid, newplayer.GetPosition());
             overworldcollisions.Insert(new CollisionCircle(newplayer.getCollCircle()));
         }
 

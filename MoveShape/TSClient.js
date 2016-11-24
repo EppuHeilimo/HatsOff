@@ -536,6 +536,7 @@ TextureImports =
         "font1": { "source": "assets/font1.png", "isPowerOfTwo": false },
         "castle1": { "source": "assets/graphics/castle1.png", "isPowerOfTwo": false },
         "castle": { "source": "assets/graphics/castle.png", "isPowerOfTwo": false },
+        "docks": { "source": "assets/graphics/docks.png", "isPowerOfTwo": false },
         "townexit": { "source": "assets/graphics/townexit.png", "isPowerOfTwo": false },
         "citywall": { "source": "assets/graphics/citywall.png", "isPowerOfTwo": false },
         "cottage1": { "source": "assets/graphics/cottage.png", "isPowerOfTwo": false },
@@ -1183,12 +1184,13 @@ class TileMap {
                 depth = 1;
             }
             for (let objk in tm.objects) {
+                let gidmask = 0x1FFFFFFF;
                 let obj = tm.objects[objk];
                 let md = {};
                 md.position = { x: obj.x + obj.width / 2, y: obj.y - obj.height / 2 };
                 md.size = { x: obj.width, y: obj.height };
                 md.depth = depth;
-                let td = us.tileDefs[obj.gid];
+                let td = us.tileDefs[obj.gid & gidmask];
                 if (td)
                     md.texture = td.texture;
                 else {
