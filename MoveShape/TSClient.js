@@ -356,7 +356,7 @@ class PlayerClient {
         this.sprite.texture = GFX.textures["hat1"];
         this.sprite.size.x = 64;
         this.sprite.size.y = 64;
-        this.sprite.depth = -0.9;
+        this.sprite.depth = -0.4;
         this.text = new DrawableText();
         this.text.text = "Test";
         this.text.setTexture(GFX.textures["font1"]);
@@ -423,7 +423,7 @@ class EnemyNpc {
         this.sprite.size.x = 64;
         this.sprite.size.y = 64;
         this.sprite.position = Vector2New(x, y);
-        this.sprite.depth = -0.9;
+        this.sprite.depth = -0.4;
         this.text = new DrawableText();
         this.text.text = "Level: " + level;
         this.text.setTexture(GFX.textures["font1"]);
@@ -1178,11 +1178,16 @@ class TileMap {
             }
         };
         let doObjects = function (tm) {
+            let depth = 0;
+            if (tm.name == "canopy") {
+                depth = 1;
+            }
             for (let objk in tm.objects) {
                 let obj = tm.objects[objk];
                 let md = {};
                 md.position = { x: obj.x + obj.width / 2, y: obj.y - obj.height / 2 };
                 md.size = { x: obj.width, y: obj.height };
+                md.depth = depth;
                 let td = us.tileDefs[obj.gid];
                 if (td)
                     md.texture = td.texture;
@@ -1318,7 +1323,10 @@ class DrawableTileMap {
             drw.texture = obj.texture;
             drw.position = obj.position;
             drw.size = obj.size;
-            drw.depth = 0.780;
+            if (obj.depth == 0)
+                drw.depth = 0.780;
+            else
+                drw.depth = -0.480;
             GFX.addDrawable(drw);
             this.drawables.push(drw);
         }

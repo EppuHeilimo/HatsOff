@@ -3772,25 +3772,6 @@
                  "y":2448
                 }, 
                 {
-                 "height":67,
-                 "id":540,
-                 "name":"",
-                 "properties":
-                    {
-                     "type":"spawnPoint"
-                    },
-                 "propertytypes":
-                    {
-                     "type":"string"
-                    },
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":65,
-                 "x":1983,
-                 "y":1277
-                }, 
-                {
                  "gid":17,
                  "height":64,
                  "id":640,
@@ -5873,6 +5854,25 @@
                  "width":256,
                  "x":726,
                  "y":545
+                }, 
+                {
+                 "height":67,
+                 "id":540,
+                 "name":"",
+                 "properties":
+                    {
+                     "type":"spawnPoint"
+                    },
+                 "propertytypes":
+                    {
+                     "type":"string"
+                    },
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":65,
+                 "x":1983,
+                 "y":1277
                 }, 
                 {
                  "gid":2147483671,

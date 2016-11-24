@@ -33,6 +33,7 @@ namespace MoveShape
             {
                 //FormsAuthentication.SetAuthCookie(LoginControl.UserName, false);
                 //Response.Redirect("/Index.aspx");
+                FormsAuthentication.SignOut();
                 FormsAuthentication.RedirectFromLoginPage(LoginControl.UserName, LoginControl.RememberMeSet);
             }
         }

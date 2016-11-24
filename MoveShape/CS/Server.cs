@@ -16,7 +16,7 @@ namespace Hatsoff
         public ConcurrentDictionary<A, B> internalContainer = new ConcurrentDictionary<A, B>();
         public ConcurrentDictionary<B, A> reverseContainer = new ConcurrentDictionary<B, A>();
 
-        bool TryAddPair(A a, B b)
+        public bool TryAddPair(A a, B b)
         {
             if (internalContainer.TryAdd(a, b))
             {
@@ -30,6 +30,14 @@ namespace Hatsoff
             else
                 return false;
             return true;
+        }
+
+        public void RemovePair(A a, B b)
+        {
+            B dummyB;
+            A dummyA;
+            internalContainer.TryRemove(a, out dummyB);
+            reverseContainer.TryRemove(b, out dummyA);
         }
 
     }
@@ -64,7 +72,7 @@ namespace Hatsoff
         public ConcurrentDictionary<string, List<PlayerActor>> leftPlayers;
         public ConcurrentDictionary<string, List<Battle>> updatedBattles;
 
-        public ConcurrentDictionary<string, string> connectionUserNames;
+        public TwoWayConcurrentDictionary<string, string> connectionUserNames = new TwoWayConcurrentDictionary<string, string>();
 
         public Broadcaster()
         {
@@ -118,7 +126,7 @@ namespace Hatsoff
                 try
                 {
                 asd.Stop();
-                Debug.WriteLine(asd.ElapsedMilliseconds);
+                //Debug.WriteLine(asd.ElapsedMilliseconds);
                 asd.Start();
                 bool collisionupdate = playerShapeChanged || playerDisconnected;
                 // This is how we can access the Clients property 
@@ -294,8 +302,18 @@ namespace Hatsoff
 
     public class ConnectionHub : Hub
     {
+        
         // Is set via the constructor on each creation
         private readonly Broadcaster _broadcaster;
+
+        private bool ValidatePlayer()
+        {
+            return _broadcaster.connectionUserNames.internalContainer.ContainsKey(Context.ConnectionId);
+        }
+        private bool ValidatePlayer(out string name)
+        {
+            return _broadcaster.connectionUserNames.internalContainer.TryGetValue(Context.ConnectionId, out name);
+        }
         public ConnectionHub()
             : this(Broadcaster.Instance)
         {
@@ -327,7 +345,9 @@ namespace Hatsoff
         }
         public void AddPlayer()
         {
-            _broadcaster.game.AddPlayer(Context.ConnectionId);
+            string name;
+            if (ValidatePlayer(out name))
+                _broadcaster.game.AddPlayer(Context.ConnectionId, name);
         }
         public void GetAreaInfo()
         {
@@ -341,13 +361,21 @@ namespace Hatsoff
 
         public override Task OnDisconnected(bool stopCalled)
         {
-            _broadcaster.game.PlayerDisconnect(Context.ConnectionId);
+            string ts;
+
+            if (ValidatePlayer())
+                _broadcaster.game.PlayerDisconnect(Context.ConnectionId);
+            if (_broadcaster.connectionUserNames.internalContainer.TryGetValue(Context.ConnectionId, out ts))
+            {
+                _broadcaster.connectionUserNames.RemovePair(Context.ConnectionId, ts);
+            }
             return base.OnDisconnected(stopCalled);
         }
         
         public override Task OnConnected()
         {
-            
+            bool success = _broadcaster.connectionUserNames.TryAddPair(Context.ConnectionId, Context.User.Identity.Name);
+
             return base.OnConnected();
         }
         
