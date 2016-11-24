@@ -270,6 +270,10 @@ class PlayerClient implements GameActor {
         setTimeout(function () { this.text.text = ""; }, 2000);
     }
 
+    public changetext(mes: string): void {
+        this.text.text = mes;
+    }
+
     public update(): void {
         this.text.position.x = this.position.x - 25;
         this.text.position.y = this.position.y - 50;
@@ -291,6 +295,7 @@ class InterpolatedPlayerClient extends PlayerClient {
     public deinit(): void {
         GFX.removeDrawable(this.sprite);
     }
+
     public teleport(pos: Vector2): void {
         this.position = Vector2Clone(pos);
         this.lastPosition = Vector2Clone(pos);
@@ -312,6 +317,7 @@ class InterpolatedPlayerClient extends PlayerClient {
             this.lastPosition = this.position;
             this.sprite.position = this.lastPosition;
 
+
         }
         super.update();
     }
@@ -324,6 +330,8 @@ class EnemyNpc implements GameActor {
     public health: number;
     public level: number;
     public id: number;
+    public lastposition: Vector2;
+    public speed: number;
 
     constructor(x: number, y: number, health: number, appearance: string, level: number) {
         this.position = Vector2New(x,y);
@@ -338,11 +346,15 @@ class EnemyNpc implements GameActor {
         this.text.setTexture(GFX.textures["font1"]);
         this.text.depth = -1;
         this.health = health;
+        this.lastposition = Vector2New(0, 0);
         this.level = level;
+        this.speed = 4;
+        this.teleport(this.position);
     }
 
     public teleport(pos: Vector2): void {
         this.position = Vector2Clone(pos);
+        this.lastposition = Vector2Clone(pos);
     }
 
     public init(): void {
@@ -361,9 +373,28 @@ class EnemyNpc implements GameActor {
     }
 
     public update(): void {
+        let diff = Vector2Clone(this.position);
+        Vector2Sub(diff, this.lastposition)
+        let len = Vector2Length(diff);
+        if (len > this.speed) {
+            Vector2Normalize(diff);
+            Vector2ScalarMul(diff, this.speed);
+            Vector2Add(this.lastposition, diff);
+            this.sprite.position = Vector2Clone(this.lastposition);
+            this.sprite.position.y -= Math.abs(Math.sin(Game.time / 4) * 10);
+
+        }
+        else {
+            this.lastposition = this.position;
+            this.sprite.position = this.lastposition;
+        }
+        this.text.position.x = this.lastposition.x - 25;
+        this.text.position.y = this.lastposition.y - 50;
+
+        /*
         this.text.position.x = this.position.x - 25;
         this.text.position.y = this.position.y - 50;
-        this.sprite.position = this.position;
+        this.sprite.position = this.position; */
     }
 }
 

@@ -120,7 +120,7 @@ namespace Hatsoff
 
     public class QuadTree
     {
-        private int MAX_OBJECTS = 10;
+        private int MAX_OBJECTS = 100;
         private int MAX_LAYERS = 5;
         private int _layer;
         private List<CollisionCircle> _collisiobobejcts;

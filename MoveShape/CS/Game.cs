@@ -16,7 +16,7 @@ namespace Hatsoff
         private Random _rand;
         public ConcurrentDictionary<string, MapState> mapstates;
         public GameData gameData;
-        public ConcurrentDictionary<int, Battle> battles;
+        public List<Battle> battles;
        
         public ConcurrentDictionary<string, RemotePlayer> connectedPlayers;
         public int newID = 0;
@@ -28,7 +28,7 @@ namespace Hatsoff
             _rand               = new Random();
             mapstates           = new ConcurrentDictionary<string, MapState>();
             overworldcollisions = new QuadTree(0, new Rectangle(new Vec2(1600, 1600), 3200, 3200));
-            battles = new ConcurrentDictionary<int, Battle>();
+            battles             = new List<Battle>();
 
             foreach (KeyValuePair<string, Map> m in gameData.maps)
             {
@@ -36,7 +36,7 @@ namespace Hatsoff
             }
             for (int i = 0; i < 10; i++)
             {
-                addNpc("Overworld", new Vec2(_rand.NextDouble() * 600, _rand.NextDouble() * 600));
+                addNpc("Overworld", new Vec2(_rand.NextDouble() * 600, _rand.NextDouble() * 600));    
             }
         }
 
@@ -47,20 +47,51 @@ namespace Hatsoff
 
         public void Tick()
         {
+
             foreach(var area in mapstates)
             {
                 foreach(var npc in area.Value.npclist)
                 {
-                    npc.Update();
-                    _broadcaster.updatedNpcs["Overworld"].Add(npc);
-                    _broadcaster.updateNpcs = true;
+                     if(npc.Update())
+                    {
+                        _broadcaster.updatedNpcs[npc.areaname].Add(npc);
+                        _broadcaster.updateNpcs = true;
+                    }
                 }
+            }
+
+            foreach(Battle b in battles)
+            {
+                if (b.Update())
+                {
+                    ClientBattleInformation binfo = b.GenerateBattleInfo();
+                    _broadcaster.updatedBattles[b.player1.areaname].Add(binfo);
+                }
+            }
+            //remove ended battles
+            for(int i = battles.Count - 1; i >= 0; i--)
+            {
+                if(battles[i].end)
+                {
+                    battles.RemoveAt(i);
+                }
+            }
+
+            overworldcollisions.Clear();
+            foreach (KeyValuePair<string, RemotePlayer> p in connectedPlayers)
+            {
+                overworldcollisions.Insert(p.Value.getCollCircle());
+            }
+            foreach (Npc n in mapstates["Overworld"].npclist)
+            {
+                overworldcollisions.Insert(n.collision);
             }
         }
 
         private void addNpc(string area, Vec2 pos)
         {
-            Npc npc = new Npc(new Item(0, 1), 1, pos, true, npcid++);
+            Npc npc = new Npc(new Item(0, 1), 1, pos, true, npcid++, area);
+            overworldcollisions.Insert(new CollisionCircle(npc.collision));
             mapstates[area].npclist.Add(npc);
         }
 
@@ -90,9 +121,17 @@ namespace Hatsoff
 
         internal void UpdateBattle(PlayerActor player, BattleAction action)
         {
+            RemotePlayer p;
+            if (!connectedPlayers.TryGetValue(player.LastUpdatedBy, out p))
+                return; //Just In Case
 
+            //Check that the owner was the one who moved the actor
+            if (p.GetPlayerShape().LastUpdatedBy == p.GetPlayerShape().owner)
+            {
+                if(p.GetPlayerShape().myturn)
+                    p.GetPlayerShape().action = action;
+            }
         }
-
         internal void NewMessage(PlayerActor player, string message)
         {
             RemotePlayer p;
@@ -102,6 +141,7 @@ namespace Hatsoff
 
             ConcurrentDictionary<RemotePlayer, List<string>> areamessages;
             _broadcaster.sentMessages.TryGetValue(p.areaname, out areamessages);
+
             if (areamessages == null)
             {
                 Debug.WriteLine("Invalid areaname '{0}' on player", p.areaname);
@@ -173,7 +213,7 @@ namespace Hatsoff
                 Debug.WriteLine("UpdateStatus called with playerless connectionId");
                 return;
             }
-            if (p.GetPlayerShape().EquipItemInBattle(selectedhat))
+            if (p.GetPlayerShape().EquipItem(selectedhat))
             {
                 _broadcaster.SendUpdatedStatus(connectionId, p.GetPlayerShape());
                 _broadcaster.updatedPlayers[p.areaname].Add(p.GetPlayerShape());
@@ -213,8 +253,28 @@ namespace Hatsoff
                             RemotePlayer rp = (RemotePlayer)collision.getObject();
                             if (rp != p && (int)rp.GetPlayerShape().id == int.Parse(attribs))
                             {
-
+                                Battle b = new Battle(p, rp);
+                                battles.Add(b);
+                                _broadcaster.StartBattle(b);
                             }
+                        }
+                    }
+                }
+            }
+            else if (cmd == "npchittrigger")
+            {
+                List<CollisionCircle> posCollisions = new List<CollisionCircle>();
+                overworldcollisions.Retrieve(posCollisions, new CollisionCircle(p.getCollCircle()));
+                foreach (var collision in posCollisions)
+                {
+                    if (Collision.TestCircleCollision(p.GetPosition(), 50, collision.getCenter(), 50))
+                    {
+                        if (collision.getType() == CollisionCircle.ObjectType.NPC)
+                        {
+                            Npc npc = (Npc)collision.getObject();
+                            Battle b = new Battle(npc, p);
+                            battles.Add(b);
+                            _broadcaster.StartBattle(b);                
                         }
                     }
                 }
@@ -255,6 +315,7 @@ namespace Hatsoff
             //Check that the owner was the one who moved the actor
             if (p.GetPlayerShape().LastUpdatedBy == p.GetPlayerShape().owner)
             {
+                if (p.lockmoving) return;
                 bool hit = false;
                 //Temporary simple tile check
                 var tm = p.areaname;

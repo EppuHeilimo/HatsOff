@@ -116,7 +116,6 @@ $(function () {
                     players.splice(index, 1);
                 }
             }
-
         }
     }
     connectionHub.client.getMyID = function (ID)
@@ -218,7 +217,11 @@ $(function () {
         for (var i = 0; i < players.length; i++) {
             Game.removeActor(players[i])
         }
+        for (var i = 0; i < npcs.length; i++) {
+            Game.removeActor(npcs[i])
+        }
         players = [];
+        npcs = [];
         connectionHub.server.getAreaInfo();
         Chat.clear();
     }
@@ -250,22 +253,50 @@ $(function () {
         me.stats = stats;
     }
 
-    connectionHub.client.randomBattle = function (turn, health, level)
-    {
-        Battle.startRandomBattle(turn, new EnemyNpc(me.position.x + 100, me.position.y, health, "hat1", level), me);
-    }
 
-    connectionHub.client.startPvPBattle = function (enemyid, turn) {
-        var p = findPlayerByID(enemyid);
-        Battle.startBattle(turn, p, me);
+    connectionHub.client.startBattle = function (enemyid, turn, pvp) {
+        if (pvp)
+        {
+            var p = findPlayerByID(enemyid);
+
+            Battle.startBattle(turn, p, me);
+        }
+        else
+        {
+            var n = findNpcByID(enemyid);
+            Battle.startRandomBattle(turn, n, me);
+        }
+
     }
     
-    connectionHub.client.updateBattle = function(animate, myhealth, enemyhealth)
+    connectionHub.client.updateBattle = function(updatedbattles)
     {
-       //if(animate)
-            //me.animate("attack");
-        Battle.updateBattle(myhealth, enemyhealth);
-        console.log(myhealth + " " + enemyhealth);
+        for(var i = 0; i < updatedbattles.length; i++)
+        {
+            if (updatedbattles[i].player1id == myId)
+            {
+                Battle.updateBattle(updatedbattles[i].player1health, updatedbattles[i].player2health);
+            }
+            else if(updatedbattles[i].player2id == myId)
+            {
+                Battle.updateBattle(updatedbattles[i].player2health, updatedbattles[i].player1health);
+            }
+            else
+            {
+                if (updatedbattles[i].pvp) {
+                    var p1 = findPlayerByID(updatedbattles[i].player1id);
+                    var p2 = findPlayerByID(updatedbattles[i].player2id);
+                    p1.changetext("Health: " + updatedbattles[i].player1health);
+                    p2.changetext("Health: " + updatedbattles[i].player2health);
+                }
+                else
+                {
+                    var p1 = findPlayerByID(updatedbattles[i].player1id);
+                    p1.changetext("Health: " + updatedbattles[i].player1health);
+                    p2.changetext("Health: " + updatedbattles[i].player2health);
+                }
+            }
+        }
     }
 
     function updateServerModel() {
@@ -303,6 +334,18 @@ $(function () {
                         if (collisionCircle(me.position, 50, players[i], 50)) {
                             trigger = "playerhittrigger";
                             attribs = players[i].id;
+                        }
+                    }
+                }
+            }
+
+            if (trigger === "") {
+                for (var i = 0; i < npcs.length; i++) {
+                    if (npcs[i].id != myId) {
+                        if (collisionCircle(me.position, 50, npcs[i].lastposition, 50)) {
+                            trigger = "npchittrigger";
+                            attribs = npcs[i].id;
+                            console.log("You hit npc");
                         }
                     }
                 }
