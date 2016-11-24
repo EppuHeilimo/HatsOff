@@ -177,6 +177,10 @@ namespace Hatsoff
             attributeid = myhat.attributeid;
             attriname = myhat.attriname;
             attributedefenses = new Dictionary<int, double>();
+            for (int i = 0; i < 6; i++)
+            {
+                attributedefenses.Add(i, 0);
+            }
             foreach (KeyValuePair<int, double> a in myhat.baseitem.attributedefense)
             {
                 attributedefenses.Add(a.Key, a.Value + level * 2);
@@ -213,7 +217,6 @@ namespace Hatsoff
         [JsonProperty("id")] public double id;
 
         [JsonIgnore] private double speed;
-        [JsonIgnore] public BattleStatus battlestatus;
         [JsonIgnore] public List<Item> droplist;
         [JsonIgnore] public bool hostile;
         [JsonIgnore] public CollisionCircle collision;
@@ -222,11 +225,12 @@ namespace Hatsoff
         [JsonIgnore] private double timer;
         [JsonIgnore] private double stopfor;
         [JsonIgnore] private NPC_STATE state;
+        [JsonIgnore] public string areaname; 
 
-        public Npc(Item hat, int level, Vec2 position, bool hostile, double id)
+        public Npc(Item hat, int level, Vec2 position, bool hostile, double id, string areaname)
         {
             this.id = id;
-            rand = new Random();
+            rand = MyRandom.rand;
             this.position = position;
             this.targetposition = position;
             droplist = new List<Item>();
@@ -240,6 +244,7 @@ namespace Hatsoff
             state = NPC_STATE.STOP;
             timer = 0;
             stopfor = 40;
+            this.areaname = areaname;
         }
 
         public void DropItems()
@@ -248,18 +253,21 @@ namespace Hatsoff
         }
 
 
-        public void Update()
+        public bool Update()
         {
             if(Vec2.Approximately(position, targetposition))
             {
-                rand = new Random();
                 if (rand.NextDouble() <= 0.5)
+                {
                     targetposition = GetRandPosFromArea(new Vec2(0, 0), new Vec2(800, 800));
+                    return true;
+                }
                 else
                 {
                     state = NPC_STATE.STOP;
                     stopfor = (rand.NextDouble() + 1.0) * 30;
                 }
+                
             }
             else
             {
@@ -280,9 +288,9 @@ namespace Hatsoff
                         diff *= speed;
                         position += diff;
                         break;
-
                 }
             }
+            return false;
         }
         private Vec2 GetRandPosFromCurPos(double distance)
         {
@@ -308,6 +316,7 @@ namespace Hatsoff
             [JsonProperty("items")] public List<Item> items;
             [JsonProperty("equippeditem")] public Item equippeditem;
             [JsonProperty("inventoryindex")] public int inventoryindex;
+
 
             public Inventory(int invsize)
             {
@@ -368,6 +377,9 @@ namespace Hatsoff
         [JsonIgnore] public Stats stats;
         [JsonIgnore] public string LastUpdatedBy;
         [JsonIgnore] public string owner;
+        [JsonIgnore] public BattleAction action;
+        [JsonIgnore] public bool myturn;
+        
 
         public PlayerActor(double id, Vec2 pos, string owner, string playername, int level)
         {

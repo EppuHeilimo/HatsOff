@@ -64,7 +64,6 @@ var Battle;
         _myhealth = me.health;
         _myattack = me.attack;
         Battle.active = true;
-        Game.addActor(_npc);
         Battle.wait = false;
     }
     Battle.startRandomBattle = startRandomBattle;
@@ -110,6 +109,12 @@ var Battle;
         }
         _me.health = myhealth;
         _me.text.text = "Health: " + _me.health;
+        if (_me.health <= 0) {
+            lose();
+        }
+        if (enemyhealth <= 0) {
+            win();
+        }
     }
     Battle.updateBattle = updateBattle;
     function lose() {
@@ -377,6 +382,9 @@ class PlayerClient {
         this.text.text = mes;
         setTimeout(function () { this.text.text = ""; }, 2000);
     }
+    changetext(mes) {
+        this.text.text = mes;
+    }
     update() {
         this.text.position.x = this.position.x - 25;
         this.text.position.y = this.position.y - 50;
@@ -429,10 +437,14 @@ class EnemyNpc {
         this.text.setTexture(GFX.textures["font1"]);
         this.text.depth = -1;
         this.health = health;
+        this.lastposition = Vector2New(0, 0);
         this.level = level;
+        this.speed = 4;
+        this.teleport(this.position);
     }
     teleport(pos) {
         this.position = Vector2Clone(pos);
+        this.lastposition = Vector2Clone(pos);
     }
     init() {
         GFX.addDrawable(this.sprite);
@@ -447,9 +459,26 @@ class EnemyNpc {
         setTimeout(function () { this.text.text = ""; }, 2000);
     }
     update() {
+        let diff = Vector2Clone(this.position);
+        Vector2Sub(diff, this.lastposition);
+        let len = Vector2Length(diff);
+        if (len > this.speed) {
+            Vector2Normalize(diff);
+            Vector2ScalarMul(diff, this.speed);
+            Vector2Add(this.lastposition, diff);
+            this.sprite.position = Vector2Clone(this.lastposition);
+            this.sprite.position.y -= Math.abs(Math.sin(Game.time / 4) * 10);
+        }
+        else {
+            this.lastposition = this.position;
+            this.sprite.position = this.lastposition;
+        }
+        this.text.position.x = this.lastposition.x - 25;
+        this.text.position.y = this.lastposition.y - 50;
+        /*
         this.text.position.x = this.position.x - 25;
         this.text.position.y = this.position.y - 50;
-        this.sprite.position = this.position;
+        this.sprite.position = this.position; */
     }
 }
 class LocalPlayerClient extends PlayerClient {
@@ -536,6 +565,7 @@ TextureImports =
         "font1": { "source": "assets/font1.png", "isPowerOfTwo": false },
         "castle1": { "source": "assets/graphics/castle1.png", "isPowerOfTwo": false },
         "castle": { "source": "assets/graphics/castle.png", "isPowerOfTwo": false },
+        "docks": { "source": "assets/graphics/docks.png", "isPowerOfTwo": false },
         "townexit": { "source": "assets/graphics/townexit.png", "isPowerOfTwo": false },
         "citywall": { "source": "assets/graphics/citywall.png", "isPowerOfTwo": false },
         "cottage1": { "source": "assets/graphics/cottage.png", "isPowerOfTwo": false },
@@ -1184,12 +1214,13 @@ class TileMap {
                 depth = 1;
             }
             for (let objk in tm.objects) {
+                let gidmask = 0x1FFFFFFF;
                 let obj = tm.objects[objk];
                 let md = {};
                 md.position = { x: obj.x + obj.width / 2, y: obj.y - obj.height / 2 };
                 md.size = { x: obj.width, y: obj.height };
                 md.depth = depth;
-                let td = us.tileDefs[obj.gid];
+                let td = us.tileDefs[obj.gid & gidmask];
                 if (td)
                     md.texture = td.texture;
                 else {

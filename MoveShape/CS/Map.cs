@@ -18,21 +18,14 @@ namespace Hatsoff
         public string tilemapsource;
 
         [JsonProperty("triggerareas")]
-        public Dictionary<string, TriggerArea> triggerareas;
+        public Dictionary<string, TriggerArea> triggerareas = new Dictionary<string, TriggerArea>();
 
 
         [JsonProperty("spawnareas")]
-        public List<SpawnArea> spawnareas;
-        public Map(Dictionary<string, TriggerArea> triggers)
-        {
-            triggerareas = new Dictionary<string, TriggerArea>();
-            spawnareas = new List<SpawnArea>();
-            
-            triggerareas = triggers;
-        }
+        public List<SpawnArea> spawnareas = new List<SpawnArea>();
+
         public Map()
         {
-            triggerareas = new Dictionary<string, TriggerArea>();
         }
     }
 

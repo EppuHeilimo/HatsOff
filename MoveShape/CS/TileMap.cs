@@ -90,6 +90,9 @@ namespace Hatsoff
 
     public class TileMap
     {
+        public const long gidmask = 0x1FFFFFFF;
+      
+
         public const int tileWidth = 64;
         public const int tileHeight = 64;
         private int _width;
@@ -181,7 +184,7 @@ namespace Hatsoff
                             l.properties = new Dictionary<string, string>();
                         l.image = "";
                         TileDefinition td;
-                        tileDefinitions.TryGetValue(obj.gid, out td);
+                        tileDefinitions.TryGetValue(obj.gid & gidmask, out td);
                         if (td != null)
                         {
                             l.image = td.image;

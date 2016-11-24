@@ -14,7 +14,8 @@ namespace Hatsoff
         public string areaname;
         private Vec2[] _recordedpositions;
         private int posRecordIndex = 0;
-        public BattleStatus battlestatus;
+        public bool lockmoving;
+        public Battle currentbattle;
         public RemotePlayer(string connectionID, int ID, string areaname, string name)
         {
             _connectionId = connectionID;
@@ -69,11 +70,13 @@ namespace Hatsoff
 
         public bool SetPosition(Vec2 newpos)
         {
+
             bool ret = true;
             ret = _playerShape.MoveTo(newpos);
             RecordPosition(_playerShape.pos);
             _collisionCircle.setPosition(GetPosition());
             return ret;
+
         }
         public void Teleport(Vec2 newpos)
         {
