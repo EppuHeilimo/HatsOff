@@ -30,7 +30,6 @@ namespace Battle
         _myhealth = me.health;
         _myattack = me.attack;
         active = true;
-        Game.addActor(_npc);
         wait = false;
     }
 
@@ -66,6 +65,7 @@ namespace Battle
         active = true;
         wait = false;
     }
+
     export function updateBattle(myhealth: number, enemyhealth: number) {
         wait = false;
         if (!_enemyIsPlayer) {
@@ -78,6 +78,13 @@ namespace Battle
         }
         _me.health = myhealth;
         _me.text.text = "Health: " + _me.health;
+        if (_me.health <= 0)
+        {
+            lose();
+        }
+        if (enemyhealth <= 0) {
+            win();
+        }
     }
 
     export function lose()

@@ -14,11 +14,12 @@ namespace Hatsoff
         public string areaname;
         private Vec2[] _recordedpositions;
         private int posRecordIndex = 0;
-        public BattleStatus battlestatus;
-        public RemotePlayer(string connectionID, int ID, string areaname, string name)
+        public bool lockmoving;
+        public Battle currentbattle;
+        public RemotePlayer(string connectionID, int ID, string areaname)
         {
             _connectionId = connectionID;
-            _playerShape = new PlayerActor(ID, new Vec2(0, 0), connectionID, name, 1);
+            _playerShape = new PlayerActor(ID, new Vec2(0, 0), connectionID, "player" + ID, 1);
             _playerShape.LastUpdatedBy = connectionID;
             this.areaname = areaname;
             _recordedpositions = new Vec2[10];
@@ -69,11 +70,15 @@ namespace Hatsoff
 
         public bool SetPosition(Vec2 newpos)
         {
+
             bool ret = true;
             ret = _playerShape.MoveTo(newpos);
             RecordPosition(_playerShape.pos);
             _collisionCircle.setPosition(GetPosition());
             return ret;
+
+            return false;
+
         }
         public void Teleport(Vec2 newpos)
         {

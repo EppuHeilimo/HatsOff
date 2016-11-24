@@ -47,7 +47,7 @@ namespace Hatsoff
 
         public static bool Approximately(Vec2 v1, Vec2 v2)
         {
-            if(Distance(v1, v2) < 5)
+            if (Distance(v1, v2) < 5)
             {
                 return true;
             }
@@ -57,5 +57,10 @@ namespace Hatsoff
         {
             return new Vec2(v.x / v.Length(), v.y / v.Length());
         }
+    }
+    public static class MyRandom
+    {
+        static public Random rand = new Random();
+
     }
 }
