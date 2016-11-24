@@ -10,7 +10,7 @@
     <form id="form1" runat="server">
     <div>
         
-        <asp:GridView ID="gridItems" runat="server" AutoGenerateColumns="true">
+        <asp:GridView ID="gridItems" runat="server" AutoGenerateColumns="true"  AllowPaging="True">
             <columns>
                 <asp:boundfield headertext="ID" datafield="Item1" />
                 <asp:boundfield headertext="Name"  datafield="Item2.name" />
@@ -22,7 +22,7 @@
                 <asp:boundfield headertext="wearable" datafield="Item2.wearable" />
                 <asp:boundfield headertext="appearance"  datafield="Item2.appearance" />
                 <asp:boundfield headertext="effect" datafield="Item2.effect" />   
-                <asp:TemplateField HeaderText="attributes">
+                <asp:TemplateField HeaderText="attributes" >
                     <ItemTemplate>
                         <asp:Repeater ID="repeater" runat="server" DataSource='<%# Eval("Item2.attributedefense") %>'>
                             <ItemTemplate>
@@ -33,6 +33,8 @@
                 </asp:TemplateField>
             </columns>
         </asp:GridView>
+
+
     </div>
     </form>
 </body>
