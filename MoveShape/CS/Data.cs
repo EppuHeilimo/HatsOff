@@ -88,6 +88,13 @@ namespace Hatsoff
                         {
                             map.spawnareas.Add(new SpawnArea(lm.area, Int32.Parse(minLvl), Int32.Parse(maxLvl)));
                         }
+
+                        string str = "";
+                        if (lm.properties.TryGetValue("type", out str))
+                        {
+                            if (str == "spawnPoint")
+                                map.spawnpoint = lm.area;
+                        }
                     }
                 }
                 catch (Exception e)

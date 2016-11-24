@@ -29,6 +29,8 @@ TextureImports =
     "tree5": { "source": "assets/graphics/tree5.png", "isPowerOfTwo": false },
     "cottage": { "source": "assets/graphics/cottage.png", "isPowerOfTwo": false },
 
+    "bigforest": { "source": "assets/graphics/bigforest.png", "isPowerOfTwo": true },
+
     "deepwater": { "source": "assets/graphics/deepwater.png", "isPowerOfTwo": true },
     "dirtroad": { "source": "assets/graphics/dirtroad.png", "isPowerOfTwo": true },
     "grass": { "source": "assets/graphics/grass.png", "isPowerOfTwo": true },

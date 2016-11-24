@@ -11,6 +11,28 @@ using System.Diagnostics;
 
 namespace Hatsoff
 {
+    public class TwoWayConcurrentDictionary<A, B>
+    {
+        public ConcurrentDictionary<A, B> internalContainer = new ConcurrentDictionary<A, B>();
+        public ConcurrentDictionary<B, A> reverseContainer = new ConcurrentDictionary<B, A>();
+
+        bool TryAddPair(A a, B b)
+        {
+            if (internalContainer.TryAdd(a, b))
+            {
+                if (!reverseContainer.TryAdd(b, a))
+                {
+                    B dummy;
+                    internalContainer.TryRemove(a, out dummy);
+                    return false;
+                }
+            }
+            else
+                return false;
+            return true;
+        }
+
+    }
     public class Broadcaster
     {
         private readonly static Lazy<Broadcaster> _instance =
@@ -41,6 +63,8 @@ namespace Hatsoff
         public ConcurrentDictionary<string, List<PlayerActor>> joinedPlayers;
         public ConcurrentDictionary<string, List<PlayerActor>> leftPlayers;
         public ConcurrentDictionary<string, List<Battle>> updatedBattles;
+
+        public ConcurrentDictionary<string, string> connectionUserNames;
 
         public Broadcaster()
         {
@@ -320,7 +344,13 @@ namespace Hatsoff
             _broadcaster.game.PlayerDisconnect(Context.ConnectionId);
             return base.OnDisconnected(stopCalled);
         }
-
+        
+        public override Task OnConnected()
+        {
+            
+            return base.OnConnected();
+        }
+        
         public void GetGameInfo()
         {
             _broadcaster.SendGameInfo(Context.ConnectionId);

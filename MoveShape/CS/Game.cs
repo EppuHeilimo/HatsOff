@@ -159,6 +159,7 @@ namespace Hatsoff
             RemotePlayer newplayer = new RemotePlayer(connectionid, id, "Overworld");
             connectedPlayers.TryAdd(connectionid, newplayer);
             mapstates["Overworld"].playerlist.Add(newplayer.GetPlayerShape());
+            newplayer.Teleport(GameData.data.maps["Overworld"].spawnpoint.getCenter());
             PlayerJoinedArea(connectionid, newplayer);
             _broadcaster.SendPlayerId(connectionid, id);
             overworldcollisions.Insert(new CollisionCircle(newplayer.getCollCircle()));

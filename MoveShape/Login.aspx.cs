@@ -31,8 +31,9 @@ namespace MoveShape
 
             if (authenticated)
             {
-                Response.Redirect("/Index.aspx");
-                //FormsAuthentication.RedirectFromLoginPage(LoginControl.UserName, LoginControl.RememberMeSet);
+                //FormsAuthentication.SetAuthCookie(LoginControl.UserName, false);
+                //Response.Redirect("/Index.aspx");
+                FormsAuthentication.RedirectFromLoginPage(LoginControl.UserName, LoginControl.RememberMeSet);
             }
         }
 
@@ -76,7 +77,6 @@ namespace MoveShape
                         string saltpass = Convert.ToBase64String(p);
                         if (saltpass == pass)
                         {
-                            Session["loginId"] = loginId;
                             loginId = (int)rdr["id"];
                             returnValue = true;
                             break;

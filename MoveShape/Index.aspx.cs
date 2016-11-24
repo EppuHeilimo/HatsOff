@@ -11,9 +11,10 @@ namespace MoveShape
     {
         protected void Page_Load(object sender, EventArgs e)
         {
-            var logd = Session["loginId"];
 
-            if (logd == null)
+            var logd = HttpContext.Current.User.Identity;
+
+            if (logd.Name == null || logd.Name == "")
             {
                 Response.Redirect("/Login.aspx");
             }
