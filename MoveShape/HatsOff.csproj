@@ -371,6 +371,7 @@
     <Content Include="Data\items.json" />
     <Content Include="Data\attributes.json" />
     <Content Include="Data\modifiers.json" />
+    <Content Include="assets\shantown.json" />
     <None Include="Properties\PublishProfiles\godaddy.pubxml" />
     <None Include="Properties\PublishProfiles\hatsoff.pubxml" />
     <None Include="Properties\PublishProfiles\hatsoff.trinedy.eu - Web Deploy.pubxml" />
