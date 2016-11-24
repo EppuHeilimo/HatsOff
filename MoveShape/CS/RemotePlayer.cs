@@ -16,6 +16,7 @@ namespace Hatsoff
         private int posRecordIndex = 0;
         public bool lockmoving;
         public Battle currentbattle;
+        public bool hasmoved;
         public RemotePlayer(string connectionID, int ID, string areaname, string name)
         {
             _connectionId = connectionID;
@@ -27,7 +28,8 @@ namespace Hatsoff
             for (int i = 0; i < 10; i++)
             {
                 RecordPosition(GetPosition());
-            }           
+            }
+            hasmoved = false;   
         }
 
         public RemotePlayer(string connectionID, int ID, PlayerActor player)

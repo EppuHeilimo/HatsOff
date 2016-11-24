@@ -89,7 +89,11 @@ namespace Hatsoff
                 if (pvp)
                     winner = 1;
                 else
+                {
                     winner = 2;
+                    npc.state = Npc.NPC_STATE.MOVE;
+                }
+                    
             }
             else if (pvp)
             {
@@ -109,7 +113,7 @@ namespace Hatsoff
 
         public bool Update()
         {       
-             if(!wait)
+            if(!wait)
             {
                 if (player1.GetPlayerShape().myturn)
                 {

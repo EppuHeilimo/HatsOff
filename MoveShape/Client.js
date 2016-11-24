@@ -258,7 +258,6 @@ $(function () {
         if (pvp)
         {
             var p = findPlayerByID(enemyid);
-
             Battle.startBattle(turn, p, me);
         }
         else
@@ -293,7 +292,6 @@ $(function () {
                 {
                     var p1 = findPlayerByID(updatedbattles[i].player1id);
                     p1.changetext("Health: " + updatedbattles[i].player1health);
-                    p2.changetext("Health: " + updatedbattles[i].player2health);
                 }
             }
         }

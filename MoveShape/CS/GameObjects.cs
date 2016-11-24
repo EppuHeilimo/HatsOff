@@ -224,7 +224,7 @@ namespace Hatsoff
         [JsonIgnore] private Random rand;
         [JsonIgnore] private double timer;
         [JsonIgnore] private double stopfor;
-        [JsonIgnore] private NPC_STATE state;
+        [JsonIgnore] public NPC_STATE state;
         [JsonIgnore] public string areaname; 
 
         public Npc(Item hat, int level, Vec2 position, bool hostile, double id, string areaname)
@@ -259,7 +259,7 @@ namespace Hatsoff
             {
                 if (rand.NextDouble() <= 0.5)
                 {
-                    targetposition = GetRandPosFromArea(new Vec2(0, 0), new Vec2(800, 800));
+                    targetposition = GetRandPosFromArea(new Vec2(200, 200), new Vec2(1000, 1000));
                     return true;
                 }
                 else
@@ -287,6 +287,9 @@ namespace Hatsoff
                         diff = Vec2.Normalize(diff);
                         diff *= speed;
                         position += diff;
+                        collision.setPosition(position);
+                        break;
+                    case NPC_STATE.BATTLE:
                         break;
                 }
             }

@@ -226,7 +226,7 @@ namespace Hatsoff
         public void Message(string cmd, string attribs, string connectionId)
         {
             RemotePlayer p;
-            if (!connectedPlayers.TryGetValue(connectionId, out p))
+             if (!connectedPlayers.TryGetValue(connectionId, out p))
             {
                 Debug.WriteLine("Message called with playerless connectionId");
                 return;
@@ -255,9 +255,12 @@ namespace Hatsoff
                             RemotePlayer rp = (RemotePlayer)collision.getObject();
                             if (rp != p && (int)rp.GetPlayerShape().id == int.Parse(attribs))
                             {
-                                Battle b = new Battle(p, rp);
-                                battles.Add(b);
-                                _broadcaster.StartBattle(b);
+                                if(rp.currentbattle != null)
+                                {
+                                    Battle b = new Battle(p, rp);
+                                    battles.Add(b);
+                                    _broadcaster.StartBattle(b);
+                                }
                             }
                         }
                     }
@@ -269,14 +272,19 @@ namespace Hatsoff
                 overworldcollisions.Retrieve(posCollisions, new CollisionCircle(p.getCollCircle()));
                 foreach (var collision in posCollisions)
                 {
-                    if (Collision.TestCircleCollision(p.GetPosition(), 50, collision.getCenter(), 50))
+                    if (Collision.TestCircleCollision(p.GetPosition(), 50, collision.getCenter(), 100))
                     {
                         if (collision.getType() == CollisionCircle.ObjectType.NPC)
                         {
+                            
                             Npc npc = (Npc)collision.getObject();
-                            Battle b = new Battle(npc, p);
-                            battles.Add(b);
-                            _broadcaster.StartBattle(b);                
+                            if (npc.state != Npc.NPC_STATE.BATTLE)
+                            {
+                                npc.state = Npc.NPC_STATE.BATTLE;
+                                Battle b = new Battle(npc, p);
+                                battles.Add(b);
+                                _broadcaster.StartBattle(b);
+                            }
                         }
                     }
                 }
