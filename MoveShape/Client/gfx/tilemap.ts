@@ -94,14 +94,13 @@ class TileMap implements AsyncLoadable
             for (let objk in tm.objects) {
 
                 let gidmask = 0x1FFFFFFF
-                let fliphoriz = 0x80000000
                 
                 let obj = tm.objects[objk]
                 let md = <TileMapObject>{};
                 md.position = { x: obj.x + obj.width / 2, y: obj.y - obj.height / 2 };
                 md.size = { x: obj.width, y: obj.height };
                 md.depth = depth
-                md.flip = ((obj.gid & fliphoriz) > 0)
+                md.flip = (obj.gid > 0x10000000)
                 let td = us.tileDefs[obj.gid & gidmask];
                 if (td)
                     md.texture = td.texture;
@@ -285,6 +284,7 @@ class DrawableTileMap implements Drawable
             drw.texture = obj.texture;
             drw.position = obj.position;
             drw.size = obj.size;
+            drw.horizontalFlip = obj.flip;
             if (obj.depth == 0)
                 drw.depth = 0.780
             else

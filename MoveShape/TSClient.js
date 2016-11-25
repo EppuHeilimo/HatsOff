@@ -569,13 +569,11 @@ TextureImports =
         "townexit": { "source": "assets/graphics/townexit.png", "isPowerOfTwo": false },
         "citywall": { "source": "assets/graphics/citywall.png", "isPowerOfTwo": false },
         "cottage1": { "source": "assets/graphics/cottage.png", "isPowerOfTwo": false },
-        "hat1": { "source": "assets/graphics/tophat.png", "isPowerOfTwo": true },
-        "peasant_hat": { "source": "assets/graphics/peasant_hat.png", "isPowerOfTwo": true },
+        "hat1": { "source": "assets/graphics/hat/tophat.png", "isPowerOfTwo": true },
+        "peasant_hat": { "source": "assets/graphics/hat/peasant_hat.png", "isPowerOfTwo": true },
         "tree1": { "source": "assets/graphics/tree1.png", "isPowerOfTwo": false },
         "tree2": { "source": "assets/graphics/tree2.png", "isPowerOfTwo": false },
         "tree3": { "source": "assets/graphics/tree3.png", "isPowerOfTwo": false },
-        "tree4": { "source": "assets/graphics/tree4.png", "isPowerOfTwo": false },
-        "tree5": { "source": "assets/graphics/tree5.png", "isPowerOfTwo": false },
         "cottage": { "source": "assets/graphics/cottage.png", "isPowerOfTwo": false },
         "bigforest": { "source": "assets/graphics/bigforest.png", "isPowerOfTwo": true },
         "deepwater": { "source": "assets/graphics/deepwater.png", "isPowerOfTwo": true },
@@ -1219,13 +1217,12 @@ class TileMap {
             }
             for (let objk in tm.objects) {
                 let gidmask = 0x1FFFFFFF;
-                let fliphoriz = 0x80000000;
                 let obj = tm.objects[objk];
                 let md = {};
                 md.position = { x: obj.x + obj.width / 2, y: obj.y - obj.height / 2 };
                 md.size = { x: obj.width, y: obj.height };
                 md.depth = depth;
-                md.flip = ((obj.gid & fliphoriz) > 0);
+                md.flip = (obj.gid > 0x10000000);
                 let td = us.tileDefs[obj.gid & gidmask];
                 if (td)
                     md.texture = td.texture;
@@ -1361,6 +1358,7 @@ class DrawableTileMap {
             drw.texture = obj.texture;
             drw.position = obj.position;
             drw.size = obj.size;
+            drw.horizontalFlip = obj.flip;
             if (obj.depth == 0)
                 drw.depth = 0.780;
             else

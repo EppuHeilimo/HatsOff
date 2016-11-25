@@ -38,13 +38,17 @@
     <script src="/signalr/hubs"></script>
     <script src="/Client.js"></script>
 	<script src="/TSClient.js"></script>
+
+    <script src="Scripts/howler.min.js"></script>
    
    <script>
        function after_load()
        {
-
-
-           
+           new Howl({
+               src: ['assets/middle.ogg'],
+               autoplay: true,
+               loop: true
+           });
        }
        initMain(after_load);
    </script> 
