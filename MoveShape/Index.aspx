@@ -47,6 +47,7 @@
            new Howl({
                src: ['assets/middle.ogg'],
                autoplay: true,
+               volume: 0.3,
                loop: true
            });
        }
