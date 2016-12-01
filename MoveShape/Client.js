@@ -321,7 +321,7 @@ $(function () {
                 if (key in gamedata.maps[currentarea.mapname].triggerareas) {
                     var area = gamedata.maps[currentarea.mapname].triggerareas[key];
                     if (!gamedata.maps[currentarea.mapname].triggerareas.hasOwnProperty(key)) continue;
-                    if (collisionCircle(me.position, 50, area, 50)) {
+                    if (Collision.testBoxCollision(me.position, { x: 50, y: 50 }, area, { x: area.sizex, y: area.sizey }).found) {
                         trigger = "areachangetrigger";
                         attribs = key;
                     }

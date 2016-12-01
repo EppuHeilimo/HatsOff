@@ -143,148 +143,6 @@ var Battle;
     }
     Battle.init = init;
 })(Battle || (Battle = {}));
-var Chat;
-(function (Chat) {
-    function newMessage(message) {
-        let temp = Array();
-        let count = 1;
-        let mes1 = "";
-        let mes2 = "";
-        let name = "";
-        let temp2 = message.split(":");
-        name = temp2[0];
-        message = "";
-        for (let i = 1; i < temp2.length; i++) {
-            message += temp2[i];
-        }
-        if (message.length > 32) {
-            mes1 = message.substr(0, 32);
-            mes2 = message.substr(32, message.length);
-            count = 2;
-        }
-        else {
-            mes1 = message;
-        }
-        for (let i = 0; i < Chat.messages.length; i++) {
-            temp.push(Chat.messages[i].text);
-        }
-        for (let i = 0; i < Chat.messages.length - count; i++) {
-            Chat.messages[i + count].text = temp[i];
-        }
-        if (count == 1) {
-            Chat.messages[0].text = name.trim() + ":" + mes1;
-        }
-        if (count == 2) {
-            Chat.messages[1].text = name.trim() + ":" + mes1;
-            Chat.messages[0].text = mes2;
-        }
-        showchat();
-        Chat.chattimeout = setTimeout(function () { Chat.fading = true; }, 3000);
-    }
-    Chat.newMessage = newMessage;
-    function loop() {
-        if (Chat.fading) {
-            if (Chat.fadetimer > 0) {
-                Chat.fadetimer -= 0.1;
-                fadechat(Chat.fadetimer);
-            }
-            else if (Chat.fadetimer <= 0) {
-                Chat.fadetimer = 1;
-                Chat.fading = false;
-            }
-        }
-    }
-    Chat.loop = loop;
-    function windowResize() {
-        Chat.currentmessage.position.y = window.innerHeight - 25;
-        for (let i = 0; i < Chat.messages.length; i++) {
-            Chat.messages[i].position.y = window.innerHeight - 50 - i * 20;
-        }
-    }
-    Chat.windowResize = windowResize;
-    function deactivateChat() {
-        Chat.chatactivated = false;
-        Chat.chattimeout = setTimeout(function () { Chat.fading = true; }, 3000);
-    }
-    Chat.deactivateChat = deactivateChat;
-    function fadechat(alpha) {
-        for (let i = 0; i < Chat.messages.length; i++) {
-            Chat.messages[i].color.a = alpha;
-        }
-    }
-    Chat.fadechat = fadechat;
-    function showchat() {
-        for (let i = 0; i < Chat.messages.length; i++) {
-            Chat.messages[i].color.a = 1;
-        }
-        clearTimeout(Chat.chattimeout);
-    }
-    Chat.showchat = showchat;
-    function init() {
-        Chat.fadetimer = 1;
-        Chat.messages = new Array();
-        Chat.messageindex = 0;
-        for (let i = 0; i < 10; i++) {
-            let mes = new DrawableText();
-            mes.setTexture(GFX.textures["font1"]);
-            mes.depth = -1;
-            mes.characterScale = 2;
-            mes.position.y = window.innerHeight - 50 - i * 20;
-            mes.position.x = 20;
-            mes.screenSpace = true;
-            mes.text = "";
-            GFX.addDrawable(mes, Layer.LayerAlpha);
-            this.messages.push(mes);
-        }
-        Chat.chatactivated = false;
-        Chat.currentmessage = new DrawableText();
-        Chat.currentmessage.setTexture(GFX.textures["font1"]);
-        Chat.currentmessage.depth = -1;
-        Chat.currentmessage.characterScale = 2;
-        Chat.currentmessage.position.y = window.innerHeight - 25;
-        Chat.currentmessage.position.x = 20;
-        Chat.currentmessage.screenSpace = true;
-        Chat.currentmessage.text = "Press enter to chat";
-        GFX.addDrawable(Chat.currentmessage, Layer.LayerAlpha);
-        Chat.sentmessage = false;
-        Chat.initialized = true;
-    }
-    Chat.init = init;
-    function clearCurrentMessage() {
-        Chat.currentmessage.text = "";
-    }
-    Chat.clearCurrentMessage = clearCurrentMessage;
-    function sendCurrentMessage() {
-        if (Chat.currentmessage.text.length > 0) {
-            Chat.lastmessage = Chat.currentmessage.text;
-            Chat.sentmessage = true;
-        }
-        Chat.currentmessage.text = "Press enter to chat";
-    }
-    Chat.sendCurrentMessage = sendCurrentMessage;
-    function addKeyToCurrentMessage(char, capitalized) {
-        if (Chat.currentmessage.text.length < 64) {
-            if (capitalized) {
-                Chat.currentmessage.text = Chat.currentmessage.text + char.toUpperCase();
-            }
-            else {
-                Chat.currentmessage.text = Chat.currentmessage.text + char;
-            }
-        }
-    }
-    Chat.addKeyToCurrentMessage = addKeyToCurrentMessage;
-    function deleteLastKeyFromCurrentMessage() {
-        Chat.currentmessage.text = Chat.currentmessage.text.slice(0, -1);
-    }
-    Chat.deleteLastKeyFromCurrentMessage = deleteLastKeyFromCurrentMessage;
-    function clear() {
-        for (let i = 0; i < Chat.messages.length; i++) {
-            Chat.messages[i].text = "";
-        }
-        Chat.messageindex = 0;
-    }
-    Chat.clear = clear;
-})(Chat || (Chat = {}));
 var Collision;
 (function (Collision) {
     function testBoxCollision(center1, size1, center2, size2) {
@@ -495,7 +353,6 @@ var Game;
 })(Game || (Game = {}));
 class PlayerClient {
     constructor() {
-        this.showmessageid = -1;
         this.health = 100;
         this.attack = 10;
         this.speed = 8;
@@ -506,17 +363,9 @@ class PlayerClient {
         this.sprite.size.y = 64;
         this.sprite.depth = -0.4;
         this.text = new DrawableText();
-        this.text.text = "404 name not found";
+        this.text.text = "Test";
         this.text.setTexture(GFX.textures["font1"]);
         this.text.depth = -1;
-        this.senttext = new DrawableText();
-        this.senttext.text = "";
-        this.senttext.setTexture(GFX.textures["font1"]);
-        this.senttext.depth = -1;
-    }
-    changeName(n) {
-        this.name = n;
-        this.text.text = this.name;
     }
     teleport(pos) {
         this.position = Vector2Clone(pos);
@@ -524,24 +373,14 @@ class PlayerClient {
     init() {
         GFX.addDrawable(this.sprite);
         GFX.addDrawable(this.text, Layer.LayerAlpha);
-        GFX.addDrawable(this.senttext);
     }
     deinit() {
         GFX.removeDrawable(this.sprite);
         GFX.removeDrawable(this.text);
-        GFX.removeDrawable(this.senttext);
     }
     showmessage(mes) {
-        let temp = mes.slice(2, mes.length);
-        if (temp.length > 24) {
-            temp = temp.slice(0, 24);
-            temp = temp + "...";
-        }
-        this.senttext.text = temp;
-        if (this.showmessageid >= 0)
-            clearTimeout(this.showmessageid);
-        let mina = this;
-        this.showmessageid = setTimeout(function () { mina.senttext.text = ""; }, 3500);
+        this.text.text = mes;
+        setTimeout(function () { this.text.text = ""; }, 2000);
     }
     changetext(mes) {
         this.text.text = mes;
@@ -549,8 +388,6 @@ class PlayerClient {
     update() {
         this.text.position.x = this.position.x - 25;
         this.text.position.y = this.position.y - 50;
-        this.senttext.position.x = this.position.x - 25;
-        this.senttext.position.y = this.position.y - 100;
     }
 }
 class InterpolatedPlayerClient extends PlayerClient {
@@ -561,7 +398,6 @@ class InterpolatedPlayerClient extends PlayerClient {
     init() {
         GFX.addDrawable(this.sprite);
         GFX.addDrawable(this.text, Layer.LayerAlpha);
-        GFX.addDrawable(this.senttext);
     }
     deinit() {
         super.deinit();
@@ -587,8 +423,6 @@ class InterpolatedPlayerClient extends PlayerClient {
         }
         this.text.position.x = this.lastPosition.x - 25;
         this.text.position.y = this.lastPosition.y - 50;
-        this.senttext.position.x = this.lastPosition.x - 25;
-        this.senttext.position.y = this.lastPosition.y - 100;
     }
 }
 class EnemyNpc {
@@ -643,6 +477,10 @@ class EnemyNpc {
         }
         this.text.position.x = this.lastposition.x - 25;
         this.text.position.y = this.lastposition.y - 50;
+        /*
+        this.text.position.x = this.position.x - 25;
+        this.text.position.y = this.position.y - 50;
+        this.sprite.position = this.position; */
     }
 }
 class LocalPlayerClient extends PlayerClient {
@@ -691,7 +529,6 @@ class LocalPlayerClient extends PlayerClient {
                 if (this.moved) {
                     let coll = Game.testMapCollision(this.position, { x: 32, y: 32 });
                     if (coll.found) {
-                        console.log(coll);
                         this.position.x -= coll.offset.x;
                         this.position.y -= coll.offset.y;
                     }
@@ -741,6 +578,8 @@ TextureImports =
         "tree3": { "source": "assets/graphics/tree3.png", "isPowerOfTwo": false },
         "cottage": { "source": "assets/graphics/cottage.png", "isPowerOfTwo": false },
         "bigforest": { "source": "assets/graphics/bigforest.png", "isPowerOfTwo": true },
+        "smallforest": { "source": "assets/graphics/smallforest.png", "isPowerOfTwo": true },
+        "rock": { "source": "assets/graphics/rock.png", "isPowerOfTwo": true },
         "deepwater": { "source": "assets/graphics/deepwater.png", "isPowerOfTwo": true },
         "dirtroad": { "source": "assets/graphics/dirtroad.png", "isPowerOfTwo": true },
         "grass": { "source": "assets/graphics/grass.png", "isPowerOfTwo": true },
@@ -961,6 +800,123 @@ class DrawableTestParticle extends DrawableColorBox {
         super.draw();
     }
 }
+var Chat;
+(function (Chat) {
+    function newMessage(message) {
+        let temp = Array();
+        for (let i = 0; i < Chat.messages.length; i++) {
+            temp.push(Chat.messages[i].text);
+        }
+        for (let i = 0; i < Chat.messages.length - 1; i++) {
+            Chat.messages[i + 1].text = temp[i];
+        }
+        Chat.messages[0].text = message;
+        console.log(message);
+        showchat();
+        Chat.chattimeout = setTimeout(function () { Chat.fading = true; }, 3000);
+    }
+    Chat.newMessage = newMessage;
+    function loop() {
+        if (Chat.fading) {
+            if (Chat.fadetimer > 0) {
+                Chat.fadetimer -= 0.1;
+                fadechat(Chat.fadetimer);
+            }
+            else if (Chat.fadetimer <= 0) {
+                Chat.fadetimer = 1;
+                Chat.fading = false;
+            }
+        }
+    }
+    Chat.loop = loop;
+    function windowResize() {
+        Chat.currentmessage.position.y = window.innerHeight - 25;
+        for (let i = 0; i < Chat.messages.length; i++) {
+            Chat.messages[i].position.y = window.innerHeight - 50 - i * 20;
+        }
+    }
+    Chat.windowResize = windowResize;
+    function deactivateChat() {
+        Chat.chatactivated = false;
+        Chat.chattimeout = setTimeout(function () { Chat.fading = true; }, 3000);
+    }
+    Chat.deactivateChat = deactivateChat;
+    function fadechat(alpha) {
+        for (let i = 0; i < Chat.messages.length; i++) {
+            Chat.messages[i].color.a = alpha;
+        }
+    }
+    Chat.fadechat = fadechat;
+    function showchat() {
+        for (let i = 0; i < Chat.messages.length; i++) {
+            Chat.messages[i].color.a = 1;
+        }
+        clearTimeout(Chat.chattimeout);
+    }
+    Chat.showchat = showchat;
+    function init() {
+        Chat.fadetimer = 1;
+        Chat.messages = new Array();
+        Chat.messageindex = 0;
+        for (let i = 0; i < 10; i++) {
+            let mes = new DrawableText();
+            mes.setTexture(GFX.textures["font1"]);
+            mes.depth = -1;
+            mes.characterScale = 2;
+            mes.position.y = window.innerHeight - 50 - i * 20;
+            mes.position.x = 20;
+            mes.screenSpace = true;
+            mes.text = "";
+            GFX.addDrawable(mes, Layer.LayerAlpha);
+            this.messages.push(mes);
+        }
+        Chat.chatactivated = false;
+        Chat.currentmessage = new DrawableText();
+        Chat.currentmessage.setTexture(GFX.textures["font1"]);
+        Chat.currentmessage.depth = -1;
+        Chat.currentmessage.characterScale = 2;
+        Chat.currentmessage.position.y = window.innerHeight - 25;
+        Chat.currentmessage.position.x = 20;
+        Chat.currentmessage.screenSpace = true;
+        Chat.currentmessage.text = "Press enter to chat";
+        GFX.addDrawable(Chat.currentmessage, Layer.LayerAlpha);
+        Chat.sentmessage = false;
+        Chat.initialized = true;
+    }
+    Chat.init = init;
+    function clearCurrentMessage() {
+        Chat.currentmessage.text = "";
+    }
+    Chat.clearCurrentMessage = clearCurrentMessage;
+    function sendCurrentMessage() {
+        if (Chat.currentmessage.text.length > 0) {
+            Chat.lastmessage = Chat.currentmessage.text;
+            Chat.sentmessage = true;
+        }
+        Chat.currentmessage.text = "Press enter to chat";
+    }
+    Chat.sendCurrentMessage = sendCurrentMessage;
+    function addKeyToCurrentMessage(char, capitalized) {
+        if (capitalized) {
+            Chat.currentmessage.text = Chat.currentmessage.text + char.toUpperCase();
+        }
+        else {
+            Chat.currentmessage.text = Chat.currentmessage.text + char;
+        }
+    }
+    Chat.addKeyToCurrentMessage = addKeyToCurrentMessage;
+    function deleteLastKeyFromCurrentMessage() {
+        Chat.currentmessage.text = Chat.currentmessage.text.slice(0, -1);
+    }
+    Chat.deleteLastKeyFromCurrentMessage = deleteLastKeyFromCurrentMessage;
+    function clear() {
+        for (let i = 0; i < Chat.messages.length; i++) {
+            Chat.messages[i].text = "";
+        }
+        Chat.messageindex = 0;
+    }
+    Chat.clear = clear;
+})(Chat || (Chat = {}));
 class ShaderBinder {
     useShader(shader) {
         this.lastShader = GFX.currentShader;
@@ -1166,11 +1122,27 @@ class DrawableText {
     constructor() {
         this.visible = true;
         this.screenSpace = false;
+        this.centering = false;
+        this.lineLengths = [];
+        this.centering = false;
         this.text = "";
         this.depth = 0;
         this.characterScale = 1;
         this.position = Vector2New(0, 0);
         this.color = { r: 1, g: 1, b: 1, a: 1.0 };
+    }
+    recalculateLineLengths() {
+        this.lineLengths = [];
+        let curlen = 0;
+        for (let i = 0; i < this.text.length; i++) {
+            if (this.text.charAt(i) == "\n") {
+                this.lineLengths.push(curlen);
+                curlen = 0;
+                continue;
+            }
+            curlen++;
+        }
+        this.lineLengths.push(curlen);
     }
     setTexture(tex) {
         this.texture = tex;
@@ -1192,10 +1164,23 @@ class DrawableText {
         a.x += this.position.x;
         a.y += this.position.y;
         let linePos = Vector2Clone(a);
+        let linenum = 0;
+        let damaster = this;
+        function getLineLength() {
+            if (!damaster.centering)
+                return 0;
+            let v = damaster.lineLengths[linenum];
+            if (v)
+                return v;
+            return 0;
+        }
+        a.x -= scaledSize.x * getLineLength() / 2;
         for (let i = 0; i < this.text.length; i++) {
             if (this.text.charAt(i) == "\n") {
                 linePos.y += scaledSize.y;
+                linenum++;
                 a = Vector2Clone(linePos);
+                a.x -= scaledSize.x * getLineLength() / 2;
                 continue;
             }
             GFX.gl.uniform1f(GFX.currentShader.uniforms["charindex"], this.text.charCodeAt(i) - 32);
@@ -1213,6 +1198,7 @@ TileMapImports = {};
 TileMapImports["Overworld"] = "assets/overworld.json";
 TileMapImports["Town"] = "assets/smalltown.json";
 TileMapImports["Shantown"] = "assets/shantown.json";
+TileMapImports["Drakeforest"] = "assets/drakeforest.json";
 class TileMap {
     constructor(name, src) {
         this.tileSize = 64;

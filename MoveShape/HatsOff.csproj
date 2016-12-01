@@ -288,6 +288,7 @@
     <Content Include="assets\graphics\hat\furhat.png" />
     <Content Include="assets\graphics\hat\peasant_hat.png" />
     <Content Include="assets\graphics\hat\tophat.png" />
+    <Content Include="assets\graphics\rock.png" />
     <Content Include="assets\graphics\sand.png" />
     <Content Include="assets\graphics\shallowwater.png" />
     <Content Include="assets\graphics\sign.png" />
@@ -371,6 +372,7 @@
     <Content Include="Data\modifiers.json" />
     <Content Include="assets\shantown.json" />
     <Content Include="assets\middle.ogg" />
+    <Content Include="assets\drakeforest.json" />
     <None Include="Properties\PublishProfiles\godaddy.pubxml" />
     <None Include="Properties\PublishProfiles\hatsoff.pubxml" />
     <None Include="Properties\PublishProfiles\hatsoff.trinedy.eu - Web Deploy.pubxml" />

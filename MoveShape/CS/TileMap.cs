@@ -177,7 +177,6 @@ namespace Hatsoff
                         LandMark l = new LandMark();
                         //Tiled object position refers to the lower left point of the object
                         //(lowest x value, highest y value)
-                        l.area = new Rectangle(new Vec2(obj.x + obj.width / 2, obj.y - obj.height / 2), obj.width, obj.height);
                         if (obj.properties != null)
                             l.properties = new Dictionary<string, string>(obj.properties);
                         else
@@ -185,10 +184,13 @@ namespace Hatsoff
                         l.image = "";
                         TileDefinition td;
                         tileDefinitions.TryGetValue(obj.gid & gidmask, out td);
-                        if (td != null)
+                        if (obj.gid > 0)
                         {
                             l.image = td.image;
+                            l.area = new Rectangle(new Vec2(obj.x + obj.width / 2, obj.y - obj.height / 2), obj.width, obj.height);
                         }
+                        else
+                            l.area = new Rectangle(new Vec2(obj.x + obj.width / 2, obj.y + obj.height / 2), obj.width, obj.height);
                         landMarks.Add(l);
                     }
                 }

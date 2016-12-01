@@ -480,7 +480,6 @@ class LocalPlayerClient extends PlayerClient {
                 if (this.moved) {
                     let coll = Game.testMapCollision(this.position, { x: 32, y: 32 });
                     if (coll.found) {
-                        console.log(coll)
                         this.position.x -= coll.offset.x;
                         this.position.y -= coll.offset.y;
                     }

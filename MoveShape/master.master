@@ -1,0 +1,73 @@
+﻿<%@ Master Language="C#" CodeBehind="master.master.cs" Inherits="MoveShape.master" %>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 
+    1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" >
+<head runat="server" >
+    <title>Master page title</title>
+    <style>
+        #nav
+        {
+            overflow: hidden;
+            max-width: 900px;
+            margin: 0;
+            padding: 0;
+        }
+        #nav li
+	    {
+		    list-style: none;
+		    text-align: center;
+		    float: left;
+		    padding: 1px;
+		    border: 2px;
+		    border-left-style: solid;
+		    border-left-color: #000000;
+		    min-width: 100px;
+		    width: 33%;
+		    box-sizing: border-box;
+	    }
+
+	    #nav li:first-child
+	    {
+		    border-left-style: none;
+	    }
+	
+	    #nav li a
+	    {
+		    width: 100%;
+		    height: 100%;
+		    display: inline-block;
+		    color:#000000;
+		    text-decoration: none;
+	    }
+
+	    #nav li a
+	    {
+		    width: 100%;
+		    height: 100%;
+		    display: inline-block;
+		    color:#000000;
+		    text-decoration: none;
+	    }
+    </style>
+</head>
+<body>
+    <form id="form1" runat="server">
+        <div align="center">
+            <h1>HatsOff</h1>
+            <ul id="nav">
+                <li><a href="Index.aspx">Front page</a></li>
+                <li><a href="Login.aspx">Login</a></li>
+                <li><a href="Registration.aspx">Register</a></li>
+            </ul>
+        <table>
+           <tr>
+               <td><asp:contentplaceholder id="Main" runat="server" /></td>
+           </tr>
+        </table>
+
+        </div>
+    </form>
+</body>
+</html>
