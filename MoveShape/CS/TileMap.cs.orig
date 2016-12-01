@@ -190,7 +190,10 @@ namespace Hatsoff
                         }
                         else
                             l.area = new Rectangle(new Vec2(obj.x + obj.width / 2, obj.y + obj.height / 2), obj.width, obj.height);
+<<<<<<< Updated upstream
+=======
                             
+>>>>>>> Stashed changes
                         landMarks.Add(l);
                     }
                 }

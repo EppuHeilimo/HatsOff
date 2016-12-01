@@ -7,6 +7,14 @@
 <head runat="server" >
     <title>Master page title</title>
     <style>
+        body 
+        {
+	        margin: 0px;
+	        padding: 0px;
+            background-color: #ffe0f8;
+	        font-family:"Lucida Sans Unicode", Geneva, sans-serif;
+        }
+
         #nav
         {
             overflow: hidden;

@@ -233,7 +233,7 @@ namespace GFX
     }
 
 	export function update() : void
-    {
+    {/*
         let curmap = tileMap.map;
         if (curmap)
         {
@@ -249,7 +249,7 @@ namespace GFX
                 camera.x = 0;
             if (camera.y < 0)
                 camera.y = 0;
-        }
+        }*/
         //draw all gfx stuff
 
         //bind the "basic" shader

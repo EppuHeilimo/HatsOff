@@ -248,6 +248,13 @@
     <Compile Include="Login.aspx.designer.cs">
       <DependentUpon>Login.aspx</DependentUpon>
     </Compile>
+    <Compile Include="master.master.cs">
+      <DependentUpon>master.master</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="master.master.designer.cs">
+      <DependentUpon>master.master</DependentUpon>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="CS\RemotePlayer.cs" />
     <Compile Include="CS\Startup.cs" />
@@ -372,6 +379,7 @@
     <Content Include="Data\modifiers.json" />
     <Content Include="assets\shantown.json" />
     <Content Include="assets\middle.ogg" />
+    <Content Include="master.master" />
     <Content Include="assets\drakeforest.json" />
     <None Include="Properties\PublishProfiles\godaddy.pubxml" />
     <None Include="Properties\PublishProfiles\hatsoff.pubxml" />

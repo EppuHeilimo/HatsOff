@@ -1137,21 +1137,6 @@ var GFX;
     }
     GFX.centerCameraOn = centerCameraOn;
     function update() {
-        let curmap = GFX.tileMap.map;
-        if (curmap) {
-            let lowerLeft = Vector2Clone(GFX.camera);
-            Vector2Add(lowerLeft, GFX.renderSize);
-            let mapsize = Vector2Clone(curmap.sizeInTiles);
-            Vector2ScalarMul(mapsize, curmap.tileSize);
-            if (lowerLeft.x > mapsize.x)
-                GFX.camera.x -= (lowerLeft.x - mapsize.x);
-            if (lowerLeft.y > mapsize.y)
-                GFX.camera.y -= (lowerLeft.y - mapsize.y);
-            if (GFX.camera.x < 0)
-                GFX.camera.x = 0;
-            if (GFX.camera.y < 0)
-                GFX.camera.y = 0;
-        }
         //draw all gfx stuff
         //bind the "basic" shader
         updateShader(GFX.shaders["basic"]);
