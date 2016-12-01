@@ -230,11 +230,14 @@ class PlayerClient implements GameActor {
     public id: number;
     public speed: number;
     public text: DrawableText;
+    public senttext: DrawableText;
     public health: number;
     public attack: number;
+    public name: string;
+    public showmessageid: number;
    
-
     constructor() {
+        this.showmessageid = -1;
         this.health = 100;
         this.attack = 10;
         this.speed = 8;
@@ -245,9 +248,18 @@ class PlayerClient implements GameActor {
         this.sprite.size.y = 64;
         this.sprite.depth = -0.4;
         this.text = new DrawableText();
-        this.text.text = "Test";
+        this.text.text = "404 name not found";
         this.text.setTexture(GFX.textures["font1"]);
         this.text.depth = -1;
+        this.senttext = new DrawableText();
+        this.senttext.text = "";
+        this.senttext.setTexture(GFX.textures["font1"]);
+        this.senttext.depth = -1;
+    }
+
+    public changeName(n: string): void {
+        this.name = n;
+        this.text.text = this.name;
     }
 
     public teleport(pos: Vector2): void {
@@ -257,17 +269,27 @@ class PlayerClient implements GameActor {
     public init(): void {
         GFX.addDrawable(this.sprite);
         GFX.addDrawable(this.text, Layer.LayerAlpha);
+        GFX.addDrawable(this.senttext);
     }
 
     public deinit(): void {
         GFX.removeDrawable(this.sprite);
         GFX.removeDrawable(this.text);
+        GFX.removeDrawable(this.senttext);
     }
 
     public showmessage(mes: string): void
     {
-        this.text.text = mes;
-        setTimeout(function () { this.text.text = ""; }, 2000);
+        let temp = mes.slice(2, mes.length);
+        if (temp.length > 24) {
+            temp = temp.slice(0, 24);
+            temp = temp + "...";
+        }
+        this.senttext.text = temp;
+        if (this.showmessageid >= 0)
+            clearTimeout(this.showmessageid);
+        let mina = this;
+        this.showmessageid = setTimeout(function () { mina.senttext.text = ""; }, 3500);
     }
 
     public changetext(mes: string): void {
@@ -277,6 +299,8 @@ class PlayerClient implements GameActor {
     public update(): void {
         this.text.position.x = this.position.x - 25;
         this.text.position.y = this.position.y - 50;
+        this.senttext.position.x = this.position.x - 25;
+        this.senttext.position.y = this.position.y - 100;
     }
 }
 
@@ -291,6 +315,7 @@ class InterpolatedPlayerClient extends PlayerClient {
     public init(): void {
         GFX.addDrawable(this.sprite);
         GFX.addDrawable(this.text, Layer.LayerAlpha);
+        GFX.addDrawable(this.senttext);
     }
 
     public deinit(): void {
@@ -321,6 +346,8 @@ class InterpolatedPlayerClient extends PlayerClient {
         }
         this.text.position.x = this.lastPosition.x - 25;
         this.text.position.y = this.lastPosition.y - 50;
+        this.senttext.position.x = this.lastPosition.x - 25;
+        this.senttext.position.y = this.lastPosition.y - 100;
     }
 }
 
@@ -392,10 +419,6 @@ class EnemyNpc implements GameActor {
         this.text.position.x = this.lastposition.x - 25;
         this.text.position.y = this.lastposition.y - 50;
 
-        /*
-        this.text.position.x = this.position.x - 25;
-        this.text.position.y = this.position.y - 50;
-        this.sprite.position = this.position; */
     }
 }
 

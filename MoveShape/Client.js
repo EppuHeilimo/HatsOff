@@ -55,6 +55,7 @@ $(function () {
         }
         //p.showmessage(messages[messages.length - 1]);
         Chat.newMessage(sender.name + messages[messages.length - 1]);
+        p.showmessage(messages[messages.length - 1]);
     }
      
     connectionHub.client.updateShapes = function (models) {
@@ -130,6 +131,7 @@ $(function () {
         player.id = model.id;
         player.teleport(Vector2Clone(model.pos));
         player.sprite.texture = GFX.textures[model.appearance];
+        player.changeName( model.name );
         Game.addActor(player);
         players.push(player);
     }
@@ -174,6 +176,7 @@ $(function () {
             a.position.y = area.y;
             a.size.x = area.sizex;
             a.size.y = area.sizey;
+            
             a.texture = GFX.textures[area.appearance];
             GFX.addDrawable(a);
             area.drawable = a;
