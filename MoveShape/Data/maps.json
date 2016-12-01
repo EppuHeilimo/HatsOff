@@ -8,11 +8,11 @@
     "triggerareas": { },
     "tilemap": "assets/shantown.json"
   },
-  "drakeforest" :
+  "Drakeforest" :
 	{
         "triggerareas": {},
         "tilemap": "assets/drakeforest.json"
-	}
+	},
 	"Town" :
 	{
 		    triggerareas :

@@ -143,123 +143,6 @@ var Battle;
     }
     Battle.init = init;
 })(Battle || (Battle = {}));
-var Chat;
-(function (Chat) {
-    function newMessage(message) {
-        let temp = Array();
-        for (let i = 0; i < Chat.messages.length; i++) {
-            temp.push(Chat.messages[i].text);
-        }
-        for (let i = 0; i < Chat.messages.length - 1; i++) {
-            Chat.messages[i + 1].text = temp[i];
-        }
-        Chat.messages[0].text = message;
-        console.log(message);
-        showchat();
-        Chat.chattimeout = setTimeout(function () { Chat.fading = true; }, 3000);
-    }
-    Chat.newMessage = newMessage;
-    function loop() {
-        if (Chat.fading) {
-            if (Chat.fadetimer > 0) {
-                Chat.fadetimer -= 0.1;
-                fadechat(Chat.fadetimer);
-            }
-            else if (Chat.fadetimer <= 0) {
-                Chat.fadetimer = 1;
-                Chat.fading = false;
-            }
-        }
-    }
-    Chat.loop = loop;
-    function windowResize() {
-        Chat.currentmessage.position.y = window.innerHeight - 25;
-        for (let i = 0; i < Chat.messages.length; i++) {
-            Chat.messages[i].position.y = window.innerHeight - 50 - i * 20;
-        }
-    }
-    Chat.windowResize = windowResize;
-    function deactivateChat() {
-        Chat.chatactivated = false;
-        Chat.chattimeout = setTimeout(function () { Chat.fading = true; }, 3000);
-    }
-    Chat.deactivateChat = deactivateChat;
-    function fadechat(alpha) {
-        for (let i = 0; i < Chat.messages.length; i++) {
-            Chat.messages[i].color.a = alpha;
-        }
-    }
-    Chat.fadechat = fadechat;
-    function showchat() {
-        for (let i = 0; i < Chat.messages.length; i++) {
-            Chat.messages[i].color.a = 1;
-        }
-        clearTimeout(Chat.chattimeout);
-    }
-    Chat.showchat = showchat;
-    function init() {
-        Chat.fadetimer = 1;
-        Chat.messages = new Array();
-        Chat.messageindex = 0;
-        for (let i = 0; i < 10; i++) {
-            let mes = new DrawableText();
-            mes.setTexture(GFX.textures["font1"]);
-            mes.depth = -1;
-            mes.characterScale = 2;
-            mes.position.y = window.innerHeight - 50 - i * 20;
-            mes.position.x = 20;
-            mes.screenSpace = true;
-            mes.text = "";
-            GFX.addDrawable(mes, Layer.LayerAlpha);
-            this.messages.push(mes);
-        }
-        Chat.chatactivated = false;
-        Chat.currentmessage = new DrawableText();
-        Chat.currentmessage.setTexture(GFX.textures["font1"]);
-        Chat.currentmessage.depth = -1;
-        Chat.currentmessage.characterScale = 2;
-        Chat.currentmessage.position.y = window.innerHeight - 25;
-        Chat.currentmessage.position.x = 20;
-        Chat.currentmessage.screenSpace = true;
-        Chat.currentmessage.text = "Press enter to chat";
-        GFX.addDrawable(Chat.currentmessage, Layer.LayerAlpha);
-        Chat.sentmessage = false;
-        Chat.initialized = true;
-    }
-    Chat.init = init;
-    function clearCurrentMessage() {
-        Chat.currentmessage.text = "";
-    }
-    Chat.clearCurrentMessage = clearCurrentMessage;
-    function sendCurrentMessage() {
-        if (Chat.currentmessage.text.length > 0) {
-            Chat.lastmessage = Chat.currentmessage.text;
-            Chat.sentmessage = true;
-        }
-        Chat.currentmessage.text = "Press enter to chat";
-    }
-    Chat.sendCurrentMessage = sendCurrentMessage;
-    function addKeyToCurrentMessage(char, capitalized) {
-        if (capitalized) {
-            Chat.currentmessage.text = Chat.currentmessage.text + char.toUpperCase();
-        }
-        else {
-            Chat.currentmessage.text = Chat.currentmessage.text + char;
-        }
-    }
-    Chat.addKeyToCurrentMessage = addKeyToCurrentMessage;
-    function deleteLastKeyFromCurrentMessage() {
-        Chat.currentmessage.text = Chat.currentmessage.text.slice(0, -1);
-    }
-    Chat.deleteLastKeyFromCurrentMessage = deleteLastKeyFromCurrentMessage;
-    function clear() {
-        for (let i = 0; i < Chat.messages.length; i++) {
-            Chat.messages[i].text = "";
-        }
-        Chat.messageindex = 0;
-    }
-    Chat.clear = clear;
-})(Chat || (Chat = {}));
 var Collision;
 (function (Collision) {
     function testBoxCollision(center1, size1, center2, size2) {
@@ -917,6 +800,123 @@ class DrawableTestParticle extends DrawableColorBox {
         super.draw();
     }
 }
+var Chat;
+(function (Chat) {
+    function newMessage(message) {
+        let temp = Array();
+        for (let i = 0; i < Chat.messages.length; i++) {
+            temp.push(Chat.messages[i].text);
+        }
+        for (let i = 0; i < Chat.messages.length - 1; i++) {
+            Chat.messages[i + 1].text = temp[i];
+        }
+        Chat.messages[0].text = message;
+        console.log(message);
+        showchat();
+        Chat.chattimeout = setTimeout(function () { Chat.fading = true; }, 3000);
+    }
+    Chat.newMessage = newMessage;
+    function loop() {
+        if (Chat.fading) {
+            if (Chat.fadetimer > 0) {
+                Chat.fadetimer -= 0.1;
+                fadechat(Chat.fadetimer);
+            }
+            else if (Chat.fadetimer <= 0) {
+                Chat.fadetimer = 1;
+                Chat.fading = false;
+            }
+        }
+    }
+    Chat.loop = loop;
+    function windowResize() {
+        Chat.currentmessage.position.y = window.innerHeight - 25;
+        for (let i = 0; i < Chat.messages.length; i++) {
+            Chat.messages[i].position.y = window.innerHeight - 50 - i * 20;
+        }
+    }
+    Chat.windowResize = windowResize;
+    function deactivateChat() {
+        Chat.chatactivated = false;
+        Chat.chattimeout = setTimeout(function () { Chat.fading = true; }, 3000);
+    }
+    Chat.deactivateChat = deactivateChat;
+    function fadechat(alpha) {
+        for (let i = 0; i < Chat.messages.length; i++) {
+            Chat.messages[i].color.a = alpha;
+        }
+    }
+    Chat.fadechat = fadechat;
+    function showchat() {
+        for (let i = 0; i < Chat.messages.length; i++) {
+            Chat.messages[i].color.a = 1;
+        }
+        clearTimeout(Chat.chattimeout);
+    }
+    Chat.showchat = showchat;
+    function init() {
+        Chat.fadetimer = 1;
+        Chat.messages = new Array();
+        Chat.messageindex = 0;
+        for (let i = 0; i < 10; i++) {
+            let mes = new DrawableText();
+            mes.setTexture(GFX.textures["font1"]);
+            mes.depth = -1;
+            mes.characterScale = 2;
+            mes.position.y = window.innerHeight - 50 - i * 20;
+            mes.position.x = 20;
+            mes.screenSpace = true;
+            mes.text = "";
+            GFX.addDrawable(mes, Layer.LayerAlpha);
+            this.messages.push(mes);
+        }
+        Chat.chatactivated = false;
+        Chat.currentmessage = new DrawableText();
+        Chat.currentmessage.setTexture(GFX.textures["font1"]);
+        Chat.currentmessage.depth = -1;
+        Chat.currentmessage.characterScale = 2;
+        Chat.currentmessage.position.y = window.innerHeight - 25;
+        Chat.currentmessage.position.x = 20;
+        Chat.currentmessage.screenSpace = true;
+        Chat.currentmessage.text = "Press enter to chat";
+        GFX.addDrawable(Chat.currentmessage, Layer.LayerAlpha);
+        Chat.sentmessage = false;
+        Chat.initialized = true;
+    }
+    Chat.init = init;
+    function clearCurrentMessage() {
+        Chat.currentmessage.text = "";
+    }
+    Chat.clearCurrentMessage = clearCurrentMessage;
+    function sendCurrentMessage() {
+        if (Chat.currentmessage.text.length > 0) {
+            Chat.lastmessage = Chat.currentmessage.text;
+            Chat.sentmessage = true;
+        }
+        Chat.currentmessage.text = "Press enter to chat";
+    }
+    Chat.sendCurrentMessage = sendCurrentMessage;
+    function addKeyToCurrentMessage(char, capitalized) {
+        if (capitalized) {
+            Chat.currentmessage.text = Chat.currentmessage.text + char.toUpperCase();
+        }
+        else {
+            Chat.currentmessage.text = Chat.currentmessage.text + char;
+        }
+    }
+    Chat.addKeyToCurrentMessage = addKeyToCurrentMessage;
+    function deleteLastKeyFromCurrentMessage() {
+        Chat.currentmessage.text = Chat.currentmessage.text.slice(0, -1);
+    }
+    Chat.deleteLastKeyFromCurrentMessage = deleteLastKeyFromCurrentMessage;
+    function clear() {
+        for (let i = 0; i < Chat.messages.length; i++) {
+            Chat.messages[i].text = "";
+        }
+        Chat.messageindex = 0;
+    }
+    Chat.clear = clear;
+})(Chat || (Chat = {}));
 class ShaderBinder {
     useShader(shader) {
         this.lastShader = GFX.currentShader;
@@ -1122,11 +1122,27 @@ class DrawableText {
     constructor() {
         this.visible = true;
         this.screenSpace = false;
+        this.centering = false;
+        this.lineLengths = [];
+        this.centering = false;
         this.text = "";
         this.depth = 0;
         this.characterScale = 1;
         this.position = Vector2New(0, 0);
         this.color = { r: 1, g: 1, b: 1, a: 1.0 };
+    }
+    recalculateLineLengths() {
+        this.lineLengths = [];
+        let curlen = 0;
+        for (let i = 0; i < this.text.length; i++) {
+            if (this.text.charAt(i) == "\n") {
+                this.lineLengths.push(curlen);
+                curlen = 0;
+                continue;
+            }
+            curlen++;
+        }
+        this.lineLengths.push(curlen);
     }
     setTexture(tex) {
         this.texture = tex;
@@ -1148,10 +1164,23 @@ class DrawableText {
         a.x += this.position.x;
         a.y += this.position.y;
         let linePos = Vector2Clone(a);
+        let linenum = 0;
+        let damaster = this;
+        function getLineLength() {
+            if (!damaster.centering)
+                return 0;
+            let v = damaster.lineLengths[linenum];
+            if (v)
+                return v;
+            return 0;
+        }
+        a.x -= scaledSize.x * getLineLength() / 2;
         for (let i = 0; i < this.text.length; i++) {
             if (this.text.charAt(i) == "\n") {
                 linePos.y += scaledSize.y;
+                linenum++;
                 a = Vector2Clone(linePos);
+                a.x -= scaledSize.x * getLineLength() / 2;
                 continue;
             }
             GFX.gl.uniform1f(GFX.currentShader.uniforms["charindex"], this.text.charCodeAt(i) - 32);
@@ -1169,6 +1198,7 @@ TileMapImports = {};
 TileMapImports["Overworld"] = "assets/overworld.json";
 TileMapImports["Town"] = "assets/smalltown.json";
 TileMapImports["Shantown"] = "assets/shantown.json";
+TileMapImports["Drakeforest"] = "assets/drakeforest.json";
 class TileMap {
     constructor(name, src) {
         this.tileSize = 64;

@@ -52,7 +52,7 @@
                  "name":"",
                  "properties":
                     {
-                     "portalTo":"highlands"
+                     "portalTo":"Highlands"
                     },
                  "propertytypes":
                     {
@@ -89,7 +89,7 @@
                  "y":200
                 }, 
                 {
-                 "gid":29,
+                 "gid":28,
                  "height":256,
                  "id":948,
                  "name":"",
@@ -101,7 +101,7 @@
                  "y":545.333333333333
                 }, 
                 {
-                 "gid":29,
+                 "gid":28,
                  "height":256,
                  "id":949,
                  "name":"",
@@ -121,7 +121,7 @@
                  "y":738.666666666667
                 }, 
                 {
-                 "gid":32,
+                 "gid":31,
                  "height":512,
                  "id":951,
                  "name":"",
@@ -141,7 +141,7 @@
                  "y":2030.66666666667
                 }, 
                 {
-                 "gid":31,
+                 "gid":30,
                  "height":256,
                  "id":953,
                  "name":"",
@@ -153,7 +153,7 @@
                  "y":2771.18181818182
                 }, 
                 {
-                 "gid":29,
+                 "gid":28,
                  "height":256,
                  "id":954,
                  "name":"",
@@ -170,7 +170,7 @@
                  "name":"",
                  "properties":
                     {
-                     "portalTo":"drakeforest"
+                     "portalTo":"Drakeforest"
                     },
                  "propertytypes":
                     {
@@ -2970,7 +2970,7 @@
         }, 
         {
          "columns":0,
-         "firstgid":28,
+         "firstgid":27,
          "margin":0,
          "name":"landmarks",
          "spacing":0,
