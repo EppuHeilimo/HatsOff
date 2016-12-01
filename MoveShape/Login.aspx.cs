@@ -18,7 +18,7 @@ namespace MoveShape
     public partial class Login : System.Web.UI.Page
     {
         static Configuration rootWebConfig = WebConfigurationManager.OpenWebConfiguration("/HatsOff");
-        const string connectionString = "hatsoffDatabase";
+        const string connectionString = "hatsoffDatabase2";
 
         protected void Page_Load(object sender, EventArgs e)
         {

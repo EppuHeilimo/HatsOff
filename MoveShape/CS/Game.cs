@@ -36,7 +36,7 @@ namespace Hatsoff
             }
             for (int i = 0; i < 10; i++)
             {
-                addNpc("Overworld", new Vec2(_rand.NextDouble() * 3000, _rand.NextDouble() * 330));    
+                addNpc("Overworld", new Vec2(_rand.NextDouble() * 2600, _rand.NextDouble() * 330));    
             }
         }
 
