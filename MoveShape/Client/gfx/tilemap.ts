@@ -19,6 +19,7 @@ TileMapImports["Overworld"] = "assets/overworld.json";
 TileMapImports["Town"] = "assets/smalltown.json";
 TileMapImports["Shantown"] = "assets/shantown.json";
 TileMapImports["Drakeforest"] = "assets/drakeforest.json";
+TileMapImports["Witch_hut"] = "assets/witch_hut.json";
 
 
 class TileMap implements AsyncLoadable

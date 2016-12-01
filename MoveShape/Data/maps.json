@@ -1,21 +1,23 @@
 ﻿{
-	"Overworld" :
-	{
-        "triggerareas": {},
-        "tilemap": "assets/overworld.json"
-	},
+  "Overworld": {
+    "triggerareas": { },
+    "tilemap": "assets/overworld.json"
+  },
   "Shantown": {
     "triggerareas": { },
     "tilemap": "assets/shantown.json"
   },
-  "Drakeforest" :
-	{
-        "triggerareas": {},
-        "tilemap": "assets/drakeforest.json"
-	},
-	"Town" :
+  "Drakeforest": {
+    "triggerareas": { },
+    "tilemap": "assets/drakeforest.json"
+  },
+  "Town": {
+    triggerareas: { },
+    "tilemap": "assets/smalltown.json"
+  },
+  "Witch_hut" :
 	{
 		    triggerareas :{},
-        "tilemap": "assets/smalltown.json"
+        "tilemap": "assets/witch_hut.json"
 	}
 }

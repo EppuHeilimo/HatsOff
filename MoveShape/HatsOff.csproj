@@ -304,6 +304,9 @@
     <Content Include="assets\graphics\tree2.png" />
     <Content Include="assets\graphics\tree3.png" />
     <Content Include="assets\graphics\woodenbridge.png" />
+    <Content Include="assets\graphics\woodenfloor.png" />
+    <Content Include="assets\graphics\woodenwall.png" />
+    <Content Include="assets\graphics\wooden_door.png" />
     <Content Include="assets\shaders\font.fs" />
     <Content Include="Client.js" />
     <Content Include="Content\bootstrap.css" />
@@ -381,6 +384,7 @@
     <Content Include="assets\middle.ogg" />
     <Content Include="master.master" />
     <Content Include="assets\drakeforest.json" />
+    <Content Include="assets\witch_hut.json" />
     <None Include="Properties\PublishProfiles\godaddy.pubxml" />
     <None Include="Properties\PublishProfiles\hatsoff.pubxml" />
     <None Include="Properties\PublishProfiles\hatsoff.trinedy.eu - Web Deploy.pubxml" />

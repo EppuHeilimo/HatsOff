@@ -193,6 +193,25 @@
                  "width":296,
                  "x":618.666666666667,
                  "y":2622.66666666667
+                }, 
+                {
+                 "height":143.5,
+                 "id":968,
+                 "name":"",
+                 "properties":
+                    {
+                     "portalTo":"Witch_hut"
+                    },
+                 "propertytypes":
+                    {
+                     "portalTo":"string"
+                    },
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":160,
+                 "x":2662,
+                 "y":2358
                 }],
          "opacity":1,
          "properties":
@@ -2909,7 +2928,7 @@
          "x":0,
          "y":0
         }],
- "nextobjectid":968,
+ "nextobjectid":969,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tileheight":64,
@@ -2920,7 +2939,7 @@
          "margin":0,
          "name":"terrain",
          "spacing":0,
-         "tilecount":13,
+         "tilecount":12,
          "tileheight":256,
          "tiles":
             {
@@ -2967,10 +2986,6 @@
              "6":
                 {
                  "image":"deepwater.png"
-                },
-             "8":
-                {
-                 "image":"stoneroad.png"
                 },
              "9":
                 {

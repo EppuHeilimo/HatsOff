@@ -40,7 +40,11 @@ TextureImports =
     "grass": { "source": "assets/graphics/grass.png", "isPowerOfTwo": true },
     "sand": { "source": "assets/graphics/sand.png", "isPowerOfTwo": true },
     "shallowwater": { "source": "assets/graphics/shallowwater.png", "isPowerOfTwo": true },
+
     "woodenbridge": { "source": "assets/graphics/woodenbridge.png", "isPowerOfTwo": true },
+    "woodenfloor": { "source": "assets/graphics/woodenfloor.png", "isPowerOfTwo": true },
+    "wooden_door": { "source": "assets/graphics/wooden_door.png", "isPowerOfTwo": true },
+    "woodenwall": { "source": "assets/graphics/woodenwall.png", "isPowerOfTwo": true },
 	
 	
     "physical": { "source": "assets/graphics/attributes/physical.png", "isPowerOfTwo": true },
