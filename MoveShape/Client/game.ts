@@ -249,10 +249,13 @@ class PlayerClient implements GameActor {
         this.sprite.depth = -0.4;
         this.text = new DrawableText();
         this.text.text = "404 name not found";
+        this.text.recalculateLineLengths();
         this.text.setTexture(GFX.textures["font1"]);
         this.text.depth = -1;
+        this.text.centering = true;
         this.senttext = new DrawableText();
         this.senttext.text = "";
+        this.senttext.centering = true;
         this.senttext.setTexture(GFX.textures["font1"]);
         this.senttext.depth = -1;
     }
@@ -260,6 +263,7 @@ class PlayerClient implements GameActor {
     public changeName(n: string): void {
         this.name = n;
         this.text.text = this.name;
+        this.text.recalculateLineLengths();
     }
 
     public teleport(pos: Vector2): void {
@@ -280,7 +284,8 @@ class PlayerClient implements GameActor {
 
     public showmessage(mes: string): void
     {
-        let temp = mes.slice(2, mes.length);
+
+        let temp = mes.slice(mes.indexOf(":")+1, mes.length).trim();
         if (temp.length > 24) {
             temp = temp.slice(0, 24);
             temp = temp + "...";
@@ -288,6 +293,7 @@ class PlayerClient implements GameActor {
         this.senttext.text = temp;
         if (this.showmessageid >= 0)
             clearTimeout(this.showmessageid);
+        this.senttext.recalculateLineLengths();
         let mina = this;
         this.showmessageid = setTimeout(function () { mina.senttext.text = ""; }, 3500);
     }
@@ -297,10 +303,10 @@ class PlayerClient implements GameActor {
     }
 
     public update(): void {
-        this.text.position.x = this.position.x - 25;
+        this.text.position.x = this.position.x;
         this.text.position.y = this.position.y - 50;
-        this.senttext.position.x = this.position.x - 25;
-        this.senttext.position.y = this.position.y - 100;
+        this.senttext.position.x = this.position.x;
+        this.senttext.position.y = this.position.y - 75;
     }
 }
 
@@ -344,10 +350,10 @@ class InterpolatedPlayerClient extends PlayerClient {
             this.sprite.position = this.lastPosition;
 
         }
-        this.text.position.x = this.lastPosition.x - 25;
+        this.text.position.x = this.lastPosition.x;
         this.text.position.y = this.lastPosition.y - 50;
-        this.senttext.position.x = this.lastPosition.x - 25;
-        this.senttext.position.y = this.lastPosition.y - 100;
+        this.senttext.position.x = this.lastPosition.x;
+        this.senttext.position.y = this.lastPosition.y - 75;
     }
 }
 
@@ -370,7 +376,7 @@ class EnemyNpc implements GameActor {
         this.sprite.position = Vector2New(x, y);
         this.sprite.depth = -0.4;
         this.text = new DrawableText();
-        this.text.text = "Level: " + level;
+        this.text.text = "";
         this.text.setTexture(GFX.textures["font1"]);
         this.text.depth = -1;
         this.health = health;

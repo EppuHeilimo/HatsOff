@@ -353,6 +353,7 @@ var Game;
 })(Game || (Game = {}));
 class PlayerClient {
     constructor() {
+        this.showmessageid = -1;
         this.health = 100;
         this.attack = 10;
         this.speed = 8;
@@ -363,9 +364,21 @@ class PlayerClient {
         this.sprite.size.y = 64;
         this.sprite.depth = -0.4;
         this.text = new DrawableText();
-        this.text.text = "Test";
+        this.text.text = "404 name not found";
+        this.text.recalculateLineLengths();
         this.text.setTexture(GFX.textures["font1"]);
         this.text.depth = -1;
+        this.text.centering = true;
+        this.senttext = new DrawableText();
+        this.senttext.text = "";
+        this.senttext.centering = true;
+        this.senttext.setTexture(GFX.textures["font1"]);
+        this.senttext.depth = -1;
+    }
+    changeName(n) {
+        this.name = n;
+        this.text.text = this.name;
+        this.text.recalculateLineLengths();
     }
     teleport(pos) {
         this.position = Vector2Clone(pos);
@@ -373,21 +386,34 @@ class PlayerClient {
     init() {
         GFX.addDrawable(this.sprite);
         GFX.addDrawable(this.text, Layer.LayerAlpha);
+        GFX.addDrawable(this.senttext);
     }
     deinit() {
         GFX.removeDrawable(this.sprite);
         GFX.removeDrawable(this.text);
+        GFX.removeDrawable(this.senttext);
     }
     showmessage(mes) {
-        this.text.text = mes;
-        setTimeout(function () { this.text.text = ""; }, 2000);
+        let temp = mes.slice(mes.indexOf(":") + 1, mes.length).trim();
+        if (temp.length > 24) {
+            temp = temp.slice(0, 24);
+            temp = temp + "...";
+        }
+        this.senttext.text = temp;
+        if (this.showmessageid >= 0)
+            clearTimeout(this.showmessageid);
+        this.senttext.recalculateLineLengths();
+        let mina = this;
+        this.showmessageid = setTimeout(function () { mina.senttext.text = ""; }, 3500);
     }
     changetext(mes) {
         this.text.text = mes;
     }
     update() {
-        this.text.position.x = this.position.x - 25;
+        this.text.position.x = this.position.x;
         this.text.position.y = this.position.y - 50;
+        this.senttext.position.x = this.position.x;
+        this.senttext.position.y = this.position.y - 75;
     }
 }
 class InterpolatedPlayerClient extends PlayerClient {
@@ -398,6 +424,7 @@ class InterpolatedPlayerClient extends PlayerClient {
     init() {
         GFX.addDrawable(this.sprite);
         GFX.addDrawable(this.text, Layer.LayerAlpha);
+        GFX.addDrawable(this.senttext);
     }
     deinit() {
         super.deinit();
@@ -421,8 +448,10 @@ class InterpolatedPlayerClient extends PlayerClient {
             this.lastPosition = this.position;
             this.sprite.position = this.lastPosition;
         }
-        this.text.position.x = this.lastPosition.x - 25;
+        this.text.position.x = this.lastPosition.x;
         this.text.position.y = this.lastPosition.y - 50;
+        this.senttext.position.x = this.lastPosition.x;
+        this.senttext.position.y = this.lastPosition.y - 75;
     }
 }
 class EnemyNpc {
@@ -435,7 +464,7 @@ class EnemyNpc {
         this.sprite.position = Vector2New(x, y);
         this.sprite.depth = -0.4;
         this.text = new DrawableText();
-        this.text.text = "Level: " + level;
+        this.text.text = "";
         this.text.setTexture(GFX.textures["font1"]);
         this.text.depth = -1;
         this.health = health;
@@ -477,10 +506,6 @@ class EnemyNpc {
         }
         this.text.position.x = this.lastposition.x - 25;
         this.text.position.y = this.lastposition.y - 50;
-        /*
-        this.text.position.x = this.position.x - 25;
-        this.text.position.y = this.position.y - 50;
-        this.sprite.position = this.position; */
     }
 }
 class LocalPlayerClient extends PlayerClient {
@@ -804,14 +829,37 @@ var Chat;
 (function (Chat) {
     function newMessage(message) {
         let temp = Array();
+        let count = 1;
+        let mes1 = "";
+        let mes2 = "";
+        let name = "";
+        let temp2 = message.split(":");
+        name = temp2[0];
+        message = "";
+        for (let i = 1; i < temp2.length; i++) {
+            message += temp2[i];
+        }
+        if (message.length > 32) {
+            mes1 = message.substr(0, 32);
+            mes2 = message.substr(32, message.length);
+            count = 2;
+        }
+        else {
+            mes1 = message;
+        }
         for (let i = 0; i < Chat.messages.length; i++) {
             temp.push(Chat.messages[i].text);
         }
-        for (let i = 0; i < Chat.messages.length - 1; i++) {
-            Chat.messages[i + 1].text = temp[i];
+        for (let i = 0; i < Chat.messages.length - count; i++) {
+            Chat.messages[i + count].text = temp[i];
         }
-        Chat.messages[0].text = message;
-        console.log(message);
+        if (count == 1) {
+            Chat.messages[0].text = name.trim() + ":" + mes1;
+        }
+        if (count == 2) {
+            Chat.messages[1].text = name.trim() + ":" + mes1;
+            Chat.messages[0].text = mes2;
+        }
         showchat();
         Chat.chattimeout = setTimeout(function () { Chat.fading = true; }, 3000);
     }
@@ -897,11 +945,13 @@ var Chat;
     }
     Chat.sendCurrentMessage = sendCurrentMessage;
     function addKeyToCurrentMessage(char, capitalized) {
-        if (capitalized) {
-            Chat.currentmessage.text = Chat.currentmessage.text + char.toUpperCase();
-        }
-        else {
-            Chat.currentmessage.text = Chat.currentmessage.text + char;
+        if (Chat.currentmessage.text.length < 64) {
+            if (capitalized) {
+                Chat.currentmessage.text = Chat.currentmessage.text + char.toUpperCase();
+            }
+            else {
+                Chat.currentmessage.text = Chat.currentmessage.text + char;
+            }
         }
     }
     Chat.addKeyToCurrentMessage = addKeyToCurrentMessage;
