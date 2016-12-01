@@ -137,6 +137,14 @@
                  "height":512,
                  "id":953,
                  "name":"",
+                 "properties":
+                    {
+                     "portalTo":"Town"
+                    },
+                 "propertytypes":
+                    {
+                     "portalTo":"string"
+                    },
                  "rotation":0,
                  "type":"",
                  "visible":true,
@@ -174,25 +182,6 @@
                  "width":139.333333333333,
                  "x":3059.66333333333,
                  "y":2466.66333333333
-                }, 
-                {
-                 "height":229.333333333333,
-                 "id":967,
-                 "name":"",
-                 "properties":
-                    {
-                     "portalTo":"Town"
-                    },
-                 "propertytypes":
-                    {
-                     "portalTo":"string"
-                    },
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":296,
-                 "x":618.666666666667,
-                 "y":2622.66666666667
                 }],
          "opacity":1,
          "properties":
@@ -2909,7 +2898,7 @@
          "x":0,
          "y":0
         }],
- "nextobjectid":968,
+ "nextobjectid":967,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tileheight":64,
