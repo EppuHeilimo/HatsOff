@@ -365,16 +365,20 @@ class PlayerClient {
         this.sprite.depth = -0.4;
         this.text = new DrawableText();
         this.text.text = "404 name not found";
+        this.text.recalculateLineLengths();
         this.text.setTexture(GFX.textures["font1"]);
         this.text.depth = -1;
+        this.text.centering = true;
         this.senttext = new DrawableText();
         this.senttext.text = "";
+        this.senttext.centering = true;
         this.senttext.setTexture(GFX.textures["font1"]);
         this.senttext.depth = -1;
     }
     changeName(n) {
         this.name = n;
         this.text.text = this.name;
+        this.text.recalculateLineLengths();
     }
     teleport(pos) {
         this.position = Vector2Clone(pos);
@@ -390,7 +394,7 @@ class PlayerClient {
         GFX.removeDrawable(this.senttext);
     }
     showmessage(mes) {
-        let temp = mes.slice(2, mes.length);
+        let temp = mes.slice(mes.indexOf(":") + 1, mes.length).trim();
         if (temp.length > 24) {
             temp = temp.slice(0, 24);
             temp = temp + "...";
@@ -398,6 +402,7 @@ class PlayerClient {
         this.senttext.text = temp;
         if (this.showmessageid >= 0)
             clearTimeout(this.showmessageid);
+        this.senttext.recalculateLineLengths();
         let mina = this;
         this.showmessageid = setTimeout(function () { mina.senttext.text = ""; }, 3500);
     }
@@ -405,10 +410,10 @@ class PlayerClient {
         this.text.text = mes;
     }
     update() {
-        this.text.position.x = this.position.x - 25;
+        this.text.position.x = this.position.x;
         this.text.position.y = this.position.y - 50;
-        this.senttext.position.x = this.position.x - 25;
-        this.senttext.position.y = this.position.y - 100;
+        this.senttext.position.x = this.position.x;
+        this.senttext.position.y = this.position.y - 75;
     }
 }
 class InterpolatedPlayerClient extends PlayerClient {
@@ -443,10 +448,10 @@ class InterpolatedPlayerClient extends PlayerClient {
             this.lastPosition = this.position;
             this.sprite.position = this.lastPosition;
         }
-        this.text.position.x = this.lastPosition.x - 25;
+        this.text.position.x = this.lastPosition.x;
         this.text.position.y = this.lastPosition.y - 50;
-        this.senttext.position.x = this.lastPosition.x - 25;
-        this.senttext.position.y = this.lastPosition.y - 100;
+        this.senttext.position.x = this.lastPosition.x;
+        this.senttext.position.y = this.lastPosition.y - 75;
     }
 }
 class EnemyNpc {
@@ -459,7 +464,7 @@ class EnemyNpc {
         this.sprite.position = Vector2New(x, y);
         this.sprite.depth = -0.4;
         this.text = new DrawableText();
-        this.text.text = "Level: " + level;
+        this.text.text = "";
         this.text.setTexture(GFX.textures["font1"]);
         this.text.depth = -1;
         this.health = health;
@@ -1132,21 +1137,6 @@ var GFX;
     }
     GFX.centerCameraOn = centerCameraOn;
     function update() {
-        let curmap = GFX.tileMap.map;
-        if (curmap) {
-            let lowerLeft = Vector2Clone(GFX.camera);
-            Vector2Add(lowerLeft, GFX.renderSize);
-            let mapsize = Vector2Clone(curmap.sizeInTiles);
-            Vector2ScalarMul(mapsize, curmap.tileSize);
-            if (lowerLeft.x > mapsize.x)
-                GFX.camera.x -= (lowerLeft.x - mapsize.x);
-            if (lowerLeft.y > mapsize.y)
-                GFX.camera.y -= (lowerLeft.y - mapsize.y);
-            if (GFX.camera.x < 0)
-                GFX.camera.x = 0;
-            if (GFX.camera.y < 0)
-                GFX.camera.y = 0;
-        }
         //draw all gfx stuff
         //bind the "basic" shader
         updateShader(GFX.shaders["basic"]);

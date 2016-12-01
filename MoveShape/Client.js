@@ -53,8 +53,7 @@ $(function () {
         {
             p = me;
         }
-        //p.showmessage(messages[messages.length - 1]);
-        Chat.newMessage(sender.name + messages[messages.length - 1]);
+        Chat.newMessage(messages[messages.length - 1]);
         p.showmessage(messages[messages.length - 1]);
     }
      
@@ -119,10 +118,11 @@ $(function () {
             }
         }
     }
-    connectionHub.client.getMyID = function (ID)
+    connectionHub.client.getMyID = function (ID, name)
     {
         myId = ID;
         me.id = ID;
+        me.changeName( name );
     }
 
     addPlayer = function(model)

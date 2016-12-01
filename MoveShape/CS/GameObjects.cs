@@ -259,7 +259,8 @@ namespace Hatsoff
             {
                 if (rand.NextDouble() <= 0.5)
                 {
-                    targetposition = GetRandPosFromArea(new Vec2(200, 200), new Vec2(1000, 1000));
+                    targetposition = GetRandPosFromArea(new Vec2(10, 10), new Vec2(3000, 330));
+         
                     return true;
                 }
                 else

@@ -64,7 +64,7 @@ namespace Hatsoff
                 {
                     //and try to load them from Map.tilemapsource
                     map.tilemap.load(new StreamReader(Path.Combine(System.Web.Hosting.HostingEnvironment.MapPath("~"), map.tilemapsource)));
-
+                
                     foreach (var lm in map.tilemap.landMarks)
                     {
                         string portalTo;
@@ -105,6 +105,7 @@ namespace Hatsoff
                 }
                 catch (Exception e)
                 {
+                    throw e;
                     System.Diagnostics.Debug.WriteLine(e);
                 }
                    
