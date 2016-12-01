@@ -325,8 +325,9 @@ namespace Hatsoff
             {
                 inventorysize = invsize;
                 items = new List<Item>();
-                items.Add(new Item(0, "Broken"));
-                items.Add(new Item(1, "Broken"));
+                items.Add(new Item(0, 1));
+                items.Add(new Item(1, 1));
+                items.Add(new Item(2, 1));
                 equippeditem = items[0];
                 inventoryindex = 0;
             }
