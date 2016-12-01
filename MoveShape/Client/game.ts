@@ -273,7 +273,7 @@ class PlayerClient implements GameActor {
     public init(): void {
         GFX.addDrawable(this.sprite);
         GFX.addDrawable(this.text, Layer.LayerAlpha);
-        GFX.addDrawable(this.senttext);
+        GFX.addDrawable(this.senttext, Layer.LayerAlpha);
     }
 
     public deinit(): void {
@@ -321,7 +321,7 @@ class InterpolatedPlayerClient extends PlayerClient {
     public init(): void {
         GFX.addDrawable(this.sprite);
         GFX.addDrawable(this.text, Layer.LayerAlpha);
-        GFX.addDrawable(this.senttext);
+        GFX.addDrawable(this.senttext, Layer.LayerAlpha);
     }
 
     public deinit(): void {
