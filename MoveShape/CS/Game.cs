@@ -257,9 +257,9 @@ namespace Hatsoff
                             {
                                 if(rp.currentbattle != null)
                                 {
-                                    Battle b = new Battle(p, rp);
-                                    battles.Add(b);
-                                    _broadcaster.StartBattle(b);
+                //                    Battle b = new Battle(p, rp);
+                //                    battles.Add(b);
+                //                    _broadcaster.StartBattle(b);
                                 }
                             }
                         }
@@ -280,10 +280,10 @@ namespace Hatsoff
                             Npc npc = (Npc)collision.getObject();
                             if (npc.state != Npc.NPC_STATE.BATTLE)
                             {
-                                npc.state = Npc.NPC_STATE.BATTLE;
-                                Battle b = new Battle(npc, p);
-                                battles.Add(b);
-                                _broadcaster.StartBattle(b);
+                  //              Battle b = new Battle(npc, p);
+                  //              npc.state = Npc.NPC_STATE.BATTLE;
+                  //              battles.Add(b);
+                  //              _broadcaster.StartBattle(b);
                             }
                         }
                     }
