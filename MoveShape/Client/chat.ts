@@ -12,14 +12,41 @@
 
     export function newMessage(message: string) {
         let temp = Array<string>();
+        let count = 1;
+        let mes1 = "";
+        let mes2 = "";
+        let name = "";
+        let temp2 = message.split(":");
+        name = temp2[0];
+        message = "";
+        for (let i = 1; i < temp2.length; i++)
+        {
+            message += temp2[i];
+        }
+        if (message.length > 32) {
+            mes1 = message.substr(0, 32);
+            mes2 = message.substr(32, message.length);
+            count = 2;
+        }
+        else {
+            mes1 = message;
+        }
+
         for (let i = 0; i < messages.length; i++) {
             temp.push(messages[i].text);
         }
-        for (let i = 0; i < messages.length - 1; i++) {
-            messages[i + 1].text = temp[i];
+        for (let i = 0; i < messages.length - count; i++) {
+            messages[i + count].text = temp[i];
         }
-        messages[0].text = message;
-        console.log(message);
+        if (count == 1) {
+            messages[0].text = name.trim() + ":" + mes1;
+        }
+        if (count == 2) {
+            messages[1].text = name.trim() + ":" + mes1;
+            messages[0].text = mes2;
+        }
+        
+
         showchat();
         chattimeout = setTimeout(function () { fading = true; }, 3000);
     }
@@ -118,11 +145,15 @@
 
     export function addKeyToCurrentMessage(char: string, capitalized: boolean)
     {
-        if (capitalized) {
-            currentmessage.text = currentmessage.text + char.toUpperCase();
-        } else {
-            currentmessage.text = currentmessage.text + char;
+        if (currentmessage.text.length < 64)
+        {
+            if (capitalized) {
+                currentmessage.text = currentmessage.text + char.toUpperCase();
+            } else {
+                currentmessage.text = currentmessage.text + char;
+            }
         }
+
     }
 
     export function deleteLastKeyFromCurrentMessage() {

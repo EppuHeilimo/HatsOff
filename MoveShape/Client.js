@@ -53,8 +53,8 @@ $(function () {
         {
             p = me;
         }
-        //p.showmessage(messages[messages.length - 1]);
-        Chat.newMessage(sender.name + messages[messages.length - 1]);
+        Chat.newMessage(messages[messages.length - 1]);
+        p.showmessage(messages[messages.length - 1]);
     }
      
     connectionHub.client.updateShapes = function (models) {
@@ -118,10 +118,11 @@ $(function () {
             }
         }
     }
-    connectionHub.client.getMyID = function (ID)
+    connectionHub.client.getMyID = function (ID, name)
     {
         myId = ID;
         me.id = ID;
+        me.changeName( name );
     }
 
     addPlayer = function(model)
@@ -130,6 +131,7 @@ $(function () {
         player.id = model.id;
         player.teleport(Vector2Clone(model.pos));
         player.sprite.texture = GFX.textures[model.appearance];
+        player.changeName( model.name );
         Game.addActor(player);
         players.push(player);
     }
@@ -168,16 +170,14 @@ $(function () {
         for (var j in gamedata.maps[currentarea.mapname].triggerareas)
         {
             var area = gamedata.maps[currentarea.mapname].triggerareas[j];
-            console.log(j)
-            console.log("FDSFDSFDFDSFD")
             if (!gamedata.maps[currentarea.mapname].triggerareas.hasOwnProperty(j)) continue;
             a = new DrawableTextureBox();
             a.position.x = area.x;
             a.position.y = area.y;
             a.size.x = area.sizex;
-            a.depth = -0.9999;
             a.size.y = area.sizey;
-            a.texture = GFX.textures["castle1"];
+            
+            a.texture = GFX.textures[area.appearance];
             GFX.addDrawable(a);
             area.drawable = a;
         }
@@ -322,7 +322,6 @@ $(function () {
                     var area = gamedata.maps[currentarea.mapname].triggerareas[key];
                     if (!gamedata.maps[currentarea.mapname].triggerareas.hasOwnProperty(key)) continue;
                     if (Collision.testBoxCollision(me.position, { x: 50, y: 50 }, area, { x: area.sizex, y: area.sizey }).found) {
-                        console.log("TRIGGED: " + area);
                         trigger = "areachangetrigger";
                         attribs = key;
                     }

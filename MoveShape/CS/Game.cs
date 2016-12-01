@@ -36,7 +36,7 @@ namespace Hatsoff
             }
             for (int i = 0; i < 10; i++)
             {
-                addNpc("Overworld", new Vec2(_rand.NextDouble() * 600, _rand.NextDouble() * 600));    
+                addNpc("Overworld", new Vec2(_rand.NextDouble() * 3000, _rand.NextDouble() * 330));    
             }
         }
 
@@ -201,7 +201,7 @@ namespace Hatsoff
             mapstates["Overworld"].playerlist.Add(newplayer.GetPlayerShape());
             newplayer.Teleport(GameData.data.maps["Overworld"].spawnpoint.getCenter());
             PlayerJoinedArea(connectionid, newplayer);
-            _broadcaster.SendPlayerId(connectionid, id);
+            _broadcaster.SendPlayerId(connectionid, id, name);
             _broadcaster.TeleportPlayer(connectionid, newplayer.GetPosition());
             overworldcollisions.Insert(new CollisionCircle(newplayer.getCollCircle()));
         }

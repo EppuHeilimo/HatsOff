@@ -298,9 +298,9 @@ namespace Hatsoff
             _hubContext.Clients.Client(connectionId).getGameInfo(game.gameData);
         }
 
-        public void SendPlayerId(string connectionId, int id)
+        public void SendPlayerId(string connectionId, int id, string name)
         {
-            _hubContext.Clients.Client(connectionId).getMyID(id);
+            _hubContext.Clients.Client(connectionId).getMyID(id, name);
         }
 
         public void SendUpdatedStatus(string connectionId, PlayerActor player)
