@@ -15,18 +15,7 @@
 	},
 	"Town" :
 	{
-		    triggerareas :
-		    {
-		    	"Overworld" :
-		    	{
-                    x: 100,
-                    y: 64,
-                    sizex: 100,
-                    sizey: 100,
-                    "appearance": "townexit"
-
-		    	}
-		    },
+		    triggerareas :{},
         "tilemap": "assets/smalltown.json"
 	}
 }
