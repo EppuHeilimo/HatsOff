@@ -3364,7 +3364,7 @@
          "margin":0,
          "name":"terrain",
          "spacing":0,
-         "tilecount":13,
+         "tilecount":12,
          "tileheight":256,
          "tiles":
             {
@@ -3411,10 +3411,6 @@
              "6":
                 {
                  "image":"deepwater.png"
-                },
-             "8":
-                {
-                 "image":"stoneroad.png"
                 },
              "9":
                 {
