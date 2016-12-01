@@ -168,13 +168,16 @@ $(function () {
         for (var j in gamedata.maps[currentarea.mapname].triggerareas)
         {
             var area = gamedata.maps[currentarea.mapname].triggerareas[j];
+            console.log(j)
+            console.log("FDSFDSFDFDSFD")
             if (!gamedata.maps[currentarea.mapname].triggerareas.hasOwnProperty(j)) continue;
             a = new DrawableTextureBox();
             a.position.x = area.x;
             a.position.y = area.y;
             a.size.x = area.sizex;
+            a.depth = -0.9999;
             a.size.y = area.sizey;
-            a.texture = GFX.textures[area.appearance];
+            a.texture = GFX.textures["castle1"];
             GFX.addDrawable(a);
             area.drawable = a;
         }
@@ -319,6 +322,7 @@ $(function () {
                     var area = gamedata.maps[currentarea.mapname].triggerareas[key];
                     if (!gamedata.maps[currentarea.mapname].triggerareas.hasOwnProperty(key)) continue;
                     if (Collision.testBoxCollision(me.position, { x: 50, y: 50 }, area, { x: area.sizex, y: area.sizey }).found) {
+                        console.log("TRIGGED: " + area);
                         trigger = "areachangetrigger";
                         attribs = key;
                     }

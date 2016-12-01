@@ -173,7 +173,6 @@ namespace Hatsoff
                     if (lay.name == "landmarks")
                     foreach (var obj in lay.objects)
                     {
-                        Debug.WriteLine("GOTS SOME LANDMARSK!!!");
                         LandMark l = new LandMark();
                         //Tiled object position refers to the lower left point of the object
                         //(lowest x value, highest y value)
@@ -191,6 +190,7 @@ namespace Hatsoff
                         }
                         else
                             l.area = new Rectangle(new Vec2(obj.x + obj.width / 2, obj.y + obj.height / 2), obj.width, obj.height);
+                            
                         landMarks.Add(l);
                     }
                 }
