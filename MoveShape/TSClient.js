@@ -529,7 +529,6 @@ class LocalPlayerClient extends PlayerClient {
                 if (this.moved) {
                     let coll = Game.testMapCollision(this.position, { x: 32, y: 32 });
                     if (coll.found) {
-                        console.log(coll);
                         this.position.x -= coll.offset.x;
                         this.position.y -= coll.offset.y;
                     }
@@ -580,6 +579,7 @@ TextureImports =
         "cottage": { "source": "assets/graphics/cottage.png", "isPowerOfTwo": false },
         "bigforest": { "source": "assets/graphics/bigforest.png", "isPowerOfTwo": true },
         "smallforest": { "source": "assets/graphics/smallforest.png", "isPowerOfTwo": true },
+        "rock": { "source": "assets/graphics/rock.png", "isPowerOfTwo": true },
         "deepwater": { "source": "assets/graphics/deepwater.png", "isPowerOfTwo": true },
         "dirtroad": { "source": "assets/graphics/dirtroad.png", "isPowerOfTwo": true },
         "grass": { "source": "assets/graphics/grass.png", "isPowerOfTwo": true },
