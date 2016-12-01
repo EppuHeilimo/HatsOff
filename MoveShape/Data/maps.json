@@ -4,11 +4,15 @@
         "triggerareas": {},
         "tilemap": "assets/overworld.json"
 	},
-	"Shantown" :
+  "Shantown": {
+    "triggerareas": { },
+    "tilemap": "assets/shantown.json"
+  },
+  "drakeforest" :
 	{
         "triggerareas": {},
-        "tilemap": "assets/shantown.json"
-	},
+        "tilemap": "assets/drakeforest.json"
+	}
 	"Town" :
 	{
 		    triggerareas :
