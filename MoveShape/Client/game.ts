@@ -290,6 +290,7 @@ class InterpolatedPlayerClient extends PlayerClient {
 
     public init(): void {
         GFX.addDrawable(this.sprite);
+        GFX.addDrawable(this.text, Layer.LayerAlpha);
     }
 
     public deinit(): void {
@@ -317,9 +318,9 @@ class InterpolatedPlayerClient extends PlayerClient {
             this.lastPosition = this.position;
             this.sprite.position = this.lastPosition;
 
-
         }
-        super.update();
+        this.text.position.x = this.lastPosition.x - 25;
+        this.text.position.y = this.lastPosition.y - 50;
     }
 }
 
