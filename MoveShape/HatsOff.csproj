@@ -288,18 +288,13 @@
     <Content Include="assets\graphics\hat\furhat.png" />
     <Content Include="assets\graphics\hat\peasant_hat.png" />
     <Content Include="assets\graphics\hat\tophat.png" />
-    <Content Include="assets\graphics\peasant_hat.png" />
     <Content Include="assets\graphics\sand.png" />
     <Content Include="assets\graphics\shallowwater.png" />
     <Content Include="assets\graphics\sign.png" />
-    <Content Include="assets\graphics\smallforest.png" />
-    <Content Include="assets\graphics\tophat.png" />
     <Content Include="assets\graphics\townexit.png" />
     <Content Include="assets\graphics\tree1.png" />
     <Content Include="assets\graphics\tree2.png" />
     <Content Include="assets\graphics\tree3.png" />
-    <Content Include="assets\graphics\tree4.png" />
-    <Content Include="assets\graphics\tree5.png" />
     <Content Include="assets\graphics\woodenbridge.png" />
     <Content Include="assets\shaders\font.fs" />
     <Content Include="Client.js" />
@@ -370,7 +365,6 @@
     <Content Include="assets\graphics\readme" />
     <Content Include="assets\overworld.json" />
     <Content Include="assets\shaders\map.vs" />
-    <Content Include="assets\town.json" />
     <Content Include="assets\smalltown.json" />
     <Content Include="Data\items.json" />
     <Content Include="Data\attributes.json" />
