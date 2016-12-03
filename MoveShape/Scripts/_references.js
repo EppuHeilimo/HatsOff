@@ -2,6 +2,7 @@
 /// <reference path="../client.js" />
 /// <reference path="ai.0.22.9-build00167.min.js" />
 /// <reference path="bootstrap.js" />
+/// <reference path="howler.min.js" />
 /// <reference path="jquery.signalr-2.2.1.min.js" />
 /// <reference path="jquery.validate.js" />
 /// <reference path="jquery.validate.unobtrusive.js" />

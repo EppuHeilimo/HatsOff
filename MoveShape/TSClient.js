@@ -386,7 +386,7 @@ class PlayerClient {
     init() {
         GFX.addDrawable(this.sprite);
         GFX.addDrawable(this.text, Layer.LayerAlpha);
-        GFX.addDrawable(this.senttext);
+        GFX.addDrawable(this.senttext, Layer.LayerAlpha);
     }
     deinit() {
         GFX.removeDrawable(this.sprite);
@@ -424,7 +424,7 @@ class InterpolatedPlayerClient extends PlayerClient {
     init() {
         GFX.addDrawable(this.sprite);
         GFX.addDrawable(this.text, Layer.LayerAlpha);
-        GFX.addDrawable(this.senttext);
+        GFX.addDrawable(this.senttext, Layer.LayerAlpha);
     }
     deinit() {
         super.deinit();
@@ -611,6 +611,9 @@ TextureImports =
         "sand": { "source": "assets/graphics/sand.png", "isPowerOfTwo": true },
         "shallowwater": { "source": "assets/graphics/shallowwater.png", "isPowerOfTwo": true },
         "woodenbridge": { "source": "assets/graphics/woodenbridge.png", "isPowerOfTwo": true },
+        "woodenfloor": { "source": "assets/graphics/woodenfloor.png", "isPowerOfTwo": true },
+        "wooden_door": { "source": "assets/graphics/wooden_door.png", "isPowerOfTwo": true },
+        "woodenwall": { "source": "assets/graphics/woodenwall.png", "isPowerOfTwo": true },
         "physical": { "source": "assets/graphics/attributes/physical.png", "isPowerOfTwo": true },
         "fire": { "source": "assets/graphics/attributes/fire.png", "isPowerOfTwo": true },
         "water": { "source": "assets/graphics/attributes/water.png", "isPowerOfTwo": true },
@@ -1137,6 +1140,21 @@ var GFX;
     }
     GFX.centerCameraOn = centerCameraOn;
     function update() {
+        let curmap = GFX.tileMap.map;
+        if (curmap) {
+            let lowerLeft = Vector2Clone(GFX.camera);
+            Vector2Add(lowerLeft, GFX.renderSize);
+            let mapsize = Vector2Clone(curmap.sizeInTiles);
+            Vector2ScalarMul(mapsize, curmap.tileSize);
+            if (lowerLeft.x > mapsize.x)
+                GFX.camera.x -= (lowerLeft.x - mapsize.x);
+            if (lowerLeft.y > mapsize.y)
+                GFX.camera.y -= (lowerLeft.y - mapsize.y);
+            if (GFX.camera.x < 0)
+                GFX.camera.x = 0;
+            if (GFX.camera.y < 0)
+                GFX.camera.y = 0;
+        }
         //draw all gfx stuff
         //bind the "basic" shader
         updateShader(GFX.shaders["basic"]);
@@ -1234,6 +1252,7 @@ TileMapImports["Overworld"] = "assets/overworld.json";
 TileMapImports["Town"] = "assets/smalltown.json";
 TileMapImports["Shantown"] = "assets/shantown.json";
 TileMapImports["Drakeforest"] = "assets/drakeforest.json";
+TileMapImports["Witch_hut"] = "assets/witch_hut.json";
 class TileMap {
     constructor(name, src) {
         this.tileSize = 64;

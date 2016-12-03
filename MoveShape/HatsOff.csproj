@@ -299,6 +299,7 @@
     <Content Include="assets\graphics\sand.png" />
     <Content Include="assets\graphics\shallowwater.png" />
     <Content Include="assets\graphics\sign.png" />
+    <Content Include="assets\graphics\smallforest.png" />
     <Content Include="assets\graphics\townexit.png" />
     <Content Include="assets\graphics\tree1.png" />
     <Content Include="assets\graphics\tree2.png" />
@@ -392,6 +393,7 @@
     <None Include="Properties\PublishProfiles\trinedy.eu - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\Trinedy.pubxml" />
     <None Include="Scripts\jquery-1.12.4.intellisense.js" />
+    <Content Include="Scripts\howler.min.js" />
     <Content Include="Scripts\jquery-1.12.4.js" />
     <Content Include="Scripts\jquery-1.12.4.min.js" />
     <Content Include="Scripts\jquery-1.12.4.min.map" />
