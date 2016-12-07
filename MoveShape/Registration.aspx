@@ -2,8 +2,8 @@
 
 <asp:Content ContentPlaceHolderID="Main" runat="server">
 <h2>Register to HatsOff</h2>
-<asp:Label ID="Label1" runat="server" Text="Register yo ass."/><br /><br />
+<asp:Label ID="Label1" runat="server" Text="Register as a new user."/><br /><br />
     <asp:Login ID="LoginControl" runat="server" 
-        onauthenticate="LoginControl_Register" DisplayRememberMe="False" LoginButtonText="Regisgter" TitleText="Registersdgariton">
+        onauthenticate="LoginControl_Register" DisplayRememberMe="False" LoginButtonText="Regisgter" TitleText="Register">
     </asp:Login>
 </asp:Content>
