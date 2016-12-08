@@ -38,7 +38,7 @@ namespace MoveShape
 
         public bool isAlphaNumeric(string text)
         {
-            return Regex.IsMatch(text, "[a-zA-Z0-9]");
+            return Regex.IsMatch(text, "^[a-zA-Z0-9]+$");
         }
 
         private static string CreateSalt() //funcsaltion
